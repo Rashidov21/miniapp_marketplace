@@ -3,17 +3,28 @@
 <html lang="{{ LANGUAGE_CODE|default:'uz' }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#0d9488">
   <title>{% block title %}{% trans "Mini do‘kon" %}{% endblock %}</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#0d9488', dark: '#0f766e' } } } } }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#0d9488', dark: '#0f766e', light: '#ccfbf1' },
+          },
+          boxShadow: { card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)' },
+        },
+      },
+    };
   </script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-  <main class="mx-auto max-w-lg px-4 pb-28 pt-4">
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand/20">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:shadow">{% trans "Asosiy kontentga o‘tish" %}</a>
+  <main id="main" class="mx-auto max-w-lg px-4 pb-36 pt-3 sm:pt-4">
     {% block content %}{% endblock %}
   </main>
   <script src="{% static 'js/app.js' %}"></script>

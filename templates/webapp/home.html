@@ -2,25 +2,42 @@
 {% load i18n %}
 {% block title %}{% trans "Bosh sahifa" %}{% endblock %}
 {% block content %}
-<section class="space-y-6">
-  <h1 class="text-2xl font-bold text-slate-900">{% trans "Mini do‘kon" %}</h1>
-  <p class="text-slate-600">{% trans "Telegram ichida oddiy sotuv." %}</p>
-  <div id="status" class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 text-sm text-slate-600">{% trans "Yuklanmoqda…" %}</div>
-  <div class="flex flex-col gap-3">
-    <a id="seller-link" href="/webapp/seller/" class="touch-target flex items-center justify-center rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
-      {% trans "Sotuvchi kabineti" %}
+<div class="flex min-h-[70vh] flex-col">
+  <div class="mb-6 text-center">
+    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Tez va oddiy" %}</p>
+    <h1 class="mt-2 text-2xl font-bold leading-tight text-slate-900">{% trans "Mini do‘kon" %}</h1>
+    <p class="mt-2 text-sm text-slate-600">{% trans "Mahsulotni tanlang — bir necha bosishda buyurtma." %}</p>
+  </div>
+
+  <div id="loading" class="space-y-3" aria-busy="true">
+    <div class="skeleton h-14 rounded-2xl bg-slate-200/80"></div>
+    <div class="skeleton h-14 rounded-2xl bg-slate-200/80"></div>
+  </div>
+
+  <div id="ready" class="hidden flex flex-1 flex-col gap-4">
+    <div id="status" class="rounded-2xl bg-white p-4 text-center text-sm text-slate-600 shadow-card ring-1 ring-slate-200/80"></div>
+    <a id="seller-link" href="/webapp/seller/"
+       class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md shadow-brand/20 active:scale-[0.99]">
+      <span>{% trans "Sotuvchi kabineti" %}</span>
+      <svg class="h-5 w-5 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
   </div>
-</section>
+
+  <div id="error" class="hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-800"></div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
   (async function () {
-    const el = document.getElementById("status");
+    const loading = document.getElementById("loading");
+    const ready = document.getElementById("ready");
+    const errEl = document.getElementById("error");
     const init = MiniApp.getInitData();
     if (!init) {
-      el.textContent = "{% trans 'Telegram ichida oching (initData yo‘q).' %}";
+      loading.classList.add("hidden");
+      errEl.classList.remove("hidden");
+      errEl.textContent = "{% trans 'Ilovani Telegram ichidan oching.' %}";
       return;
     }
     try {
@@ -34,9 +51,14 @@
       }
       await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
-      el.textContent = "{% trans 'Xush kelibsiz,' %} " + (me.first_name || me.username || me.telegram_id);
+      loading.classList.add("hidden");
+      ready.classList.remove("hidden");
+      const name = me.first_name || me.username || me.telegram_id;
+      document.getElementById("status").textContent = "{% trans 'Salom' %}, " + name + "!";
     } catch (e) {
-      el.textContent = "{% trans 'Autentifikatsiya xatosi.' %}";
+      loading.classList.add("hidden");
+      errEl.classList.remove("hidden");
+      errEl.textContent = "{% trans 'Kirishda xato. Qayta urinib ko‘ring.' %}";
     }
   })();
 </script>

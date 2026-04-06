@@ -1,4 +1,40 @@
-/* Small tweaks on top of Tailwind CDN */
+/* Mini App — mobile-first, safe areas, thumb-friendly targets */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
 .touch-target {
   min-height: 48px;
+  min-width: 48px;
+}
+
+.app-sticky-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding-bottom: calc(0.75rem + var(--safe-bottom));
+  padding-top: 0.5rem;
+  background: linear-gradient(to top, rgba(248, 250, 252, 0.98) 70%, transparent);
+  pointer-events: none;
+}
+
+.app-sticky-bottom > * {
+  pointer-events: auto;
+}
+
+.skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; opacity: 0.85; }
 }

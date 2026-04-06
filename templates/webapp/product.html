@@ -2,37 +2,77 @@
 {% load i18n %}
 {% block title %}{% trans "Mahsulot" %}{% endblock %}
 {% block content %}
-<section class="space-y-4">
-  <div id="card" class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-    <img id="img" class="aspect-square w-full object-cover bg-slate-100" alt="">
-    <div class="space-y-2 p-4">
-      <h1 id="name" class="text-xl font-bold"></h1>
-      <p id="price" class="text-2xl font-bold text-brand"></p>
-      <p id="desc" class="text-sm text-slate-600 whitespace-pre-line"></p>
+<div class="flex flex-col pb-4">
+  <div id="loading" class="space-y-4">
+    <div class="skeleton aspect-square w-full rounded-2xl bg-slate-200/90"></div>
+    <div class="skeleton h-8 max-w-[70%] rounded bg-slate-200/90"></div>
+    <div class="skeleton h-10 max-w-[40%] rounded bg-slate-200/90"></div>
+  </div>
+
+  <div id="content" class="hidden">
+    <div class="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-slate-200/80">
+      <div class="relative aspect-square w-full bg-slate-100">
+        <img id="img" class="h-full w-full object-cover" alt="" loading="eager">
+      </div>
+      <div class="space-y-2 p-4">
+        <h1 id="name" class="text-xl font-bold leading-snug text-slate-900"></h1>
+        <p id="price" class="text-2xl font-bold text-brand"></p>
+        <p id="desc" class="hidden text-sm leading-relaxed text-slate-600"></p>
+      </div>
     </div>
   </div>
-  <a id="order-btn" href="#" class="touch-target flex items-center justify-center rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
-    {% trans "Buyurtma berish" %}
-  </a>
-  <p id="msg" class="text-sm text-red-600"></p>
-</section>
+
+  <p id="msg" class="mt-4 text-center text-sm text-red-600" role="alert"></p>
+</div>
+
+<div class="app-sticky-bottom">
+  <div class="mx-auto max-w-lg px-4">
+    <div class="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div id="sticky-price" class="hidden text-lg font-bold text-brand"></div>
+        <a id="order-btn" href="#"
+           class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-center text-base font-semibold text-white shadow-md shadow-brand/25 active:scale-[0.99] sm:flex-1">
+          {% trans "Buyurtma berish" %}
+          <svg class="h-5 w-5 shrink-0 opacity-95" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
   const shopId = {{ shop_id }};
   const productId = {{ product_id }};
+  const uzSum = "{% trans 'so‘m' %}";
   (async function () {
+    const loading = document.getElementById("loading");
+    const content = document.getElementById("content");
     const msg = document.getElementById("msg");
     try {
       const p = await MiniApp.apiFetch("/shops/" + shopId + "/products/" + productId + "/public/", { method: "GET" });
-      document.getElementById("img").src = p.image || "";
+      loading.classList.add("hidden");
+      content.classList.remove("hidden");
+      const imgEl = document.getElementById("img");
+      if (p.image) imgEl.src = p.image;
+      else imgEl.alt = "";
       document.getElementById("name").textContent = p.name;
-      document.getElementById("price").textContent = p.price + " so'm";
-      document.getElementById("desc").textContent = p.description || "";
-      document.getElementById("order-btn").href = "/webapp/shop/" + shopId + "/product/" + productId + "/order/";
+      const priceStr = String(p.price) + " " + uzSum;
+      document.getElementById("price").textContent = priceStr;
+      document.getElementById("sticky-price").textContent = priceStr;
+      document.getElementById("sticky-price").classList.remove("hidden");
+      const desc = (p.description || "").trim();
+      if (desc) {
+        const d = document.getElementById("desc");
+        d.textContent = desc;
+        d.classList.remove("hidden");
+      }
+      document.getElementById("order-btn").href =
+        "/webapp/shop/" + shopId + "/product/" + productId + "/order/";
     } catch (e) {
-      msg.textContent = "{% trans 'Topilmadi.' %}";
+      loading.classList.add("hidden");
+      msg.textContent = "{% trans 'Mahsulot topilmadi.' %}";
     }
   })();
 </script>
