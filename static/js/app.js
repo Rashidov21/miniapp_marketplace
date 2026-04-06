@@ -1,5 +1,6 @@
 /**
  * Telegram Mini App helpers — API, UX, safe DOM.
+ * v2 — hapticLight + merge with stale cached MiniApp
  */
 (function () {
   const API_BASE = "/api";
@@ -124,7 +125,7 @@
     } catch (e) {}
   }
 
-  window.MiniApp = {
+  const api = {
     getInitData,
     getStartParam,
     getTelegramUser,
@@ -137,4 +138,8 @@
     ready,
     hapticLight,
   };
+  window.MiniApp = Object.assign({}, window.MiniApp || {}, api);
+  if (typeof window.MiniApp.hapticLight !== "function") {
+    window.MiniApp.hapticLight = hapticLight;
+  }
 })();
