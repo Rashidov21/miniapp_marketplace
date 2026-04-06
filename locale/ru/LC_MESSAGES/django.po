@@ -1,0 +1,16 @@
+# Russian translations (structure for future full coverage).
+# Compile: django-admin compilemessages
+msgid ""
+msgstr ""
+"Project-Id-Version: miniapp_marketplace\n"
+"Language: ru\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Mini do‘kon"
+msgstr "Мини-магазин"
+
+msgid "Buyurtma qabul qilindi!"
+msgstr "Заказ принят!"
+
+msgid "Sotuvchi kabineti"
+msgstr "Кабинет продавца"

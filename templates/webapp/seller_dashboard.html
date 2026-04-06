@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Sotuvchi" %}{% endblock %}
+{% block content %}
+<section class="space-y-4">
+  <h1 class="text-2xl font-bold">{% trans "Kabinet" %}</h1>
+  <div id="banner" class="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200"></div>
+  <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 space-y-3">
+    <button type="button" id="btn-seller" class="touch-target w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-800">
+      {% trans "Sotuvchi bo‘lish" %}
+    </button>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Do‘kon nomi" %}
+      <input id="shop-name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" placeholder="{% trans 'Masalan: Gilam studio' %}">
+    </label>
+    <button type="button" id="btn-create-shop" class="touch-target w-full rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
+      {% trans "Do‘kon yaratish" %}
+    </button>
+    <div id="shop-info" class="text-sm text-slate-600"></div>
+    <div id="link-box" class="hidden rounded-lg bg-slate-50 p-3 text-xs break-all ring-1 ring-slate-200"></div>
+  </div>
+  <div class="flex gap-3">
+    <a href="/webapp/seller/products/new/" class="touch-target flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white">
+      {% trans "Mahsulot qo‘shish" %}
+    </a>
+  </div>
+  <h2 class="text-lg font-semibold pt-2">{% trans "Buyurtmalar" %}</h2>
+  <div id="orders" class="space-y-2"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  async function ensureAuth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  (async function () {
+    const banner = document.getElementById("banner");
+    try {
+      await ensureAuth();
+      const me = await MiniApp.apiFetch("/me/", { method: "GET" });
+      banner.textContent = "{% trans 'Rol:' %} " + me.role + " · ID: " + me.telegram_id;
+    } catch (e) {
+      banner.textContent = e.message || "{% trans 'Kirish xatosi' %}";
+      return;
+    }
+    document.getElementById("btn-seller").onclick = async function () {
+      try {
+        await ensureAuth();
+        await MiniApp.apiFetch("/me/become-seller/", { method: "POST", body: JSON.stringify({}) });
+        MiniApp.showAlert("{% trans 'Endi do‘kon yarating.' %}");
+        const me = await MiniApp.apiFetch("/me/", { method: "GET" });
+        banner.textContent = "{% trans 'Rol:' %} " + me.role;
+      } catch (e) {
+        MiniApp.showAlert(e.message || "error");
+      }
+    };
+    document.getElementById("btn-create-shop").onclick = async function () {
+      try {
+        await ensureAuth();
+        const name = document.getElementById("shop-name").value.trim();
+        const shop = await MiniApp.apiFetch("/shops/", { method: "POST", body: JSON.stringify({ name: name }) });
+        document.getElementById("shop-info").textContent = "{% trans 'Do‘kon:' %} " + shop.name + " (id " + shop.id + ")";
+        const link = await MiniApp.apiFetch("/shops/" + shop.id + "/link/", { method: "GET" });
+        const lb = document.getElementById("link-box");
+        lb.classList.remove("hidden");
+        lb.textContent = link.telegram_deep_link || link.url;
+      } catch (e) {
+        MiniApp.showAlert((e.data && e.data.detail) || e.message || "error");
+      }
+    };
+    async function loadOrders() {
+      const box = document.getElementById("orders");
+      box.innerHTML = "";
+      try {
+        await ensureAuth();
+        const res = await MiniApp.apiFetch("/seller/orders/", { method: "GET" });
+        (res.results || []).forEach(function (o) {
+          const div = document.createElement("div");
+          div.className = "rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 text-sm space-y-1";
+          div.innerHTML =
+            "<div class='font-semibold'>#" + o.id + " · " + o.product_name + "</div>" +
+            "<div>" + o.customer_name + " · " + o.phone + "</div>" +
+            "<div class='text-slate-600'>" + o.address + "</div>" +
+            "<div class='pt-2 flex gap-2 flex-wrap'>" +
+            statusBtn(o, "ACCEPTED") +
+            statusBtn(o, "DELIVERED") +
+            "</div>";
+          box.appendChild(div);
+        });
+      } catch (e) {
+        box.textContent = "{% trans 'Buyurtmalar yo‘q yoki do‘kon yo‘q.' %}";
+      }
+    }
+    function statusBtn(o, st) {
+      return '<button type="button" data-oid="' + o.id + '" data-st="' + st + '" class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium">' + st + "</button>";
+    }
+    document.getElementById("orders").addEventListener("click", async function (ev) {
+      const t = ev.target;
+      if (t.tagName !== "BUTTON" || !t.getAttribute("data-oid")) return;
+      try {
+        await ensureAuth();
+        await MiniApp.apiFetch("/seller/orders/" + t.getAttribute("data-oid") + "/", {
+          method: "PATCH",
+          body: JSON.stringify({ status: t.getAttribute("data-st") }),
+        });
+        await loadOrders();
+      } catch (e) {
+        MiniApp.showAlert(e.message || "error");
+      }
+    });
+    loadOrders();
+  })();
+</script>
+{% endblock %}

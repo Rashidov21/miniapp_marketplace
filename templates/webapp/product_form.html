@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mahsulot" %}{% endblock %}
+{% block content %}
+<section class="space-y-4">
+  <h1 class="text-xl font-bold">{% if product_id %}{% trans "Tahrirlash" %}{% else %}{% trans "Yangi mahsulot" %}{% endif %}</h1>
+  <form id="form" class="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200" enctype="multipart/form-data">
+    <label class="block text-sm font-medium text-slate-700">{% trans "Nomi" %}
+      <input id="field-name" name="name" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base">
+    </label>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Narx (so‘m)" %}
+      <input id="field-price" name="price" type="number" step="0.01" min="0" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base">
+    </label>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Rasm" %}
+      <input name="image" type="file" accept="image/*" class="mt-1 w-full text-sm" {% if not product_id %}required{% endif %}>
+    </label>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Tavsif" %}
+      <textarea id="field-desc" name="description" rows="3" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base"></textarea>
+    </label>
+    <button type="submit" class="touch-target w-full rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
+      {% trans "Saqlash" %}
+    </button>
+  </form>
+  <p id="msg" class="text-sm"></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  const productId = {% if product_id %}{{ product_id }}{% else %}null{% endif %};
+  async function ensureAuth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  (async function () {
+    if (!productId) return;
+    try {
+      await ensureAuth();
+      const p = await MiniApp.apiFetch("/seller/products/" + productId + "/", { method: "GET" });
+      document.getElementById("field-name").value = p.name;
+      document.getElementById("field-price").value = p.price;
+      document.getElementById("field-desc").value = p.description || "";
+    } catch (e) {}
+  })();
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    try {
+      await ensureAuth();
+      const fd = new FormData(e.target);
+      if (productId) {
+        await MiniApp.apiFetch("/seller/products/" + productId + "/", {
+          method: "PATCH",
+          body: fd,
+        });
+      } else {
+        await MiniApp.apiFetch("/seller/products/", { method: "POST", body: fd });
+      }
+      msg.className = "text-sm text-emerald-700";
+      msg.textContent = "{% trans 'Saqlandi' %}";
+      MiniApp.showAlert("{% trans 'Saqlandi' %}");
+      window.location.href = "/webapp/seller/";
+    } catch (err) {
+      msg.className = "text-sm text-red-600";
+      msg.textContent = err.message || "{% trans 'Xato' %}";
+    }
+  });
+</script>
+{% endblock %}

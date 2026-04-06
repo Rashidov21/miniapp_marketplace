@@ -1,0 +1,77 @@
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.orders.models import Order
+from apps.orders.serializers import OrderCreateSerializer, OrderSerializer
+from apps.orders.services import notify_new_order, notify_order_confirmation, notify_order_status
+from apps.products.models import Product
+from apps.shops.models import Shop
+from apps.shops.permissions import IsSellerOrAdmin
+from apps.users.models import User
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_create(request):
+    ser = OrderCreateSerializer(data=request.data)
+    if not ser.is_valid():
+        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    product: Product = ser.validated_data["product"]
+    if not product.shop.is_active:
+        return Response({"detail": _("Shop is not available.")}, status=status.HTTP_400_BAD_REQUEST)
+    order = Order.objects.create(
+        product=product,
+        shop=product.shop,
+        buyer=request.user,
+        customer_name=ser.validated_data["customer_name"].strip(),
+        phone=ser.validated_data["phone"].strip(),
+        address=ser.validated_data["address"].strip(),
+        status=Order.Status.NEW,
+    )
+    notify_new_order(order)
+    notify_order_confirmation(order)
+    return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_orders(request):
+    shop = Shop.objects.filter(owner=request.user).first()
+    if not shop:
+        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+    qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer")
+    ser = OrderSerializer(qs, many=True)
+    return Response({"results": ser.data})
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_order_update(request, order_id):
+    shop = Shop.objects.filter(owner=request.user).first()
+    if not shop:
+        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+    order = get_object_or_404(Order, pk=order_id, shop=shop)
+    new_status = request.data.get("status")
+    if new_status not in dict(Order.Status.choices):
+        return Response({"status": [_("Invalid status.")]}, status=status.HTTP_400_BAD_REQUEST)
+    old = order.status
+    order.status = new_status
+    order.save(update_fields=["status"])
+    if old != order.status and order.status != Order.Status.NEW:
+        notify_order_status(order)
+    return Response(OrderSerializer(order).data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def buyer_order_detail(request, order_id):
+    order = Order.objects.filter(pk=order_id).select_related("product", "shop").first()
+    if not order:
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
+    if order.buyer_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:
+        return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
+    return Response(OrderSerializer(order).data)

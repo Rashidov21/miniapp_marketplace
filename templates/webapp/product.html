@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mahsulot" %}{% endblock %}
+{% block content %}
+<section class="space-y-4">
+  <div id="card" class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+    <img id="img" class="aspect-square w-full object-cover bg-slate-100" alt="">
+    <div class="space-y-2 p-4">
+      <h1 id="name" class="text-xl font-bold"></h1>
+      <p id="price" class="text-2xl font-bold text-brand"></p>
+      <p id="desc" class="text-sm text-slate-600 whitespace-pre-line"></p>
+    </div>
+  </div>
+  <a id="order-btn" href="#" class="touch-target flex items-center justify-center rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
+    {% trans "Buyurtma berish" %}
+  </a>
+  <p id="msg" class="text-sm text-red-600"></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  const shopId = {{ shop_id }};
+  const productId = {{ product_id }};
+  (async function () {
+    const msg = document.getElementById("msg");
+    try {
+      const p = await MiniApp.apiFetch("/shops/" + shopId + "/products/" + productId + "/public/", { method: "GET" });
+      document.getElementById("img").src = p.image || "";
+      document.getElementById("name").textContent = p.name;
+      document.getElementById("price").textContent = p.price + " so'm";
+      document.getElementById("desc").textContent = p.description || "";
+      document.getElementById("order-btn").href = "/webapp/shop/" + shopId + "/product/" + productId + "/order/";
+    } catch (e) {
+      msg.textContent = "{% trans 'Topilmadi.' %}";
+    }
+  })();
+</script>
+{% endblock %}

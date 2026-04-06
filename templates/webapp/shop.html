@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Do‘kon" %}{% endblock %}
+{% block content %}
+<section class="space-y-4">
+  <div id="shop-head" class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <h1 id="shop-name" class="text-xl font-bold">{% trans "Do‘kon" %}</h1>
+  </div>
+  <div id="products" class="grid gap-3"></div>
+  <p id="msg" class="text-sm text-slate-500"></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  const shopId = {{ shop_id }};
+  (async function () {
+    const box = document.getElementById("products");
+    const msg = document.getElementById("msg");
+    try {
+      const shop = await MiniApp.apiFetch("/shops/" + shopId + "/public/", { method: "GET" });
+      document.getElementById("shop-name").textContent = shop.name;
+      const list = await MiniApp.apiFetch("/shops/" + shopId + "/products/", { method: "GET" });
+      (list.results || []).forEach(function (p) {
+        const a = document.createElement("a");
+        a.href = "/webapp/shop/" + shopId + "/product/" + p.id + "/";
+        a.className = "flex gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50";
+        a.innerHTML =
+          '<img src="' + (p.image || "") + '" alt="" class="h-20 w-20 shrink-0 rounded-lg object-cover bg-slate-100" />' +
+          '<div class="min-w-0 flex-1"><div class="font-semibold text-slate-900 truncate">' + p.name + '</div>' +
+          '<div class="text-brand font-bold">' + p.price + " so'm</div></div>";
+        box.appendChild(a);
+      });
+      if (!list.results || !list.results.length) msg.textContent = "{% trans 'Mahsulotlar hozircha yo‘q.' %}";
+    } catch (e) {
+      msg.textContent = "{% trans 'Yuklashda xato.' %}";
+    }
+  })();
+</script>
+{% endblock %}

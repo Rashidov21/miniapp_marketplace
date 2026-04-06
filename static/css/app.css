@@ -1,0 +1,4 @@
+/* Small tweaks on top of Tailwind CDN */
+.touch-target {
+  min-height: 48px;
+}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Buyurtma" %}{% endblock %}
+{% block content %}
+<section class="space-y-4">
+  <h1 class="text-xl font-bold">{% trans "Buyurtma" %}</h1>
+  <form id="form" class="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <label class="block text-sm font-medium text-slate-700">{% trans "Ism" %}
+      <input name="customer_name" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" autocomplete="name">
+    </label>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Telefon" %}
+      <input name="phone" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base" inputmode="tel" autocomplete="tel">
+    </label>
+    <label class="block text-sm font-medium text-slate-700">{% trans "Manzil" %}
+      <textarea name="address" required rows="3" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 text-base"></textarea>
+    </label>
+    <input type="hidden" name="product" id="product-id">
+    <button type="submit" class="touch-target w-full rounded-xl bg-brand px-4 py-3 font-semibold text-white shadow hover:bg-brand-dark">
+      {% trans "Yuborish" %}
+    </button>
+  </form>
+  <p id="msg" class="text-sm"></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  const shopId = {{ shop_id }};
+  const productId = {{ product_id }};
+  document.getElementById("product-id").value = String(productId);
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    const init = MiniApp.getInitData();
+    if (!init) {
+      msg.className = "text-sm text-red-600";
+      msg.textContent = "{% trans 'Telegram ichida oching.' %}";
+      return;
+    }
+    const fd = new FormData(e.target);
+    const body = {
+      product: Number(fd.get("product")),
+      customer_name: fd.get("customer_name"),
+      phone: fd.get("phone"),
+      address: fd.get("address"),
+    };
+    try {
+      await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+      await MiniApp.apiFetch("/orders/", { method: "POST", body: JSON.stringify(body) });
+      msg.className = "text-sm text-emerald-700";
+      msg.textContent = "{% trans 'Buyurtma qabul qilindi!' %}";
+      MiniApp.showAlert("{% trans 'Buyurtma qabul qilindi!' %}");
+    } catch (err) {
+      msg.className = "text-sm text-red-600";
+      msg.textContent = err.message || "{% trans 'Xato' %}";
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+Django>=5.0,<6
+djangorestframework>=3.15,<4
+# psycopg-binary wheels are not published for all Windows targets; use Docker/Linux for Postgres.
+psycopg[binary]>=3.2,<4; sys_platform != "win32"
+Pillow>=10.0,<12
+gunicorn>=22.0,<24
+python-dotenv>=1.0,<2
+requests>=2.31,<3
