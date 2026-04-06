@@ -4,7 +4,7 @@ from apps.products.models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    shop_id = serializers.IntegerField(source="shop_id", read_only=True)
+    shop_id = serializers.IntegerField(read_only=True)
     image_url = serializers.SerializerMethodField()
 
     class Meta:
