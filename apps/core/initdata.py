@@ -7,6 +7,9 @@ import json
 from typing import Any
 from urllib.parse import parse_qsl
 
+from django.conf import settings
+from django.utils import timezone
+
 
 def verify_init_data(init_data: str, bot_token: str) -> dict[str, Any] | None:
     """
@@ -35,6 +38,20 @@ def verify_init_data(init_data: str, bot_token: str) -> dict[str, Any] | None:
     ).hexdigest()
     if not hmac.compare_digest(computed, received_hash):
         return None
+
+    auth_date_raw = parsed.get("auth_date")
+    if auth_date_raw is None:
+        return None
+    try:
+        auth_ts = int(auth_date_raw)
+    except (TypeError, ValueError):
+        return None
+    now_ts = int(timezone.now().timestamp())
+    max_age = int(getattr(settings, "TELEGRAM_INITDATA_MAX_AGE_SECONDS", 86400))
+    # Reject stale initData (replay) and wildly future timestamps (clock skew / tampering).
+    if auth_ts > now_ts + 120 or now_ts - auth_ts > max_age:
+        return None
+
     user_raw = parsed.get("user")
     user: dict[str, Any] = {}
     if user_raw:
@@ -44,7 +61,7 @@ def verify_init_data(init_data: str, bot_token: str) -> dict[str, Any] | None:
             return None
     return {
         "user": user,
-        "auth_date": parsed.get("auth_date"),
+        "auth_date": auth_date_raw,
         "query_id": parsed.get("query_id"),
         "start_param": parsed.get("start_param") or "",
     }

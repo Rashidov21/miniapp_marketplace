@@ -13,12 +13,24 @@ def upsert_user_from_telegram_user(tg_user: dict) -> User:
     tid = tg_user.get("id")
     if tid is None:
         raise AuthenticationFailed("Invalid Telegram user payload")
+    tid_int = int(tid)
     defaults = {
         "first_name": tg_user.get("first_name") or "",
         "last_name": tg_user.get("last_name") or "",
         "username": tg_user.get("username") or "",
     }
-    user, _ = User.objects.update_or_create(telegram_id=int(tid), defaults=defaults)
+    try:
+        user = User.objects.get(telegram_id=tid_int)
+    except User.DoesNotExist:
+        return User.objects.create_user(telegram_id=tid_int, **defaults)
+
+    changed_fields: list[str] = []
+    for field, value in defaults.items():
+        if getattr(user, field) != value:
+            setattr(user, field, value)
+            changed_fields.append(field)
+    if changed_fields:
+        user.save(update_fields=changed_fields)
     return user
 
 

@@ -122,9 +122,17 @@
     spin.classList.remove("hidden");
     label.textContent = "{% trans 'Yuborilmoqda…' %}";
     MiniApp.hapticLight();
+    const idemKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : String(Date.now()) + "-" + Math.random().toString(36).slice(2);
     try {
       await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
-      await MiniApp.apiFetch("/orders/", { method: "POST", body: JSON.stringify(body) });
+      await MiniApp.apiFetch("/orders/", {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: { "Idempotency-Key": idemKey },
+      });
       document.getElementById("form-section").classList.add("hidden");
       document.querySelector(".app-sticky-bottom").classList.add("hidden");
       document.getElementById("success-section").classList.remove("hidden");

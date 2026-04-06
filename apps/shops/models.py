@@ -18,6 +18,9 @@ class Shop(models.Model):
         ordering = ["-created_at"]
         verbose_name = _("shop")
         verbose_name_plural = _("shops")
+        constraints = [
+            models.UniqueConstraint(fields=["owner"], name="shops_shop_owner_uniq"),
+        ]
 
     def __str__(self) -> str:
         return self.name

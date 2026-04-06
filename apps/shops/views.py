@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -25,7 +26,10 @@ def shop_create(request):
         return Response({"name": [_("This field is required.")]}, status=status.HTTP_400_BAD_REQUEST)
     if Shop.objects.filter(owner=user).exists():
         return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
-    shop = Shop.objects.create(owner=user, name=name)
+    try:
+        shop = Shop.objects.create(owner=user, name=name)
+    except IntegrityError:
+        return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
     return Response(ShopSerializer(shop).data, status=status.HTTP_201_CREATED)
 
 
