@@ -113,6 +113,34 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Production: ManifestStaticFilesStorage → hashed filenames (e.g. app.abc12.js) for cache busting.
+# Dev: StaticFilesStorage → plain names; runserver works without collectstatic.
+# Django 5+ requires both "default" (uploads) and "staticfiles" keys in STORAGES.
+if DEBUG:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "OPTIONS": {"location": MEDIA_ROOT},
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "OPTIONS": {"location": MEDIA_ROOT},
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+        },
+    }
+# Related pitfalls (not fixed by this alone):
+# - Nginx must serve the whole STATIC_ROOT tree (hashed files + manifest).
+# - External scripts (telegram.org, cdn.tailwindcss.com) use their own cache; pin or self-host if needed.
+# - Deploy: collectstatic --noinput then reload Gunicorn; long Cache-Control on /static/ is OK with hashes.
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Freshness window for Telegram WebApp initData (auth_date), seconds. Default 24h.

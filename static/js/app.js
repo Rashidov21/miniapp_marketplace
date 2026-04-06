@@ -139,7 +139,6 @@
     hapticLight,
   };
   window.MiniApp = Object.assign({}, window.MiniApp || {}, api);
-  if (typeof window.MiniApp.hapticLight !== "function") {
-    window.MiniApp.hapticLight = hapticLight;
-  }
+  // Har doim to‘liq implementatsiya (stub yoki eski keshdan keyin ham to‘g‘ri ishlashi uchun).
+  window.MiniApp.hapticLight = hapticLight;
 })();

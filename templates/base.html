@@ -27,6 +27,20 @@
   <main id="main" class="mx-auto max-w-lg px-4 pb-36 pt-3 sm:pt-4">
     {% block content %}{% endblock %}
   </main>
+  {# Eski keshdagi app.js da hapticLight bo‘lmasa ham chaqiriuv xato bermasligi uchun — app.js dan oldin #}
+  <script>
+    (function () {
+      var m = (window.MiniApp = window.MiniApp || {});
+      if (typeof m.hapticLight !== "function") {
+        m.hapticLight = function () {
+          try {
+            var h = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback;
+            if (h) h.impactOccurred("light");
+          } catch (e) {}
+        };
+      }
+    })();
+  </script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block scripts %}{% endblock %}
 </body>
