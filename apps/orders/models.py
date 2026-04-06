@@ -40,6 +40,10 @@ class Order(models.Model):
         ordering = ["-created_at"]
         verbose_name = _("order")
         verbose_name_plural = _("orders")
+        indexes = [
+            models.Index(fields=["shop", "-created_at"]),
+            models.Index(fields=["status", "shop"]),
+        ]
 
     def __str__(self) -> str:
         return f"Order {self.pk} ({self.status})"

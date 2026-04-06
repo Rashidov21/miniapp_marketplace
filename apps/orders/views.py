@@ -9,10 +9,12 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.pagination import OrderListPagination
 from apps.orders.locks import advisory_xact_lock_for_string
 from apps.orders.models import Order, OrderIdempotency
 from apps.orders.serializers import OrderCreateSerializer, OrderSerializer
 from apps.orders.services import notify_new_order, notify_order_confirmation, notify_order_status
+from apps.orders.state_machine import can_transition
 from apps.orders.throttles import OrderCreateThrottle
 from apps.products.models import Product
 from apps.shops.models import Shop
@@ -52,10 +54,6 @@ def order_create(request):
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     product: Product = ser.validated_data["product"]
-    if not product.shop.is_active:
-        return Response({"detail": _("Shop is not available.")}, status=status.HTTP_400_BAD_REQUEST)
-    if not product.shop.is_subscription_operational():
-        return Response({"detail": _("Shop is not available.")}, status=status.HTTP_400_BAD_REQUEST)
 
     idem_raw = request.headers.get("Idempotency-Key") or request.headers.get("X-Idempotency-Key")
     idem_key = _normalize_idempotency_key(idem_raw)
@@ -63,9 +61,16 @@ def order_create(request):
     with transaction.atomic():
         if idem_key:
             advisory_xact_lock_for_string(idem_key)
-            existing = OrderIdempotency.objects.filter(key=idem_key).select_related("order").first()
+            existing = (
+                OrderIdempotency.objects.filter(key=idem_key)
+                .select_related("order", "order__product", "order__shop", "order__buyer")
+                .first()
+            )
             if existing:
-                return Response(OrderSerializer(existing.order).data, status=status.HTTP_200_OK)
+                return Response(
+                    OrderSerializer(existing.order).data,
+                    status=status.HTTP_200_OK,
+                )
 
         order = Order.objects.create(
             product=product,
@@ -79,6 +84,7 @@ def order_create(request):
         if idem_key:
             OrderIdempotency.objects.create(key=idem_key, order=order)
 
+    order = Order.objects.select_related("product", "shop", "buyer").get(pk=order.pk)
     _schedule_order_notifications(order.pk)
     return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
@@ -89,9 +95,11 @@ def seller_orders(request):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
         return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
-    qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer")
-    ser = OrderSerializer(qs, many=True)
-    return Response({"results": ser.data})
+    qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer").order_by("-created_at")
+    paginator = OrderListPagination()
+    page = paginator.paginate_queryset(qs, request)
+    ser = OrderSerializer(page, many=True)
+    return paginator.get_paginated_response(ser.data)
 
 
 @api_view(["PATCH"])
@@ -100,14 +108,25 @@ def seller_order_update(request, order_id):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
         return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
-    order = get_object_or_404(Order, pk=order_id, shop=shop)
+    order = get_object_or_404(
+        Order.objects.select_related("product", "shop", "buyer"),
+        pk=order_id,
+        shop=shop,
+    )
     new_status = request.data.get("status")
     if new_status not in dict(Order.Status.choices):
         return Response({"status": [_("Invalid status.")]}, status=status.HTTP_400_BAD_REQUEST)
     old = order.status
+    if new_status == old:
+        return Response(OrderSerializer(order).data)
+    if not can_transition(old, new_status):
+        return Response(
+            {"status": [_("Invalid status transition.")]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     order.status = new_status
     order.save(update_fields=["status"])
-    if old != order.status and order.status != Order.Status.NEW:
+    if old != new_status and new_status != Order.Status.NEW:
         notify_order_status(order)
     return Response(OrderSerializer(order).data)
 
@@ -115,7 +134,11 @@ def seller_order_update(request, order_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def buyer_order_detail(request, order_id):
-    order = Order.objects.filter(pk=order_id).select_related("product", "shop").first()
+    order = (
+        Order.objects.filter(pk=order_id)
+        .select_related("product", "shop", "buyer")
+        .first()
+    )
     if not order:
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     if order.buyer_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:

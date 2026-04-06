@@ -18,7 +18,9 @@ class ShopAdmin(admin.ModelAdmin):
     )
     list_display_links = ("name",)
     list_filter = ("is_active", "is_verified", "subscription_status")
-    search_fields = ("name", "owner__telegram_id", "owner__username")
+    search_fields = ("name", "phone", "owner__telegram_id", "owner__username", "owner__first_name", "owner__last_name")
+    list_select_related = ("owner", "current_plan")
+    date_hierarchy = "created_at"
     raw_id_fields = ("owner", "current_plan")
     readonly_fields = ("created_at",)
     fieldsets = (

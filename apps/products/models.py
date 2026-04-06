@@ -27,6 +27,9 @@ class Product(models.Model):
         ordering = ["-created_at"]
         verbose_name = _("product")
         verbose_name_plural = _("products")
+        indexes = [
+            models.Index(fields=["shop", "is_active", "-created_at"]),
+        ]
 
     def __str__(self) -> str:
         return self.name

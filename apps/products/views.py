@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.pagination import ProductListPagination
 from apps.products.models import Product
 from apps.products.serializers import ProductPublicSerializer, ProductSerializer
 from apps.shops.models import Shop
@@ -18,9 +19,11 @@ def product_list_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
-    qs = Product.objects.filter(shop=shop, is_active=True)
-    ser = ProductPublicSerializer(qs, many=True, context={"request": request})
-    return Response({"results": ser.data})
+    qs = Product.objects.filter(shop=shop, is_active=True).order_by("-created_at")
+    paginator = ProductListPagination()
+    page = paginator.paginate_queryset(qs, request)
+    ser = ProductPublicSerializer(page, many=True, context={"request": request})
+    return paginator.get_paginated_response(ser.data)
 
 
 @api_view(["GET"])
@@ -40,9 +43,11 @@ def product_list_manage(request):
     if not shop:
         return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
     if request.method == "GET":
-        qs = Product.objects.filter(shop=shop)
-        ser = ProductSerializer(qs, many=True, context={"request": request})
-        return Response({"results": ser.data})
+        qs = Product.objects.filter(shop=shop).select_related("shop").order_by("-created_at")
+        paginator = ProductListPagination()
+        page = paginator.paginate_queryset(qs, request)
+        ser = ProductSerializer(page, many=True, context={"request": request})
+        return paginator.get_paginated_response(ser.data)
     if not shop.is_subscription_operational():
         return Response(
             {"detail": _("Subscription required to add products.")},
@@ -61,7 +66,11 @@ def product_detail_manage(request, product_id):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
         return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
-    product = Product.objects.filter(pk=product_id, shop=shop).first()
+    product = (
+        Product.objects.filter(pk=product_id, shop=shop)
+        .select_related("shop")
+        .first()
+    )
     if not product:
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
@@ -89,7 +98,7 @@ def product_detail_manage(request, product_id):
 def product_admin_block(request, product_id):
     if request.user.role != User.Role.ADMIN and not request.user.is_superuser:
         return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
-    product = Product.objects.filter(pk=product_id).first()
+    product = Product.objects.filter(pk=product_id).select_related("shop").first()
     if not product:
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     if "is_active" in request.data:
