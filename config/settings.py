@@ -32,11 +32,13 @@ INSTALLED_APPS = [
     "apps.shops",
     "apps.products",
     "apps.orders",
+    "apps.platform",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "apps.platform.middleware.AnalyticsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -186,3 +188,7 @@ TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+LOGIN_URL = "/platform/login/"
+LOGIN_REDIRECT_URL = "/platform/"
+LOGOUT_REDIRECT_URL = "/platform/login/"

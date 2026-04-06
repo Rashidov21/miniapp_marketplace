@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Obuna" %}{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4 pb-28">
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Obuna" %}</p>
+    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Tariflar" %}</h1>
+    <p class="mt-2 text-sm text-slate-600">{% trans "To‘lovni amalga oshirgach, skrinshotni yuklang — admin tasdiqlagach obuna ochiladi." %}</p>
+  </div>
+  <div id="pay-info" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80">
+    <p class="font-medium">{% trans "To‘lov rekvizitlari" %}</p>
+    <p class="mt-1 font-mono text-xs">{% trans "Keyinroq admin sozlamalaridan o‘zgartirasiz — hozircha shu yerda ko‘rsating." %}</p>
+  </div>
+  <div id="plans" class="space-y-3"></div>
+  <form id="pay-form" class="hidden space-y-3 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
+    <input type="hidden" name="plan_id" id="plan_id" />
+    <p id="plan-label" class="text-sm font-semibold text-slate-800"></p>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "To‘lov skrinshoti" %}</label>
+      <input name="proof_image" type="file" accept="image/*" required class="mt-2 block w-full text-sm" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Izoh (ixtiyoriy)" %}</label>
+      <input name="notes" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm" />
+    </div>
+    <button type="submit" class="w-full rounded-2xl bg-brand py-3 text-base font-semibold text-white">{% trans "Yuborish" %}</button>
+  </form>
+  <p id="err" class="hidden text-sm text-red-700"></p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  let selectedPlan = null;
+  async function auth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  function fmt(n, cur) {
+    return new Intl.NumberFormat("uz-UZ").format(n) + " " + (cur || "UZS");
+  }
+  (async function () {
+    const err = document.getElementById("err");
+    try {
+      await auth();
+      const res = await MiniApp.apiFetch("/subscription/plans/", { method: "GET" });
+      const box = document.getElementById("plans");
+      (res.results || []).forEach(function (p) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className =
+          "w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm ring-1 ring-slate-100 active:bg-slate-50";
+        b.innerHTML =
+          '<p class="font-semibold text-slate-900">' +
+          p.name +
+          '</p><p class="mt-1 text-lg font-bold text-brand">' +
+          fmt(p.price, p.currency) +
+          "</p>";
+        b.addEventListener("click", function () {
+          selectedPlan = p;
+          document.getElementById("pay-form").classList.remove("hidden");
+          document.getElementById("plan_id").value = String(p.id);
+          document.getElementById("plan-label").textContent = p.name + " — " + fmt(p.price, p.currency);
+        });
+        box.appendChild(b);
+      });
+    } catch (e) {
+      err.textContent = e.message || "error";
+      err.classList.remove("hidden");
+    }
+  })();
+  document.getElementById("pay-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const err = document.getElementById("err");
+    err.classList.add("hidden");
+    try {
+      await auth();
+      const fd = new FormData(e.target);
+      await MiniApp.apiFetch("/shops/mine/payments/", { method: "POST", body: fd });
+      MiniApp.showAlert("{% trans 'Yuborildi. Admin tasdiqlashini kuting.' %}");
+      window.location.href = "/webapp/seller/";
+    } catch (x) {
+      err.textContent = x.message || "{% trans 'Xato' %}";
+      err.classList.remove("hidden");
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% trans "Platforma" %}{% endblock %} — miniapp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <a href="{% url 'platform_dashboard' %}" class="text-lg font-bold text-teal-700">{% trans "Platform boshqaruvi" %}</a>
+      <nav class="flex flex-wrap gap-2 text-sm">
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_dashboard' %}">{% trans "Bosh sahifa" %}</a>
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_payments' %}">{% trans "To‘lovlar" %}</a>
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_users' %}">{% trans "Foydalanuvchilar" %}</a>
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_shops' %}">{% trans "Do‘konlar" %}</a>
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_broadcast' %}">{% trans "Xabar" %}</a>
+        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_audit' %}">{% trans "Audit" %}</a>
+        <a class="rounded-lg px-2 py-1 text-red-700 hover:bg-red-50" href="{% url 'platform_logout' %}">{% trans "Chiqish" %}</a>
+      </nav>
+    </div>
+  </header>
+  <main class="mx-auto max-w-6xl px-4 py-8">
+    {% if messages %}
+      <ul class="mb-6 space-y-2">
+        {% for message in messages %}
+          <li class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950 ring-1 ring-amber-200">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

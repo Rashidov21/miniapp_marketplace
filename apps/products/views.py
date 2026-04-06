@@ -16,7 +16,7 @@ from apps.users.models import User
 @permission_classes([AllowAny])
 def product_list_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
-    if not shop:
+    if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     qs = Product.objects.filter(shop=shop, is_active=True)
     ser = ProductPublicSerializer(qs, many=True, context={"request": request})
@@ -27,7 +27,7 @@ def product_list_public(request, shop_id):
 @permission_classes([AllowAny])
 def product_detail_public(request, shop_id, product_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
-    if not shop:
+    if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     p = get_object_or_404(Product, pk=product_id, shop=shop, is_active=True)
     return Response(ProductPublicSerializer(p, context={"request": request}).data)
@@ -43,6 +43,11 @@ def product_list_manage(request):
         qs = Product.objects.filter(shop=shop)
         ser = ProductSerializer(qs, many=True, context={"request": request})
         return Response({"results": ser.data})
+    if not shop.is_subscription_operational():
+        return Response(
+            {"detail": _("Subscription required to add products.")},
+            status=status.HTTP_403_FORBIDDEN,
+        )
     ser = ProductSerializer(data=request.data, context={"request": request})
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)

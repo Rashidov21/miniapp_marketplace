@@ -5,6 +5,8 @@ from apps.core import views
 urlpatterns = [
     path("", views.webapp_home, name="webapp_home"),
     path("seller/", views.seller_dashboard, name="seller_dashboard"),
+    path("seller/shop/", views.shop_settings_page, name="shop_settings"),
+    path("seller/subscription/", views.subscription_page, name="subscription"),
     path("seller/products/new/", views.product_form, name="product_new"),
     path("seller/products/<int:product_id>/edit/", views.product_form, name="product_edit"),
     path("shop/<int:shop_id>/", views.shop_page, name="shop_page"),

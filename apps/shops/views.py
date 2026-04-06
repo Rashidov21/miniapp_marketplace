@@ -5,9 +5,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from apps.shops.models import Shop
+from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
-from apps.shops.serializers import ShopPublicSerializer, ShopSerializer
+from apps.shops.serializers import (
+    ShopPublicSerializer,
+    ShopSerializer,
+    SubscriptionPaymentCreateSerializer,
+    SubscriptionPlanSerializer,
+)
+from apps.shops.services import apply_trial_for_new_shop
 from apps.users.models import User
 
 
@@ -30,7 +36,12 @@ def shop_create(request):
         shop = Shop.objects.create(owner=user, name=name)
     except IntegrityError:
         return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
-    return Response(ShopSerializer(shop).data, status=status.HTTP_201_CREATED)
+    apply_trial_for_new_shop(shop)
+    shop.refresh_from_db()
+    return Response(
+        ShopSerializer(shop, context={"request": request}).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["GET"])
@@ -40,7 +51,7 @@ def shop_mine(request):
     shop = Shop.objects.filter(owner=user).first()
     if not shop:
         return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
-    return Response(ShopSerializer(shop).data)
+    return Response(ShopSerializer(shop, context={"request": request}).data)
 
 
 @api_view(["PATCH"])
@@ -51,22 +62,28 @@ def shop_update(request, shop_id):
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
         return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
-    name = (request.data or {}).get("name")
-    if name is not None:
-        shop.name = str(name).strip() or shop.name
-    if "is_active" in request.data and (request.user.is_superuser or request.user.role == User.Role.ADMIN):
-        shop.is_active = bool(request.data.get("is_active"))
-    shop.save()
-    return Response(ShopSerializer(shop).data)
+    data = request.data.copy()
+    if not (request.user.is_superuser or request.user.role == User.Role.ADMIN):
+        data.pop("is_active", None)
+    ser = ShopSerializer(shop, data=data, partial=True, context={"request": request})
+    if not ser.is_valid():
+        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    ser.save()
+    shop.refresh_from_db()
+    if request.user.is_superuser or request.user.role == User.Role.ADMIN:
+        if "is_active" in request.data:
+            shop.is_active = bool(request.data.get("is_active"))
+            shop.save(update_fields=["is_active"])
+    return Response(ShopSerializer(shop, context={"request": request}).data)
 
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def shop_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
-    if not shop:
+    if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
-    return Response(ShopPublicSerializer(shop).data)
+    return Response(ShopPublicSerializer(shop, context={"request": request}).data)
 
 
 @api_view(["GET"])
@@ -86,3 +103,43 @@ def shop_link(request, shop_id):
     startapp = f"shop_{shop.id}"
     deep_link = f"https://t.me/{bot}?startapp={startapp}" if bot else ""
     return Response({"url": full_url, "startapp": startapp, "telegram_deep_link": deep_link})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def subscription_plans_list(request):
+    qs = SubscriptionPlan.objects.filter(is_active=True)
+    return Response({"results": SubscriptionPlanSerializer(qs, many=True).data})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def subscription_payment_create(request):
+    shop = Shop.objects.filter(owner=request.user).first()
+    if not shop:
+        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+    ser = SubscriptionPaymentCreateSerializer(data=request.data)
+    if not ser.is_valid():
+        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    plan = SubscriptionPlan.objects.get(pk=ser.validated_data["plan_id"])
+    if SubscriptionPayment.objects.filter(
+        shop=shop,
+        status=SubscriptionPayment.Status.PENDING,
+    ).exists():
+        return Response(
+            {"detail": _("You already have a pending payment.")},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    payment = SubscriptionPayment.objects.create(
+        shop=shop,
+        plan=plan,
+        amount=plan.price,
+        proof_image=ser.validated_data["proof_image"],
+        notes=ser.validated_data.get("notes") or "",
+    )
+    shop.subscription_status = Shop.SubscriptionStatus.PAYMENT_PENDING
+    shop.save(update_fields=["subscription_status"])
+    return Response(
+        {"id": payment.id, "status": payment.status, "amount": str(payment.amount)},
+        status=status.HTTP_201_CREATED,
+    )

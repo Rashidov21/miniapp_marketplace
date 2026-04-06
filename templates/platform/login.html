@@ -1,0 +1,37 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% trans "Platform kirish" %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg ring-1 ring-slate-200">
+    <h1 class="text-xl font-bold text-slate-900">{% trans "Platform boshqaruvi" %}</h1>
+    <p class="mt-1 text-sm text-slate-600">{% trans "Telegram ID (username maydoni) va parol" %}</p>
+    <form method="post" action="{% url 'platform_login' %}" class="mt-6 space-y-4">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700">{{ form.username.label }}</label>
+        {{ form.username }}
+        {% if form.username.errors %}<p class="mt-1 text-sm text-red-600">{{ form.username.errors }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700">{{ form.password.label }}</label>
+        {{ form.password }}
+        {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors }}</p>{% endif %}
+      </div>
+      <input type="hidden" name="next" value="{{ next }}" />
+      <button type="submit" class="w-full rounded-xl bg-teal-600 py-3 text-base font-semibold text-white hover:bg-teal-700">
+        {% trans "Kirish" %}
+      </button>
+    </form>
+    <p class="mt-4 text-xs text-slate-500">{% trans "Faqat platform_owner yoki superuser." %}</p>
+  </div>
+</body>
+</html>

@@ -39,3 +39,13 @@ def order_page(request, shop_id, product_id):
     get_object_or_404(Shop, pk=shop_id)
     get_object_or_404(Product, pk=product_id, shop_id=shop_id)
     return render(request, "webapp/order.html", {"shop_id": shop_id, "product_id": product_id})
+
+
+@require_GET
+def shop_settings_page(request):
+    return render(request, "webapp/shop_settings.html")
+
+
+@require_GET
+def subscription_page(request):
+    return render(request, "webapp/subscription.html")

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Do‘kon sozlamalari" %}{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4 pb-28">
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Profil" %}</p>
+    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Do‘kon" %}</h1>
+    <p class="mt-2 text-sm text-slate-600">{% trans "Logo, aloqa va ijtimoiy tarmoqlar — mijoz ishonchi uchun." %}</p>
+  </div>
+  <form id="f" class="space-y-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Do‘kon nomi" %}</label>
+      <input name="name" id="name" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Qisqa tavsif" %}</label>
+      <textarea name="description" id="description" rows="3" class="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Logo" %}</label>
+      <input name="logo" type="file" accept="image/*" class="mt-2 block w-full text-sm" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Telefon" %}</label>
+      <input name="phone" id="phone" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" placeholder="+998..." />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Qo‘shimcha telefon" %}</label>
+      <input name="phone_secondary" id="phone_secondary" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Manzil" %}</label>
+      <textarea name="address" id="address" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">Telegram URL</label>
+      <input name="social_telegram" id="social_telegram" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" placeholder="https://t.me/..." />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">Instagram URL</label>
+      <input name="social_instagram" id="social_instagram" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">Facebook URL</label>
+      <input name="social_facebook" id="social_facebook" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+    </div>
+    <p id="err" class="hidden text-sm text-red-700"></p>
+    <button type="submit" id="btn" class="touch-target w-full rounded-2xl bg-brand py-4 text-base font-semibold text-white">{% trans "Saqlash" %}</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  async function auth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  (async function load() {
+    try {
+      await auth();
+      const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      document.getElementById("name").value = shop.name || "";
+      document.getElementById("description").value = shop.description || "";
+      document.getElementById("phone").value = shop.phone || "";
+      document.getElementById("phone_secondary").value = shop.phone_secondary || "";
+      document.getElementById("address").value = shop.address || "";
+      document.getElementById("social_telegram").value = shop.social_telegram || "";
+      document.getElementById("social_instagram").value = shop.social_instagram || "";
+      document.getElementById("social_facebook").value = shop.social_facebook || "";
+    } catch (e) {
+      document.getElementById("err").textContent = e.message || "error";
+      document.getElementById("err").classList.remove("hidden");
+    }
+  })();
+  document.getElementById("f").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const err = document.getElementById("err");
+    err.classList.add("hidden");
+    try {
+      await auth();
+      const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      const fd = new FormData(e.target);
+      await MiniApp.apiFetch("/shops/" + shop.id + "/", { method: "PATCH", body: fd });
+      MiniApp.showAlert("{% trans 'Saqlandi' %}");
+      window.location.href = "/webapp/seller/";
+    } catch (x) {
+      err.textContent = x.message || "{% trans 'Xato' %}";
+      err.classList.remove("hidden");
+    }
+  });
+</script>
+{% endblock %}

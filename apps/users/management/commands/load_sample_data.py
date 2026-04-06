@@ -42,11 +42,23 @@ class Command(BaseCommand):
         )
         shop1, _ = Shop.objects.update_or_create(
             owner=seller1,
-            defaults={"name": "Qo‘lda ishlangan sovg‘alar", "is_active": True, "is_verified": True},
+            defaults={
+                "name": "Qo‘lda ishlangan sovg‘alar",
+                "is_active": True,
+                "is_verified": True,
+                "subscription_status": Shop.SubscriptionStatus.ACTIVE,
+                "subscription_ends_at": None,
+            },
         )
         shop2, _ = Shop.objects.update_or_create(
             owner=seller2,
-            defaults={"name": "Dropship elektronika", "is_active": True, "is_verified": False},
+            defaults={
+                "name": "Dropship elektronika",
+                "is_active": True,
+                "is_verified": False,
+                "subscription_status": Shop.SubscriptionStatus.ACTIVE,
+                "subscription_ends_at": None,
+            },
         )
 
         jpeg = _jpeg_placeholder()

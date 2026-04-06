@@ -54,6 +54,8 @@ def order_create(request):
     product: Product = ser.validated_data["product"]
     if not product.shop.is_active:
         return Response({"detail": _("Shop is not available.")}, status=status.HTTP_400_BAD_REQUEST)
+    if not product.shop.is_subscription_operational():
+        return Response({"detail": _("Shop is not available.")}, status=status.HTTP_400_BAD_REQUEST)
 
     idem_raw = request.headers.get("Idempotency-Key") or request.headers.get("X-Idempotency-Key")
     idem_key = _normalize_idempotency_key(idem_raw)

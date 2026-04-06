@@ -9,6 +9,13 @@
     <p class="mt-1 text-sm text-slate-600">{% trans "Do‘kon — mahsulot — havola. Hammasi shu yerda." %}</p>
   </header>
 
+  <div class="flex flex-wrap gap-2">
+    <a href="/webapp/seller/shop/"
+       class="touch-target rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-brand shadow-sm ring-1 ring-brand/25">{% trans "Do‘kon profili" %}</a>
+    <a href="/webapp/seller/subscription/"
+       class="touch-target rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200">{% trans "Obuna" %}</a>
+  </div>
+
   <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
 
   <section id="onboarding" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
@@ -172,6 +179,20 @@
         btnSeller.classList.add("hidden");
         const intro = onboarding.querySelector("p");
         if (intro) intro.textContent = "{% trans 'Do‘kon nomini yozing yoki yangi mahsulot qo‘shing.' %}";
+        try {
+          const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+          if (shop.subscription_status === "trial" && shop.trial_days_left != null) {
+            banner.innerHTML =
+              "{% trans 'Demo muddati:' %} <strong>" +
+              shop.trial_days_left +
+              "</strong> {% trans 'kun qoldi.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obuna' %}</a>";
+          } else if (shop.subscription_status === "payment_pending") {
+            banner.textContent = "{% trans 'To‘lov tasdiqlanmoqda. Tez orada javob beramiz.' %}";
+          } else if (!shop.subscription_operational) {
+            banner.innerHTML =
+              "{% trans 'Obuna/demo tugadi — vitrina yopiq.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obunani yangilash' %}</a>";
+          }
+        } catch (x) {}
       } else {
         banner.textContent = "{% trans 'Sotuvchi bo‘lish uchun bosing — 1 qadam.' %}";
       }

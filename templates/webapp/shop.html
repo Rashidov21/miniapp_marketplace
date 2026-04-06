@@ -4,8 +4,15 @@
 {% block content %}
 <div class="flex flex-col gap-4">
   <header class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Do‘kon" %}</p>
-    <h1 id="shop-name" class="mt-1 text-xl font-bold leading-snug text-slate-900">{% trans "Yuklanmoqda…" %}</h1>
+    <div class="flex gap-3">
+      <div id="shop-logo" class="hidden h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100"></div>
+      <div class="min-w-0 flex-1">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Do‘kon" %}</p>
+        <h1 id="shop-name" class="mt-1 text-xl font-bold leading-snug text-slate-900">{% trans "Yuklanmoqda…" %}</h1>
+        <p id="shop-desc" class="mt-2 hidden text-sm leading-relaxed text-slate-600"></p>
+        <div id="shop-contacts" class="mt-2 hidden flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600"></div>
+      </div>
+    </div>
   </header>
 
   <div id="skeleton-list" class="space-y-3" aria-hidden="true">
@@ -56,6 +63,25 @@
     try {
       const shop = await MiniApp.apiFetch("/shops/" + shopId + "/public/", { method: "GET" });
       document.getElementById("shop-name").textContent = shop.name;
+      if (shop.description) {
+        const d = document.getElementById("shop-desc");
+        d.textContent = shop.description;
+        d.classList.remove("hidden");
+      }
+      if (shop.logo) {
+        const lw = document.getElementById("shop-logo");
+        lw.innerHTML = '<img src="' + MiniApp.escapeHtml(shop.logo) + '" alt="" class="h-full w-full object-cover" loading="lazy" />';
+        lw.classList.remove("hidden");
+      }
+      const contacts = [];
+      if (shop.phone) contacts.push('<a class="text-brand underline" href="tel:' + MiniApp.escapeHtml(shop.phone.replace(/\s/g, "")) + '">' + MiniApp.escapeHtml(shop.phone) + "</a>");
+      if (shop.phone_secondary) contacts.push(MiniApp.escapeHtml(shop.phone_secondary));
+      if (shop.social_telegram) contacts.push('<a class="text-brand underline" target="_blank" rel="noopener" href="' + MiniApp.escapeHtml(shop.social_telegram) + '">Telegram</a>');
+      if (shop.social_instagram) contacts.push('<a class="text-brand underline" target="_blank" rel="noopener" href="' + MiniApp.escapeHtml(shop.social_instagram) + '">Instagram</a>');
+      if (contacts.length) {
+        document.getElementById("shop-contacts").innerHTML = contacts.join(" · ");
+        document.getElementById("shop-contacts").classList.remove("hidden");
+      }
       const list = await MiniApp.apiFetch("/shops/" + shopId + "/products/", { method: "GET" });
       skel.classList.add("hidden");
       const items = list.results || [];

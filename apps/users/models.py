@@ -24,6 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         BUYER = "buyer", _("Buyer")
         SELLER = "seller", _("Seller")
         ADMIN = "admin", _("Admin")
+        PLATFORM_OWNER = "platform_owner", _("Platform owner")
 
     telegram_id = models.BigIntegerField(unique=True, db_index=True)
     first_name = models.CharField(max_length=255, blank=True)
