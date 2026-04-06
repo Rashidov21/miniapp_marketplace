@@ -1,0 +1,43 @@
+{% extends "platform/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Foydalanuvchilar" %}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">{% trans "Foydalanuvchilar" %}</h1>
+<form method="get" class="mt-4 flex gap-2">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Telegram ID yoki username' %}" class="max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Qidirish" %}</button>
+</form>
+
+<div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
+  <table class="min-w-full text-left text-sm">
+    <thead>
+      <tr class="border-b border-slate-200 bg-slate-50">
+        <th class="px-3 py-2">ID</th>
+        <th class="px-3 py-2">telegram_id</th>
+        <th class="px-3 py-2">{% trans "Ism" %}</th>
+        <th class="px-3 py-2">{% trans "Rol" %}</th>
+        <th class="px-3 py-2">{% trans "Faol" %}</th>
+        <th class="px-3 py-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in page %}
+        <tr class="border-b border-slate-100">
+          <td class="px-3 py-2">{{ u.id }}</td>
+          <td class="px-3 py-2 font-mono">{{ u.telegram_id }}</td>
+          <td class="px-3 py-2">{{ u.first_name }} {{ u.last_name }}</td>
+          <td class="px-3 py-2">{{ u.get_role_display }}</td>
+          <td class="px-3 py-2">{% if u.is_active %}✓{% else %}✗{% endif %}</td>
+          <td class="px-3 py-2">
+            <form method="post" action="{% url 'platform_user_toggle' u.id %}">{% csrf_token %}
+              <button type="submit" class="text-sm text-teal-700 underline">{% if u.is_active %}{% trans "Bloklash" %}{% else %}{% trans "Blokdan chiqarish" %}{% endif %}</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "platform/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Bosh sahifa" %}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-900">{% trans "Statistika" %}</h1>
+<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <p class="text-xs font-medium uppercase text-slate-500">{% trans "Foydalanuvchilar" %}</p>
+    <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats.users_total }}</p>
+    <p class="text-xs text-slate-500">{% trans "faol" %}: {{ stats.users_active }}</p>
+  </div>
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <p class="text-xs font-medium uppercase text-slate-500">{% trans "Do‘konlar" %}</p>
+    <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats.shops_total }}</p>
+    <p class="text-xs text-slate-500">{% trans "faol" %}: {{ stats.shops_active }}</p>
+  </div>
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <p class="text-xs font-medium uppercase text-slate-500">{% trans "Buyurtmalar" %}</p>
+    <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats.orders_total }}</p>
+    <p class="text-xs text-slate-500">{% trans "7 kun" %}: {{ stats.orders_week }}</p>
+  </div>
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <p class="text-xs font-medium uppercase text-slate-500">{% trans "Kutilayotgan to‘lov" %}</p>
+    <p class="mt-2 text-3xl font-bold text-amber-700">{{ stats.payments_pending }}</p>
+    <p class="text-xs text-slate-500">{% trans "tasdiqlangan (7 kun)" %}: {{ stats.payments_approved_week }}</p>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-4 lg:grid-cols-2">
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <h2 class="font-semibold text-slate-900">{% trans "Do‘kon sahifasi tashriflari" %}</h2>
+    <p class="mt-2 text-sm text-slate-600">{% trans "24 soat" %}: <strong>{{ stats.shop_views_day }}</strong></p>
+    <p class="text-sm text-slate-600">{% trans "7 kun" %}: <strong>{{ stats.shop_views_week }}</strong></p>
+  </div>
+  <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+    <h2 class="font-semibold text-slate-900">{% trans "Tariflar" %}</h2>
+    <ul class="mt-2 space-y-1 text-sm">
+      {% for p in plans %}
+        <li>{{ p.name }} — {{ p.price }} {{ p.currency }} / {{ p.duration_months }} {% trans "oy" %}</li>
+      {% empty %}
+        <li class="text-slate-500">—</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="mt-8 rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+  <h2 class="font-semibold text-slate-900">{% trans "Top do‘konlar (7 kun, tashrif)" %}</h2>
+  <table class="mt-3 w-full text-left text-sm">
+    <thead><tr class="border-b border-slate-200 text-slate-500"><th class="py-2">ID</th><th>{% trans "Nomi" %}</th><th>{% trans "Tashrif" %}</th></tr></thead>
+    <tbody>
+      {% for row in top_shops %}
+        <tr class="border-b border-slate-100">
+          <td class="py-2 font-mono">{{ row.shop_id }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.views }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3" class="py-4 text-slate-500">{% trans "Ma’lumot yo‘q" %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

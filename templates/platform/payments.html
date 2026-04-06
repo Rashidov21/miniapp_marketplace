@@ -1,0 +1,55 @@
+{% extends "platform/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "To‘lovlar" %}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">{% trans "Obuna to‘lovlari" %}</h1>
+<div class="mt-4 flex gap-2 text-sm">
+  <a href="?status=pending" class="rounded-lg px-3 py-1 {% if status_filter == 'pending' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Kutilmoqda" %}</a>
+  <a href="?status=approved" class="rounded-lg px-3 py-1 {% if status_filter == 'approved' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Tasdiqlangan" %}</a>
+  <a href="?status=rejected" class="rounded-lg px-3 py-1 {% if status_filter == 'rejected' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Rad etilgan" %}</a>
+</div>
+
+<div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
+  <table class="min-w-full text-left text-sm">
+    <thead>
+      <tr class="border-b border-slate-200 bg-slate-50 text-slate-600">
+        <th class="px-3 py-2">ID</th>
+        <th class="px-3 py-2">{% trans "Do‘kon" %}</th>
+        <th class="px-3 py-2">{% trans "Tarif" %}</th>
+        <th class="px-3 py-2">{% trans "Summa" %}</th>
+        <th class="px-3 py-2">{% trans "Holat" %}</th>
+        <th class="px-3 py-2">{% trans "Vaqt" %}</th>
+        <th class="px-3 py-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in page %}
+        <tr class="border-b border-slate-100">
+          <td class="px-3 py-2 font-mono">{{ p.id }}</td>
+          <td class="px-3 py-2">{{ p.shop.name }}</td>
+          <td class="px-3 py-2">{{ p.plan.name }}</td>
+          <td class="px-3 py-2">{{ p.amount }}</td>
+          <td class="px-3 py-2">{{ p.get_status_display }}</td>
+          <td class="px-3 py-2 text-slate-500">{{ p.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="px-3 py-2">
+            {% if p.status == "pending" %}
+              <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline">{% csrf_token %}<button type="submit" class="text-teal-700 underline">{% trans "Tasdiqlash" %}</button></form>
+              <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline">{% csrf_token %}<button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button></form>
+            {% endif %}
+            {% if p.proof_image %}
+              <a href="{{ p.proof_image.url }}" target="_blank" class="ml-2 text-xs text-slate-600 underline">{% trans "Skrinshot" %}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.has_other_pages %}
+  <p class="mt-4 text-sm text-slate-600">
+    {% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}
+  </p>
+{% endif %}
+{% endblock %}

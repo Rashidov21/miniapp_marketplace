@@ -1,0 +1,17 @@
+{% extends "platform/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Xabar" %}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">{% trans "Telegram orqali xabar" %}</h1>
+<p class="mt-2 text-sm text-slate-600">{% trans "Tanlangan segmentdagi faol foydalanuvchilarga ketma-ket yuboriladi." %}</p>
+<form method="post" class="mt-6 max-w-xl space-y-4 rounded-2xl bg-white p-6 shadow ring-1 ring-slate-200">
+  {% csrf_token %}
+  {{ form.segment.label_tag }}
+  {{ form.segment }}
+  {% if form.segment.errors %}<p class="text-sm text-red-600">{{ form.segment.errors }}</p>{% endif %}
+  {{ form.message.label_tag }}
+  {{ form.message }}
+  {% if form.message.errors %}<p class="text-sm text-red-600">{{ form.message.errors }}</p>{% endif %}
+  <button type="submit" class="rounded-xl bg-teal-600 px-5 py-3 font-semibold text-white hover:bg-teal-700">{% trans "Yuborish" %}</button>
+</form>
+{% endblock %}
