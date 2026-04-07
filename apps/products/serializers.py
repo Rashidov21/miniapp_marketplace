@@ -17,6 +17,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "image",
             "image_url",
             "description",
+            "scarcity_text",
+            "social_proof_text",
             "is_active",
             "created_at",
         )
@@ -31,11 +33,35 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductPublicSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    shop_name = serializers.CharField(source="shop.name", read_only=True)
+    shop_verified = serializers.BooleanField(source="shop.is_verified", read_only=True)
 
     class Meta:
         model = Product
-        fields = ("id", "name", "price", "image", "description", "created_at")
-        read_only_fields = fields
+        fields = (
+            "id",
+            "name",
+            "price",
+            "image",
+            "description",
+            "created_at",
+            "shop_name",
+            "shop_verified",
+            "scarcity_text",
+            "social_proof_text",
+        )
+        read_only_fields = (
+            "id",
+            "name",
+            "price",
+            "image",
+            "description",
+            "created_at",
+            "shop_name",
+            "shop_verified",
+            "scarcity_text",
+            "social_proof_text",
+        )
 
     def get_image(self, obj: Product):
         request = self.context.get("request")

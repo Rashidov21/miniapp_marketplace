@@ -1,23 +1,40 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Mahsulot" %}{% endblock %}
+{% block title %}{% if og_title %}{{ og_title }}{% else %}{% trans "Mahsulot" %}{% endif %}{% endblock %}
+{% block extra_head %}
+{% if og_title %}
+  <meta name="description" content="{{ og_description|escape }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ og_title|escape }}">
+  <meta property="og:description" content="{{ og_description|escape }}">
+  {% if og_image %}<meta property="og:image" content="{{ og_image|escape }}">{% endif %}
+  <meta property="og:url" content="{{ og_url|escape }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title|escape }}">
+  <meta name="twitter:description" content="{{ og_description|escape }}">
+  {% if og_image %}<meta name="twitter:image" content="{{ og_image|escape }}">{% endif %}
+{% endif %}
+{% endblock %}
 {% block content %}
-<div class="flex flex-col pb-4">
+<div id="page-root" class="flex flex-col">
   <div id="loading" class="space-y-4">
-    <div class="skeleton aspect-square w-full rounded-2xl bg-slate-200/90"></div>
-    <div class="skeleton h-8 max-w-[70%] rounded bg-slate-200/90"></div>
-    <div class="skeleton h-10 max-w-[40%] rounded bg-slate-200/90"></div>
+    <div class="skeleton aspect-[4/5] w-full max-h-[min(72vh,520px)] rounded-2xl bg-slate-200/90"></div>
+    <div class="skeleton h-6 max-w-[85%] rounded bg-slate-200/90"></div>
+    <div class="skeleton h-10 max-w-[45%] rounded bg-slate-200/90"></div>
   </div>
 
-  <div id="content" class="hidden">
+  <div id="content" class="hidden flex flex-col gap-3">
     <div class="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-slate-200/80">
-      <div class="relative aspect-square w-full bg-slate-100">
-        <img id="img" class="h-full w-full object-cover" alt="" loading="eager">
+      <div class="relative w-full bg-slate-100">
+        <img id="img" class="max-h-[min(72vh,520px)] w-full object-cover" alt="" width="800" height="1000" loading="eager" decoding="async" fetchpriority="high" sizes="100vw">
       </div>
-      <div class="space-y-2 p-4">
-        <h1 id="name" class="text-xl font-bold leading-snug text-slate-900"></h1>
-        <p id="price" class="text-2xl font-bold text-brand"></p>
-        <p id="desc" class="hidden text-sm leading-relaxed text-slate-600"></p>
+      <div class="space-y-3 p-4">
+        <div id="trust-row" class="flex flex-wrap gap-2"></div>
+        <div id="scarcity-box" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900"></div>
+        <div id="social-proof" class="hidden text-sm text-slate-600"></div>
+        <h1 id="name" class="text-2xl font-bold leading-tight tracking-tight text-slate-900"></h1>
+        <p id="price" class="text-3xl font-extrabold tabular-nums text-brand"></p>
+        <p id="desc" class="hidden text-[15px] leading-relaxed text-slate-600"></p>
       </div>
     </div>
   </div>
@@ -27,15 +44,16 @@
 
 <div class="app-sticky-bottom">
   <div class="mx-auto max-w-lg px-4">
-    <div class="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div id="sticky-price" class="hidden text-lg font-bold text-brand"></div>
-        <a id="order-btn" href="#"
-           class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-center text-base font-semibold text-white shadow-md shadow-brand/25 active:scale-[0.99] sm:flex-1">
-          {% trans "Buyurtma berish" %}
-          <svg class="h-5 w-5 shrink-0 opacity-95" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-        </a>
+    <div class="rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_-4px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
+      <div class="mb-3 flex items-baseline justify-between gap-2 px-0.5">
+        <span class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Narx" %}</span>
+        <p id="sticky-price" class="text-xl font-extrabold tabular-nums text-brand"></p>
       </div>
+      <a id="order-btn" href="#"
+         class="touch-target flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-center text-base font-bold text-white shadow-lg shadow-brand/30 active:scale-[0.99]">
+        {% trans "Buyurtma berish" %}
+        <svg class="h-5 w-5 shrink-0 opacity-95" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
     </div>
   </div>
 </div>
@@ -46,6 +64,10 @@
   const shopId = {{ shop_id }};
   const productId = {{ product_id }};
   const uzSum = "{% trans 'so‘m' %}";
+  const labels = {
+    verified: "{% trans 'Tasdiqlangan do‘kon' %}",
+    delivery: "{% trans 'Tez yetkazib berish' %}",
+  };
   (async function () {
     const loading = document.getElementById("loading");
     const content = document.getElementById("content");
@@ -55,13 +77,44 @@
       loading.classList.add("hidden");
       content.classList.remove("hidden");
       const imgEl = document.getElementById("img");
-      if (p.image) imgEl.src = p.image;
-      else imgEl.alt = "";
+      if (p.image) {
+        imgEl.src = p.image;
+        imgEl.alt = p.name || "";
+      } else {
+        imgEl.removeAttribute("src");
+        imgEl.alt = "";
+      }
       document.getElementById("name").textContent = p.name;
       const priceStr = String(p.price) + " " + uzSum;
       document.getElementById("price").textContent = priceStr;
       document.getElementById("sticky-price").textContent = priceStr;
-      document.getElementById("sticky-price").classList.remove("hidden");
+
+      const trust = document.getElementById("trust-row");
+      trust.innerHTML = "";
+      if (p.shop_verified) {
+        const b = document.createElement("span");
+        b.className = "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200/80";
+        b.innerHTML = '<span aria-hidden="true">✓</span> ' + MiniApp.escapeHtml(labels.verified);
+        trust.appendChild(b);
+      }
+      const dlv = document.createElement("span");
+      dlv.className = "inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80";
+      dlv.innerHTML = '<span aria-hidden="true">⚡</span> ' + MiniApp.escapeHtml(labels.delivery);
+      trust.appendChild(dlv);
+
+      const st = (p.scarcity_text || "").trim();
+      if (st) {
+        const sb = document.getElementById("scarcity-box");
+        sb.textContent = st;
+        sb.classList.remove("hidden");
+      }
+      const sp = (p.social_proof_text || "").trim();
+      if (sp) {
+        const el = document.getElementById("social-proof");
+        el.textContent = sp;
+        el.classList.remove("hidden");
+      }
+
       const desc = (p.description || "").trim();
       if (desc) {
         const d = document.getElementById("desc");

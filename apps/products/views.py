@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
@@ -6,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.pagination import ProductListPagination
+from apps.products.cache_utils import product_public_cache_key
 from apps.products.models import Product
 from apps.products.serializers import ProductPublicSerializer, ProductSerializer
 from apps.shops.models import Shop
@@ -19,7 +21,11 @@ def product_list_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
-    qs = Product.objects.filter(shop=shop, is_active=True).order_by("-created_at")
+    qs = (
+        Product.objects.filter(shop=shop, is_active=True)
+        .select_related("shop")
+        .order_by("-created_at")
+    )
     paginator = ProductListPagination()
     page = paginator.paginate_queryset(qs, request)
     ser = ProductPublicSerializer(page, many=True, context={"request": request})
@@ -32,8 +38,19 @@ def product_detail_public(request, shop_id, product_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
-    p = get_object_or_404(Product, pk=product_id, shop=shop, is_active=True)
-    return Response(ProductPublicSerializer(p, context={"request": request}).data)
+    cache_key = product_public_cache_key(shop_id, product_id)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return Response(cached)
+    p = get_object_or_404(
+        Product.objects.select_related("shop"),
+        pk=product_id,
+        shop=shop,
+        is_active=True,
+    )
+    data = ProductPublicSerializer(p, context={"request": request}).data
+    cache.set(cache_key, data, 90)
+    return Response(data)
 
 
 @api_view(["GET", "POST"])

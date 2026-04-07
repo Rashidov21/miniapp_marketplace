@@ -1,7 +1,16 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from apps.core.image_utils import SHOP_LOGO_MAX_SIDE, file_to_optimized_content
+
+try:
+    from PIL import Image
+except ImportError:  # pragma: no cover
+    Image = None
 
 
 class SubscriptionPlan(models.Model):
@@ -80,6 +89,20 @@ class Shop(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if self.logo and Image and (update_fields is None or "logo" in update_fields):
+            try:
+                cf, storage_name = file_to_optimized_content(
+                    self.logo,
+                    basename=f"logo_{uuid.uuid4().hex[:12]}",
+                    max_side=SHOP_LOGO_MAX_SIDE,
+                )
+                self.logo.save(storage_name, cf, save=False)
+            except OSError:
+                pass
+        super().save(*args, **kwargs)
 
     def is_subscription_operational(self) -> bool:
         """Do‘kon mijozlarga ochiq (vitrina, buyurtma) bo‘lishi mumkinmi."""

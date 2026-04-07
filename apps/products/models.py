@@ -1,8 +1,9 @@
-from io import BytesIO
+import uuid
 
-from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from apps.core.image_utils import PRODUCT_MAX_SIDE, file_to_optimized_content
 
 try:
     from PIL import Image
@@ -20,6 +21,16 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     image = models.ImageField(upload_to="products/%Y/%m/")
     description = models.TextField(blank=True)
+    scarcity_text = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text=_("Optional urgency line, e.g. few items left."),
+    )
+    social_proof_text = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text=_("Optional social proof line for the product card."),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,26 +46,15 @@ class Product(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if self.image and Image and (update_fields is None or "image" in update_fields):
+            try:
+                cf, storage_name = file_to_optimized_content(
+                    self.image,
+                    basename=f"p_{uuid.uuid4().hex[:16]}",
+                    max_side=PRODUCT_MAX_SIDE,
+                )
+                self.image.save(storage_name, cf, save=False)
+            except OSError:
+                pass
         super().save(*args, **kwargs)
-        if self.pk and self.image and Image:
-            self._optimize_image_once()
-
-    def _optimize_image_once(self) -> None:
-        if not self.image or not Image:
-            return
-        try:
-            self.image.open()
-            img = Image.open(self.image)
-            img = img.convert("RGB")
-            max_side = 1200
-            w, h = img.size
-            if max(w, h) > max_side:
-                ratio = max_side / float(max(w, h))
-                img = img.resize((int(w * ratio), int(h * ratio)), Image.Resampling.LANCZOS)
-            buf = BytesIO()
-            img.save(buf, format="JPEG", quality=82, optimize=True)
-            name = self.image.name.rsplit("/", 1)[-1].rsplit(".", 1)[0] + ".jpg"
-            self.image.save(name, ContentFile(buf.getvalue()), save=False)
-            super().save(update_fields=["image"])
-        except OSError:
-            pass

@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
 
@@ -29,15 +30,51 @@ def shop_page(request, shop_id):
 
 @require_GET
 def product_page(request, shop_id, product_id):
-    get_object_or_404(Shop, pk=shop_id)
-    get_object_or_404(Product, pk=product_id, shop_id=shop_id)
-    return render(request, "webapp/product.html", {"shop_id": shop_id, "product_id": product_id})
+    product = get_object_or_404(
+        Product.objects.select_related("shop"),
+        pk=product_id,
+        shop_id=shop_id,
+    )
+    shop = product.shop
+    if (
+        not shop.is_active
+        or not product.is_active
+        or not shop.is_subscription_operational()
+    ):
+        raise Http404()
+    desc = (product.description or "").strip()
+    og_desc = (desc[:200] if desc else "") or product.name
+    og_image = ""
+    if product.image:
+        og_image = request.build_absolute_uri(product.image.url)
+    return render(
+        request,
+        "webapp/product.html",
+        {
+            "shop_id": shop_id,
+            "product_id": product_id,
+            "og_title": product.name,
+            "og_description": og_desc[:300],
+            "og_image": og_image,
+            "og_url": request.build_absolute_uri(request.get_full_path()),
+        },
+    )
 
 
 @require_GET
 def order_page(request, shop_id, product_id):
-    get_object_or_404(Shop, pk=shop_id)
-    get_object_or_404(Product, pk=product_id, shop_id=shop_id)
+    product = get_object_or_404(
+        Product.objects.select_related("shop"),
+        pk=product_id,
+        shop_id=shop_id,
+    )
+    shop = product.shop
+    if (
+        not shop.is_active
+        or not product.is_active
+        or not shop.is_subscription_operational()
+    ):
+        raise Http404()
     return render(request, "webapp/order.html", {"shop_id": shop_id, "product_id": product_id})
 
 
