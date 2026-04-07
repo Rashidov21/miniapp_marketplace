@@ -18,7 +18,7 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
 
 
 class ShopSerializer(serializers.ModelSerializer):
-    owner_id = serializers.IntegerField(source="owner_id", read_only=True)
+    owner_id = serializers.IntegerField(read_only=True)
     logo = serializers.ImageField(required=False, allow_null=True)
     subscription_operational = serializers.SerializerMethodField()
     trial_days_left = serializers.SerializerMethodField()
