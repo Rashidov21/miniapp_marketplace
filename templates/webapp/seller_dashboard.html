@@ -226,6 +226,8 @@
       const txt = MiniApp.parseApiError(e, "{% trans 'Kirish xatosi' %}");
       banner.textContent = txt;
       MiniApp.showToast(txt, "error");
+      document.getElementById("orders-loading").classList.add("hidden");
+      document.getElementById("orders-empty").classList.remove("hidden");
       return;
     }
 

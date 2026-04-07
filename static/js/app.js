@@ -5,6 +5,7 @@
 (function () {
   const API_BASE = "/api";
   const TOAST_LIFETIME_MS = 4200;
+  const API_TIMEOUT_MS = 15000;
   let toastTimer = null;
 
   function getInitData() {
@@ -77,7 +78,30 @@
     if (opts.body && !(opts.body instanceof FormData) && !headers["Content-Type"]) {
       headers["Content-Type"] = "application/json";
     }
-    const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+    const controller = new AbortController();
+    const timer = setTimeout(function () {
+      controller.abort();
+    }, API_TIMEOUT_MS);
+    let res;
+    try {
+      res = await fetch(
+        API_BASE + path,
+        Object.assign({}, opts, { headers, signal: controller.signal })
+      );
+    } catch (networkErr) {
+      if (networkErr && networkErr.name === "AbortError") {
+        const err = new Error("So'rov vaqti tugadi. Internetni tekshirib qayta urinib ko'ring.");
+        err.status = 0;
+        err.data = null;
+        throw err;
+      }
+      const err = new Error("Ulanishda muammo. Internetni tekshirib qayta urinib ko'ring.");
+      err.status = 0;
+      err.data = null;
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
     const text = await res.text();
     let data = null;
     try {
