@@ -94,7 +94,7 @@ def order_create(request):
 def seller_orders(request):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
-        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer").order_by("-created_at")
     paginator = OrderListPagination()
     page = paginator.paginate_queryset(qs, request)
@@ -107,7 +107,7 @@ def seller_orders(request):
 def seller_order_update(request, order_id):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
-        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     order = get_object_or_404(
         Order.objects.select_related("product", "shop", "buyer"),
         pk=order_id,
@@ -140,7 +140,7 @@ def buyer_order_detail(request, order_id):
         .first()
     )
     if not order:
-        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Order not found.")}, status=status.HTTP_404_NOT_FOUND)
     if order.buyer_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:
-        return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     return Response(OrderSerializer(order).data)

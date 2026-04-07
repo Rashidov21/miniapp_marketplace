@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Kabinet" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Sotuvchi paneli" %}</p>
+</div>
+{% endblock %}
 {% block content %}
 <div class="flex flex-col gap-5">
   <header>
@@ -50,7 +56,7 @@
     </div>
   </section>
 
-  <a href="/webapp/seller/products/new/"
+  <a id="add-product-cta" href="/webapp/seller/products/new/"
      class="touch-target flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-base font-semibold text-white shadow-md active:scale-[0.99]">
     <span class="text-xl leading-none">＋</span>
     {% trans "Mahsulot qo‘shish" %}
@@ -82,6 +88,7 @@
 {% block scripts %}
 <script>
   MiniApp.ready();
+  MiniApp.bindBackButton("back-btn", "/webapp/");
   const L = {
     new: "{% trans 'Yangi' %}",
     accepted: "{% trans 'Qabul qilindi' %}",
@@ -184,6 +191,7 @@
     const banner = document.getElementById("banner");
     const onboarding = document.getElementById("onboarding");
     const btnSeller = document.getElementById("btn-seller");
+    const addProductCta = document.getElementById("add-product-cta");
     try {
       await ensureAuth();
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
@@ -194,6 +202,7 @@
         if (intro) intro.textContent = "{% trans 'Do‘kon nomini yozing yoki yangi mahsulot qo‘shing.' %}";
         try {
           const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+          addProductCta.classList.remove("hidden");
           if (shop.subscription_status === "trial" && shop.trial_days_left != null) {
             banner.innerHTML =
               "{% trans 'Demo muddati:' %} <strong>" +
@@ -205,12 +214,18 @@
             banner.innerHTML =
               "{% trans 'Obuna/demo tugadi — vitrina yopiq.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obunani yangilash' %}</a>";
           }
-        } catch (x) {}
+        } catch (x) {
+          addProductCta.classList.add("hidden");
+          banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
+        }
       } else {
         banner.textContent = "{% trans 'Sotuvchi bo‘lish uchun bosing — 1 qadam.' %}";
+        addProductCta.classList.add("hidden");
       }
     } catch (e) {
-      banner.textContent = e.message || "{% trans 'Kirish xatosi' %}";
+      const txt = MiniApp.parseApiError(e, "{% trans 'Kirish xatosi' %}");
+      banner.textContent = txt;
+      MiniApp.showToast(txt, "error");
       return;
     }
 
@@ -219,7 +234,7 @@
       try {
         await ensureAuth();
         await MiniApp.apiFetch("/me/become-seller/", { method: "POST", body: JSON.stringify({}) });
-        MiniApp.showAlert("{% trans 'Endi do‘kon yarating.' %}");
+        MiniApp.showToast("{% trans 'Endi do‘kon yarating.' %}", "success");
         await MiniApp.apiFetch("/me/", { method: "GET" });
         banner.textContent = "{% trans 'Endi do‘kon nomini yozing.' %}";
         btnSeller.classList.add("hidden");
@@ -227,7 +242,7 @@
         if (intro) intro.textContent = "{% trans 'Do‘kon nomini yozing yoki yangi mahsulot qo‘shing.' %}";
         MiniApp.hapticLight();
       } catch (e) {
-        MiniApp.showAlert((e.data && e.data.detail) || e.message || "error");
+        MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Xatolik yuz berdi.' %}"), "error");
       } finally {
         setBtnLoading(btnSeller, "", false);
       }
@@ -240,7 +255,7 @@
         await ensureAuth();
         const name = document.getElementById("shop-name").value.trim();
         if (!name) {
-          MiniApp.showAlert("{% trans 'Do‘kon nomini yozing.' %}");
+          MiniApp.showToast("{% trans 'Do‘kon nomini yozing.' %}", "warning");
           return;
         }
         const shop = await MiniApp.apiFetch("/shops/", { method: "POST", body: JSON.stringify({ name: name }) });
@@ -253,13 +268,14 @@
         document.getElementById("link-text").textContent = href;
         document.getElementById("btn-copy").onclick = function () {
           navigator.clipboard.writeText(href).then(function () {
-            MiniApp.showAlert("{% trans 'Nusxalandi' %}");
+            MiniApp.showToast("{% trans 'Nusxalandi' %}", "success");
           });
         };
         MiniApp.hapticLight();
+        addProductCta.classList.remove("hidden");
         loadOrders();
       } catch (e) {
-        MiniApp.showAlert((e.data && e.data.detail) || e.message || "error");
+        MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Do‘konni yaratib bo‘lmadi.' %}"), "error");
       } finally {
         setBtnLoading(createBtn, "", false);
       }
@@ -301,6 +317,7 @@
         }
         err.textContent = "{% trans 'Buyurtmalarni yuklab bo‘lmadi.' %}";
         err.classList.remove("hidden");
+        MiniApp.showToast(err.textContent, "error");
       }
     }
 
@@ -316,7 +333,7 @@
         });
         await loadOrders();
       } catch (e) {
-        MiniApp.showAlert(e.message || "error");
+        MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Buyurtma holatini yangilab bo‘lmadi.' %}"), "error");
       }
     });
 

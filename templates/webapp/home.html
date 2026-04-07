@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Bosh sahifa" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Mini App" %}</p>
+</div>
+{% endblock %}
 {% block content %}
 <div class="flex min-h-[70vh] flex-col">
   <div class="mb-6 text-center">
@@ -16,14 +22,14 @@
 
   <div id="ready" class="hidden flex flex-1 flex-col gap-4">
     <div id="status" class="rounded-2xl bg-white p-4 text-center text-sm text-slate-600 shadow-card ring-1 ring-slate-200/80"></div>
-    <p class="text-center text-xs text-slate-500">{% trans "Nima qilmoqchisiz?" %}</p>
+    <p class="text-center text-xs text-slate-500">{% trans "Boshlash uchun yo‘nalish tanlang." %}</p>
     <a id="seller-link" href="/webapp/seller/"
        class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md shadow-brand/20 active:scale-[0.99]">
       <span>{% trans "Sotuvchi kabineti" %}</span>
       <svg class="h-5 w-5 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
     <p class="rounded-xl bg-white px-3 py-2 text-center text-xs text-slate-500 ring-1 ring-slate-200/70">
-      {% trans "Xaridorlar do‘kon havolasi orqali to‘g‘ridan-to‘g‘ri mahsulotga kiradi." %}
+      {% trans "Xaridorlar do‘kon havolasi orqali katalogga kirib, tez buyurtma beradi." %}
     </p>
   </div>
 
@@ -33,6 +39,7 @@
 {% block scripts %}
 <script>
   MiniApp.ready();
+  MiniApp.bindBackButton("back-btn", "/webapp/");
   (async function () {
     const loading = document.getElementById("loading");
     const ready = document.getElementById("ready");
@@ -41,7 +48,8 @@
     if (!init) {
       loading.classList.add("hidden");
       errEl.classList.remove("hidden");
-      errEl.textContent = "{% trans 'Ilovani Telegram ichidan oching.' %}";
+      errEl.textContent = "{% trans 'Ilovani Telegram ichida oching.' %}";
+      MiniApp.showToast("{% trans 'Ilovani Telegram ichida oching.' %}", "warning");
       return;
     }
     try {
@@ -62,7 +70,8 @@
     } catch (e) {
       loading.classList.add("hidden");
       errEl.classList.remove("hidden");
-      errEl.textContent = "{% trans 'Kirishda xato. Qayta urinib ko‘ring.' %}";
+      errEl.textContent = "{% trans 'Kirishda muammo. Qayta urinib ko‘ring.' %}";
+      MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Kirishda muammo. Qayta urinib ko‘ring.' %}"), "error");
     }
   })();
 </script>

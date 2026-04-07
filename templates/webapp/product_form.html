@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% if product_id %}{% trans "Mahsulotni tahrirlash" %}{% else %}{% trans "Yangi mahsulot" %}{% endif %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Mahsulot boshqaruvi" %}</p>
+</div>
+{% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
   <div>
@@ -93,6 +99,7 @@
 {% block scripts %}
 <script>
   MiniApp.ready();
+  MiniApp.bindBackButton("back-btn", "/webapp/seller/");
   const productId = {% if product_id %}{{ product_id }}{% else %}null{% endif %};
   async function ensureAuth() {
     const init = MiniApp.getInitData();
@@ -100,16 +107,27 @@
     await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
   }
   (async function () {
-    if (!productId) return;
     try {
       await ensureAuth();
+      if (!productId) {
+        await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      }
+    } catch (e) {
+      MiniApp.showToast("{% trans 'Avval do‘kon yarating.' %}", "warning");
+      window.location.href = "/webapp/seller/";
+      return;
+    }
+    if (!productId) return;
+    try {
       const p = await MiniApp.apiFetch("/seller/products/" + productId + "/", { method: "GET" });
       document.getElementById("field-name").value = p.name;
       document.getElementById("field-price").value = p.price;
       document.getElementById("field-desc").value = p.description || "";
       document.getElementById("field-scarcity").value = p.scarcity_text || "";
       document.getElementById("field-social").value = p.social_proof_text || "";
-    } catch (e) {}
+    } catch (e) {
+      MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Mahsulotni yuklab bo‘lmadi.' %}"), "error");
+    }
   })();
   document.getElementById("form").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -130,12 +148,13 @@
         await MiniApp.apiFetch("/seller/products/", { method: "POST", body: fd });
       }
       MiniApp.hapticLight();
-      MiniApp.showAlert("{% trans 'Saqlandi' %}");
+      MiniApp.showToast("{% trans 'Saqlandi' %}", "success");
       window.location.href = "/webapp/seller/";
     } catch (err) {
       msg.className = "rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800";
-      msg.textContent = err.message || "{% trans 'Saqlab bo‘lmadi' %}";
+      msg.textContent = MiniApp.parseApiError(err, "{% trans 'Saqlab bo‘lmadi' %}");
       msg.classList.remove("hidden");
+      MiniApp.showToast(msg.textContent, "error");
     } finally {
       btn.disabled = false;
       spin.classList.add("hidden");

@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Obuna" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Obuna" %}</p>
+</div>
+{% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
   <div>
@@ -32,6 +38,7 @@
 {% block scripts %}
 <script>
   MiniApp.ready();
+  MiniApp.bindBackButton("back-btn", "/webapp/seller/");
   let selectedPlan = null;
   async function auth() {
     const init = MiniApp.getInitData();
@@ -67,8 +74,9 @@
         box.appendChild(b);
       });
     } catch (e) {
-      err.textContent = e.message || "error";
+      err.textContent = MiniApp.parseApiError(e, "{% trans 'Tariflarni yuklab bo‘lmadi.' %}");
       err.classList.remove("hidden");
+      MiniApp.showToast(err.textContent, "error");
     }
   })();
   document.getElementById("pay-form").addEventListener("submit", async function (e) {
@@ -79,11 +87,12 @@
       await auth();
       const fd = new FormData(e.target);
       await MiniApp.apiFetch("/shops/mine/payments/", { method: "POST", body: fd });
-      MiniApp.showAlert("{% trans 'Yuborildi. Admin tasdiqlashini kuting.' %}");
+      MiniApp.showToast("{% trans 'Yuborildi. Admin tasdiqlashini kuting.' %}", "success");
       window.location.href = "/webapp/seller/";
     } catch (x) {
-      err.textContent = x.message || "{% trans 'Xato' %}";
+      err.textContent = MiniApp.parseApiError(x, "{% trans 'To‘lovni yuborib bo‘lmadi.' %}");
       err.classList.remove("hidden");
+      MiniApp.showToast(err.textContent, "error");
     }
   });
 </script>

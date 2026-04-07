@@ -4,6 +4,8 @@
  */
 (function () {
   const API_BASE = "/api";
+  const TOAST_LIFETIME_MS = 4200;
+  let toastTimer = null;
 
   function getInitData() {
     try {
@@ -85,6 +87,11 @@
     }
     if (!res.ok) {
       let msg = (data && (data.detail || data.error)) || res.statusText;
+      if (data && typeof data === "object" && !msg) {
+        const firstKey = Object.keys(data)[0];
+        const v = firstKey ? data[firstKey] : null;
+        if (Array.isArray(v) && v.length) msg = String(v[0]);
+      }
       if (typeof msg === "object") msg = JSON.stringify(msg);
       const err = new Error(msg);
       err.status = res.status;
@@ -102,6 +109,69 @@
       }
     } catch (e) {}
     window.alert(message);
+  }
+
+  function _ensureToastContainer() {
+    let c = document.getElementById("app-toast");
+    if (c) return c;
+    c = document.createElement("div");
+    c.id = "app-toast";
+    c.className = "app-toast hidden";
+    c.innerHTML =
+      '<div class="app-toast-card">' +
+      '<p id="app-toast-text" class="app-toast-text"></p>' +
+      '<button type="button" id="app-toast-close" class="app-toast-close" aria-label="close">×</button>' +
+      "</div>";
+    document.body.appendChild(c);
+    c.querySelector("#app-toast-close").addEventListener("click", function () {
+      c.classList.add("hidden");
+    });
+    return c;
+  }
+
+  function showToast(message, type) {
+    const c = _ensureToastContainer();
+    const t = c.querySelector("#app-toast-text");
+    c.classList.remove("hidden", "app-toast-success", "app-toast-error", "app-toast-warning", "app-toast-info");
+    c.classList.add("app-toast-" + (type || "info"));
+    t.textContent = String(message || "");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      c.classList.add("hidden");
+    }, TOAST_LIFETIME_MS);
+  }
+
+  function parseApiError(err, fallbackText) {
+    const fallback = fallbackText || "Xatolik yuz berdi.";
+    if (!err) return fallback;
+    if (err.data && typeof err.data === "object") {
+      if (typeof err.data.detail === "string" && err.data.detail) return err.data.detail;
+      const k = Object.keys(err.data)[0];
+      if (k) {
+        const v = err.data[k];
+        if (Array.isArray(v) && v.length) return String(v[0]);
+        if (typeof v === "string") return v;
+      }
+    }
+    return err.message || fallback;
+  }
+
+  function back(fallbackUrl) {
+    try {
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+    } catch (e) {}
+    window.location.href = fallbackUrl || "/webapp/";
+  }
+
+  function bindBackButton(btnId, fallbackUrl) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      back(fallbackUrl);
+    });
   }
 
   function ready() {
@@ -135,8 +205,12 @@
     apiHeaders,
     apiFetch,
     showAlert,
+    showToast,
+    parseApiError,
     ready,
     hapticLight,
+    back,
+    bindBackButton,
   };
   window.MiniApp = Object.assign({}, window.MiniApp || {}, api);
   // Har doim to‘liq implementatsiya (stub yoki eski keshdan keyin ham to‘g‘ri ishlashi uchun).

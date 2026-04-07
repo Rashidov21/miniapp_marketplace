@@ -50,7 +50,7 @@ def shop_mine(request):
     user = _require_auth_user(request)
     shop = Shop.objects.filter(owner=user).first()
     if not shop:
-        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(ShopSerializer(shop, context={"request": request}).data)
 
 
@@ -59,9 +59,9 @@ def shop_mine(request):
 def shop_update(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id).first()
     if not shop:
-        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Shop not found.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
-        return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     data = request.data.copy()
     if not (request.user.is_superuser or request.user.role == User.Role.ADMIN):
         data.pop("is_active", None)
@@ -82,7 +82,7 @@ def shop_update(request, shop_id):
 def shop_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(ShopPublicSerializer(shop, context={"request": request}).data)
 
 
@@ -91,9 +91,9 @@ def shop_public(request, shop_id):
 def shop_link(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id).first()
     if not shop:
-        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Shop not found.")}, status=status.HTTP_404_NOT_FOUND)
     if shop.owner_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:
-        return Response({"detail": _("Forbidden.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     from django.conf import settings as dj_settings
 
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
@@ -117,7 +117,7 @@ def subscription_plans_list(request):
 def subscription_payment_create(request):
     shop = Shop.objects.filter(owner=request.user).first()
     if not shop:
-        return Response({"detail": _("No shop yet.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     ser = SubscriptionPaymentCreateSerializer(data=request.data)
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -127,7 +127,7 @@ def subscription_payment_create(request):
         status=SubscriptionPayment.Status.PENDING,
     ).exists():
         return Response(
-            {"detail": _("You already have a pending payment.")},
+            {"detail": _("You already sent a payment. Please wait for review.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
     payment = SubscriptionPayment.objects.create(

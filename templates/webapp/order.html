@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Buyurtma" %}</p>
+</div>
+{% endblock %}
 {% block content %}
 <div id="form-section" class="flex flex-col gap-4 pb-28">
   <div>
@@ -71,6 +77,7 @@
   MiniApp.ready();
   const shopId = {{ shop_id }};
   const productId = {{ product_id }};
+  MiniApp.bindBackButton("back-btn", "/webapp/shop/" + shopId + "/product/" + productId + "/");
   document.getElementById("product-id").value = String(productId);
 
   (function prefill() {
@@ -96,6 +103,7 @@
     if (!init) {
       msg.textContent = "{% trans 'Telegram ichidan oching.' %}";
       msg.classList.remove("hidden");
+      MiniApp.showToast("{% trans 'Telegram ichidan oching.' %}", "warning");
       return;
     }
     const fd = new FormData(e.target);
@@ -110,12 +118,14 @@
     if (body.customer_name.length < 2) {
       msg.textContent = "{% trans 'Ismni to‘liqroq yozing.' %}";
       msg.classList.remove("hidden");
+      MiniApp.showToast("{% trans 'Ismni to‘liqroq yozing.' %}", "warning");
       return;
     }
     const digits = phone.replace(/\D/g, "");
     if (digits.length < 12) {
       msg.textContent = "{% trans 'Telefon +998 bilan to‘liq bo‘lsin.' %}";
       msg.classList.remove("hidden");
+      MiniApp.showToast("{% trans 'Telefon raqamini to‘liq kiriting.' %}", "warning");
       return;
     }
     btn.disabled = true;
@@ -136,15 +146,16 @@
       document.getElementById("form-section").classList.add("hidden");
       document.querySelector(".app-sticky-bottom").classList.add("hidden");
       document.getElementById("success-section").classList.remove("hidden");
-      MiniApp.showAlert("{% trans 'Rahmat! Buyurtma qabul qilindi.' %}");
+      MiniApp.showToast("{% trans 'Rahmat! Buyurtma qabul qilindi.' %}", "success");
       try {
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.notificationOccurred("success");
         }
       } catch (x) {}
     } catch (err) {
-      msg.textContent = err.message || "{% trans 'Xato. Qayta urinib ko‘ring.' %}";
+      msg.textContent = MiniApp.parseApiError(err, "{% trans 'Xato. Qayta urinib ko‘ring.' %}");
       msg.classList.remove("hidden");
+      MiniApp.showToast(msg.textContent, "error");
     } finally {
       btn.disabled = false;
       spin.classList.add("hidden");
