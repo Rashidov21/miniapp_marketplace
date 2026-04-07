@@ -104,6 +104,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 @_staff_required
 def payments_list(request: HttpRequest) -> HttpResponse:
     status_filter = request.GET.get("status") or "pending"
+    q = (request.GET.get("q") or "").strip()
     qs = SubscriptionPayment.objects.select_related("shop", "plan", "reviewed_by").order_by("-created_at")
     if status_filter == "pending":
         qs = qs.filter(status=SubscriptionPayment.Status.PENDING)
@@ -111,13 +112,18 @@ def payments_list(request: HttpRequest) -> HttpResponse:
         qs = qs.filter(status=SubscriptionPayment.Status.APPROVED)
     elif status_filter == "rejected":
         qs = qs.filter(status=SubscriptionPayment.Status.REJECTED)
+    if q:
+        if q.isdigit():
+            qs = qs.filter(Q(id=int(q)) | Q(shop__owner__telegram_id=int(q)))
+        else:
+            qs = qs.filter(Q(shop__name__icontains=q) | Q(plan__name__icontains=q))
 
     paginator = Paginator(qs, 25)
     page = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "platform/payments.html",
-        {"page": page, "status_filter": status_filter},
+        {"page": page, "status_filter": status_filter, "q": q},
     )
 
 
@@ -151,10 +157,15 @@ def payment_reject(request: HttpRequest, payment_id: int) -> HttpResponse:
     if payment.status != SubscriptionPayment.Status.PENDING:
         messages.warning(request, _("Already processed."))
         return redirect("platform_payments")
+    admin_note = (request.POST.get("admin_note") or "").strip()
+    if not admin_note:
+        messages.error(request, _("Reject reason is required."))
+        return redirect("platform_payments")
     payment.status = SubscriptionPayment.Status.REJECTED
+    payment.admin_note = admin_note
     payment.reviewed_at = timezone.now()
     payment.reviewed_by = request.user
-    payment.save(update_fields=["status", "reviewed_at", "reviewed_by"])
+    payment.save(update_fields=["status", "admin_note", "reviewed_at", "reviewed_by"])
     shop = payment.shop
     if shop.subscription_status == Shop.SubscriptionStatus.PAYMENT_PENDING:
         shop.subscription_status = Shop.SubscriptionStatus.EXPIRED
@@ -164,6 +175,7 @@ def payment_reject(request: HttpRequest, payment_id: int) -> HttpResponse:
         "payment_reject",
         target_type="SubscriptionPayment",
         target_id=str(payment.pk),
+        payload={"reason": admin_note},
     )
     messages.success(request, _("Payment rejected."))
     return redirect("platform_payments")
@@ -173,14 +185,30 @@ def payment_reject(request: HttpRequest, payment_id: int) -> HttpResponse:
 def users_list(request: HttpRequest) -> HttpResponse:
     qs = UserModel.objects.all().order_by("-created_at")
     q = (request.GET.get("q") or "").strip()
+    role = (request.GET.get("role") or "").strip()
+    is_active = (request.GET.get("is_active") or "").strip()
     if q:
         if q.isdigit():
             qs = qs.filter(telegram_id=int(q))
         else:
-            qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q))
+            qs = qs.filter(
+                Q(username__icontains=q)
+                | Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+            )
+    if role in {User.Role.BUYER, User.Role.SELLER, User.Role.ADMIN, User.Role.PLATFORM_OWNER}:
+        qs = qs.filter(role=role)
+    if is_active == "1":
+        qs = qs.filter(is_active=True)
+    elif is_active == "0":
+        qs = qs.filter(is_active=False)
     paginator = Paginator(qs, 30)
     page = paginator.get_page(request.GET.get("page"))
-    return render(request, "platform/users.html", {"page": page, "q": q})
+    return render(
+        request,
+        "platform/users.html",
+        {"page": page, "q": q, "role": role, "is_active": is_active},
+    )
 
 
 @_staff_required
@@ -193,6 +221,10 @@ def user_toggle_active(request: HttpRequest, user_id: int) -> HttpResponse:
     if u.role == User.Role.PLATFORM_OWNER and not request.user.is_superuser:
         messages.error(request, _("Only superuser can block platform owner."))
         return redirect("platform_users")
+    reason = (request.POST.get("reason") or "").strip()
+    if not reason:
+        messages.error(request, _("Please provide a reason."))
+        return redirect("platform_users")
     u.is_active = not u.is_active
     u.save(update_fields=["is_active"])
     log_staff_action(
@@ -200,7 +232,7 @@ def user_toggle_active(request: HttpRequest, user_id: int) -> HttpResponse:
         "user_toggle_active",
         target_type="User",
         target_id=str(u.pk),
-        payload={"is_active": u.is_active},
+        payload={"is_active": u.is_active, "reason": reason},
     )
     messages.success(request, _("User updated."))
     return redirect("platform_users")
@@ -209,9 +241,81 @@ def user_toggle_active(request: HttpRequest, user_id: int) -> HttpResponse:
 @_staff_required
 def shops_list(request: HttpRequest) -> HttpResponse:
     qs = Shop.objects.select_related("owner").order_by("-created_at")
+    q = (request.GET.get("q") or "").strip()
+    is_active = (request.GET.get("is_active") or "").strip()
+    is_verified = (request.GET.get("is_verified") or "").strip()
+    subscription_status = (request.GET.get("subscription_status") or "").strip()
+    if q:
+        if q.isdigit():
+            qs = qs.filter(Q(id=int(q)) | Q(owner__telegram_id=int(q)))
+        else:
+            qs = qs.filter(Q(name__icontains=q) | Q(owner__username__icontains=q))
+    if is_active == "1":
+        qs = qs.filter(is_active=True)
+    elif is_active == "0":
+        qs = qs.filter(is_active=False)
+    if is_verified == "1":
+        qs = qs.filter(is_verified=True)
+    elif is_verified == "0":
+        qs = qs.filter(is_verified=False)
+    if subscription_status in dict(Shop.SubscriptionStatus.choices):
+        qs = qs.filter(subscription_status=subscription_status)
     paginator = Paginator(qs, 25)
     page = paginator.get_page(request.GET.get("page"))
-    return render(request, "platform/shops.html", {"page": page})
+    return render(
+        request,
+        "platform/shops.html",
+        {
+            "page": page,
+            "q": q,
+            "is_active": is_active,
+            "is_verified": is_verified,
+            "subscription_status": subscription_status,
+            "subscription_choices": Shop.SubscriptionStatus.choices,
+        },
+    )
+
+
+@_staff_required
+@require_POST
+def shop_toggle_active(request: HttpRequest, shop_id: int) -> HttpResponse:
+    shop = get_object_or_404(Shop, pk=shop_id)
+    reason = (request.POST.get("reason") or "").strip()
+    if not reason:
+        messages.error(request, _("Please provide a reason."))
+        return redirect("platform_shops")
+    shop.is_active = not shop.is_active
+    shop.save(update_fields=["is_active"])
+    log_staff_action(
+        request.user,
+        "shop_toggle_active",
+        target_type="Shop",
+        target_id=str(shop.pk),
+        payload={"is_active": shop.is_active, "reason": reason},
+    )
+    messages.success(request, _("Shop updated."))
+    return redirect("platform_shops")
+
+
+@_staff_required
+@require_POST
+def shop_toggle_verified(request: HttpRequest, shop_id: int) -> HttpResponse:
+    shop = get_object_or_404(Shop, pk=shop_id)
+    reason = (request.POST.get("reason") or "").strip()
+    if not reason:
+        messages.error(request, _("Please provide a reason."))
+        return redirect("platform_shops")
+    shop.is_verified = not shop.is_verified
+    shop.save(update_fields=["is_verified"])
+    log_staff_action(
+        request.user,
+        "shop_toggle_verified",
+        target_type="Shop",
+        target_id=str(shop.pk),
+        payload={"is_verified": shop.is_verified, "reason": reason},
+    )
+    messages.success(request, _("Shop updated."))
+    return redirect("platform_shops")
 
 
 @_staff_required
@@ -247,5 +351,60 @@ def broadcast(request: HttpRequest) -> HttpResponse:
 def audit_log(request: HttpRequest) -> HttpResponse:
     from apps.platform.models import StaffAuditLog
 
-    qs = StaffAuditLog.objects.select_related("actor").order_by("-created_at")[:200]
-    return render(request, "platform/audit.html", {"logs": qs})
+    qs = StaffAuditLog.objects.select_related("actor").order_by("-created_at")
+    q = (request.GET.get("q") or "").strip()
+    action = (request.GET.get("action") or "").strip()
+    days = (request.GET.get("days") or "").strip()
+    if q:
+        qs = qs.filter(
+            Q(target_id__icontains=q)
+            | Q(target_type__icontains=q)
+            | Q(actor__username__icontains=q)
+            | Q(actor__first_name__icontains=q)
+        )
+    if action:
+        qs = qs.filter(action__icontains=action)
+    if days.isdigit():
+        qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=int(days)))
+    paginator = Paginator(qs, 50)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "platform/audit.html",
+        {"page": page, "q": q, "action": action, "days": days},
+    )
+
+
+@_staff_required
+def orders_list(request: HttpRequest) -> HttpResponse:
+    qs = Order.objects.select_related("shop", "product", "buyer").order_by("-created_at")
+    q = (request.GET.get("q") or "").strip()
+    status_filter = (request.GET.get("status") or "").strip()
+    shop_id = (request.GET.get("shop_id") or "").strip()
+    if q:
+        if q.isdigit():
+            qs = qs.filter(Q(id=int(q)) | Q(phone__icontains=q) | Q(shop__owner__telegram_id=int(q)))
+        else:
+            qs = qs.filter(
+                Q(customer_name__icontains=q)
+                | Q(phone__icontains=q)
+                | Q(shop__name__icontains=q)
+                | Q(product__name__icontains=q)
+            )
+    if status_filter in dict(Order.Status.choices):
+        qs = qs.filter(status=status_filter)
+    if shop_id.isdigit():
+        qs = qs.filter(shop_id=int(shop_id))
+    paginator = Paginator(qs, 30)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "platform/orders.html",
+        {
+            "page": page,
+            "q": q,
+            "status_filter": status_filter,
+            "shop_id": shop_id,
+            "status_choices": Order.Status.choices,
+        },
+    )

@@ -17,6 +17,9 @@ urlpatterns = [
     path("users/", views.users_list, name="platform_users"),
     path("users/<int:user_id>/toggle/", views.user_toggle_active, name="platform_user_toggle"),
     path("shops/", views.shops_list, name="platform_shops"),
+    path("shops/<int:shop_id>/toggle-active/", views.shop_toggle_active, name="platform_shop_toggle_active"),
+    path("shops/<int:shop_id>/toggle-verified/", views.shop_toggle_verified, name="platform_shop_toggle_verified"),
+    path("orders/", views.orders_list, name="platform_orders"),
     path("broadcast/", views.broadcast, name="platform_broadcast"),
     path("audit/", views.audit_log, name="platform_audit"),
 ]

@@ -16,11 +16,15 @@
 
   <div id="ready" class="hidden flex flex-1 flex-col gap-4">
     <div id="status" class="rounded-2xl bg-white p-4 text-center text-sm text-slate-600 shadow-card ring-1 ring-slate-200/80"></div>
+    <p class="text-center text-xs text-slate-500">{% trans "Nima qilmoqchisiz?" %}</p>
     <a id="seller-link" href="/webapp/seller/"
        class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md shadow-brand/20 active:scale-[0.99]">
       <span>{% trans "Sotuvchi kabineti" %}</span>
       <svg class="h-5 w-5 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </a>
+    <p class="rounded-xl bg-white px-3 py-2 text-center text-xs text-slate-500 ring-1 ring-slate-200/70">
+      {% trans "Xaridorlar do‘kon havolasi orqali to‘g‘ridan-to‘g‘ri mahsulotga kiradi." %}
+    </p>
   </div>
 
   <div id="error" class="hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-800"></div>

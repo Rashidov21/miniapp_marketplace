@@ -3,6 +3,26 @@
 {% block title %}{% trans "Do‘konlar" %}{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold">{% trans "Do‘konlar" %}</h1>
+<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-5">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'ID, nom yoki owner telegram_id' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <select name="is_active" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Faollik" %}</option>
+    <option value="1" {% if is_active == "1" %}selected{% endif %}>{% trans "Faol" %}</option>
+    <option value="0" {% if is_active == "0" %}selected{% endif %}>{% trans "Nofaol" %}</option>
+  </select>
+  <select name="is_verified" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Verifikatsiya" %}</option>
+    <option value="1" {% if is_verified == "1" %}selected{% endif %}>{% trans "Tasdiqlangan" %}</option>
+    <option value="0" {% if is_verified == "0" %}selected{% endif %}>{% trans "Tasdiqlanmagan" %}</option>
+  </select>
+  <select name="subscription_status" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Obuna holati" %}</option>
+    {% for val, label in subscription_choices %}
+      <option value="{{ val }}" {% if subscription_status == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Filtrlash" %}</button>
+</form>
 <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
   <table class="min-w-full text-left text-sm">
     <thead>
@@ -12,7 +32,9 @@
         <th class="px-3 py-2">{% trans "Egasi (telegram_id)" %}</th>
         <th class="px-3 py-2">{% trans "Obuna" %}</th>
         <th class="px-3 py-2">{% trans "Faol" %}</th>
+        <th class="px-3 py-2">{% trans "Tasdiq" %}</th>
         <th class="px-3 py-2">{% trans "Yaratilgan" %}</th>
+        <th class="px-3 py-2">{% trans "Amallar" %}</th>
       </tr>
     </thead>
     <tbody>
@@ -23,12 +45,28 @@
           <td class="px-3 py-2 font-mono">{{ s.owner.telegram_id }}</td>
           <td class="px-3 py-2">{{ s.get_subscription_status_display }}</td>
           <td class="px-3 py-2">{% if s.is_active %}✓{% else %}✗{% endif %}</td>
+          <td class="px-3 py-2">{% if s.is_verified %}✓{% else %}✗{% endif %}</td>
           <td class="px-3 py-2 text-slate-500">{{ s.created_at|date:"Y-m-d" }}</td>
+          <td class="px-3 py-2">
+            <div class="space-y-2">
+              <form method="post" action="{% url 'platform_shop_toggle_active' s.id %}" class="flex gap-1">{% csrf_token %}
+                <input required name="reason" placeholder="{% trans 'Sabab' %}" class="w-28 rounded border border-slate-300 px-2 py-1 text-xs" />
+                <button type="submit" class="text-xs text-teal-700 underline">{% if s.is_active %}{% trans "Bloklash" %}{% else %}{% trans "Ochish" %}{% endif %}</button>
+              </form>
+              <form method="post" action="{% url 'platform_shop_toggle_verified' s.id %}" class="flex gap-1">{% csrf_token %}
+                <input required name="reason" placeholder="{% trans 'Sabab' %}" class="w-28 rounded border border-slate-300 px-2 py-1 text-xs" />
+                <button type="submit" class="text-xs text-slate-700 underline">{% if s.is_verified %}{% trans "Tasdiqni olish" %}{% else %}{% trans "Tasdiqlash" %}{% endif %}</button>
+              </form>
+            </div>
+          </td>
         </tr>
       {% empty %}
-        <tr><td colspan="6" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
+        <tr><td colspan="8" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+{% if page.has_other_pages %}
+  <p class="mt-4 text-sm text-slate-600">{% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}</p>
+{% endif %}
 {% endblock %}

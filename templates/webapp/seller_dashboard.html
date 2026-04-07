@@ -6,7 +6,7 @@
   <header>
     <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Sotuvchi" %}</p>
     <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Kabinet" %}</h1>
-    <p class="mt-1 text-sm text-slate-600">{% trans "Do‘kon — mahsulot — havola. Hammasi shu yerda." %}</p>
+    <p class="mt-1 text-sm text-slate-600">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
   </header>
 
   <div class="flex flex-wrap gap-2">
@@ -19,6 +19,11 @@
   <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
 
   <section id="onboarding" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+    <div class="mb-3 flex flex-wrap gap-2 text-xs">
+      <span class="rounded-full bg-brand/10 px-2.5 py-1 font-semibold text-brand">1. {% trans "Sotuvchi bo‘ling" %}</span>
+      <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">2. {% trans "Do‘kon yarating" %}</span>
+      <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">3. {% trans "Mahsulot qo‘shing" %}</span>
+    </div>
     <h2 class="text-sm font-semibold text-slate-900">{% trans "Boshlash" %}</h2>
     <p class="mt-1 text-xs text-slate-500">{% trans "Avval sotuvchi bo‘ling, keyin do‘kon nomini yozing." %}</p>
     <button type="button" id="btn-seller"
@@ -92,6 +97,14 @@
     const init = MiniApp.getInitData();
     if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
     await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+
+  function setBtnLoading(btn, loadingText, isLoading) {
+    if (!btn) return;
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent.trim();
+    btn.disabled = !!isLoading;
+    btn.textContent = isLoading ? loadingText : btn.dataset.originalText;
+    btn.classList.toggle("opacity-60", !!isLoading);
   }
 
   function statusLabel(st) {
@@ -202,6 +215,7 @@
     }
 
     btnSeller.onclick = async function () {
+      setBtnLoading(btnSeller, "{% trans 'Kutilmoqda…' %}", true);
       try {
         await ensureAuth();
         await MiniApp.apiFetch("/me/become-seller/", { method: "POST", body: JSON.stringify({}) });
@@ -214,10 +228,14 @@
         MiniApp.hapticLight();
       } catch (e) {
         MiniApp.showAlert((e.data && e.data.detail) || e.message || "error");
+      } finally {
+        setBtnLoading(btnSeller, "", false);
       }
     };
 
     document.getElementById("btn-create-shop").onclick = async function () {
+      const createBtn = this;
+      setBtnLoading(createBtn, "{% trans 'Yaratilmoqda…' %}", true);
       try {
         await ensureAuth();
         const name = document.getElementById("shop-name").value.trim();
@@ -242,6 +260,8 @@
         loadOrders();
       } catch (e) {
         MiniApp.showAlert((e.data && e.data.detail) || e.message || "error");
+      } finally {
+        setBtnLoading(createBtn, "", false);
       }
     };
 
@@ -265,7 +285,8 @@
           countEl.classList.add("hidden");
           return;
         }
-        countEl.textContent = list.length + " · {% trans 'buyurtma' %}";
+        const total = typeof res.count === "number" ? res.count : list.length;
+        countEl.textContent = total + " · {% trans 'buyurtma' %}";
         countEl.classList.remove("hidden");
         box.innerHTML = "";
         list.forEach(function (o) {

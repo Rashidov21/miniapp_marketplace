@@ -3,10 +3,16 @@
 {% block title %}{% trans "To‘lovlar" %}{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold">{% trans "Obuna to‘lovlari" %}</h1>
+<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'ID, do‘kon yoki owner telegram_id' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <input type="hidden" name="status" value="{{ status_filter }}">
+  <div class="sm:col-span-2"></div>
+  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Qidirish" %}</button>
+</form>
 <div class="mt-4 flex gap-2 text-sm">
-  <a href="?status=pending" class="rounded-lg px-3 py-1 {% if status_filter == 'pending' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Kutilmoqda" %}</a>
-  <a href="?status=approved" class="rounded-lg px-3 py-1 {% if status_filter == 'approved' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Tasdiqlangan" %}</a>
-  <a href="?status=rejected" class="rounded-lg px-3 py-1 {% if status_filter == 'rejected' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Rad etilgan" %}</a>
+  <a href="?status=pending&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'pending' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Kutilmoqda" %}</a>
+  <a href="?status=approved&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'approved' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Tasdiqlangan" %}</a>
+  <a href="?status=rejected&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'rejected' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Rad etilgan" %}</a>
 </div>
 
 <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
@@ -34,7 +40,10 @@
           <td class="px-3 py-2">
             {% if p.status == "pending" %}
               <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline">{% csrf_token %}<button type="submit" class="text-teal-700 underline">{% trans "Tasdiqlash" %}</button></form>
-              <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline">{% csrf_token %}<button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button></form>
+              <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline-flex items-center gap-1">{% csrf_token %}
+                <input required name="admin_note" placeholder="{% trans 'Rad sababi' %}" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs" />
+                <button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button>
+              </form>
             {% endif %}
             {% if p.proof_image %}
               <a href="{{ p.proof_image.url }}" target="_blank" class="ml-2 text-xs text-slate-600 underline">{% trans "Skrinshot" %}</a>

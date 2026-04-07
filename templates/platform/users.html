@@ -3,9 +3,21 @@
 {% block title %}{% trans "Foydalanuvchilar" %}{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold">{% trans "Foydalanuvchilar" %}</h1>
-<form method="get" class="mt-4 flex gap-2">
-  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Telegram ID yoki username' %}" class="max-w-md rounded-xl border border-slate-300 px-3 py-2 text-sm" />
-  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Qidirish" %}</button>
+<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Telegram ID yoki username' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <select name="role" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Barcha rollar" %}</option>
+    <option value="buyer" {% if role == "buyer" %}selected{% endif %}>{% trans "Buyer" %}</option>
+    <option value="seller" {% if role == "seller" %}selected{% endif %}>{% trans "Seller" %}</option>
+    <option value="admin" {% if role == "admin" %}selected{% endif %}>{% trans "Admin" %}</option>
+    <option value="platform_owner" {% if role == "platform_owner" %}selected{% endif %}>{% trans "Platform owner" %}</option>
+  </select>
+  <select name="is_active" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Faollik" %}</option>
+    <option value="1" {% if is_active == "1" %}selected{% endif %}>{% trans "Faol" %}</option>
+    <option value="0" {% if is_active == "0" %}selected{% endif %}>{% trans "Nofaol" %}</option>
+  </select>
+  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Filtrlash" %}</button>
 </form>
 
 <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
@@ -29,7 +41,8 @@
           <td class="px-3 py-2">{{ u.get_role_display }}</td>
           <td class="px-3 py-2">{% if u.is_active %}✓{% else %}✗{% endif %}</td>
           <td class="px-3 py-2">
-            <form method="post" action="{% url 'platform_user_toggle' u.id %}">{% csrf_token %}
+            <form method="post" action="{% url 'platform_user_toggle' u.id %}" class="space-y-2">{% csrf_token %}
+              <input required name="reason" placeholder="{% trans 'Sabab' %}" class="w-40 rounded-lg border border-slate-300 px-2 py-1 text-xs" />
               <button type="submit" class="text-sm text-teal-700 underline">{% if u.is_active %}{% trans "Bloklash" %}{% else %}{% trans "Blokdan chiqarish" %}{% endif %}</button>
             </form>
           </td>
@@ -40,4 +53,7 @@
     </tbody>
   </table>
 </div>
+{% if page.has_other_pages %}
+  <p class="mt-4 text-sm text-slate-600">{% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}</p>
+{% endif %}
 {% endblock %}

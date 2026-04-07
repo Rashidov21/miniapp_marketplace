@@ -3,7 +3,18 @@
 {% block title %}Audit{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold">{% trans "Staff audit" %}</h1>
-<p class="mt-1 text-sm text-slate-600">{% trans "So‘nggi 200 yozuv" %}</p>
+<p class="mt-1 text-sm text-slate-600">{% trans "Staff harakatlar jurnali" %}</p>
+<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Actor, target yoki ID' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <input type="text" name="action" value="{{ action }}" placeholder="{% trans 'Action nomi' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+  <select name="days" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="">{% trans "Vaqt oralig‘i" %}</option>
+    <option value="1" {% if days == "1" %}selected{% endif %}>1 {% trans "kun" %}</option>
+    <option value="7" {% if days == "7" %}selected{% endif %}>7 {% trans "kun" %}</option>
+    <option value="30" {% if days == "30" %}selected{% endif %}>30 {% trans "kun" %}</option>
+  </select>
+  <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Filtrlash" %}</button>
+</form>
 <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
   <table class="min-w-full text-left text-xs">
     <thead>
@@ -15,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for log in logs %}
+      {% for log in page %}
         <tr class="border-b border-slate-100">
           <td class="px-2 py-2 whitespace-nowrap">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
           <td class="px-2 py-2">{{ log.actor }}</td>
@@ -28,4 +39,7 @@
     </tbody>
   </table>
 </div>
+{% if page.has_other_pages %}
+  <p class="mt-4 text-sm text-slate-600">{% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}</p>
+{% endif %}
 {% endblock %}
