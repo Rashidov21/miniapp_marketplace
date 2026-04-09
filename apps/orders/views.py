@@ -67,8 +67,26 @@ def order_create(request):
                 .first()
             )
             if existing:
+                existing_order = existing.order
+                # Never leak another user's order by shared idempotency key.
+                if existing_order.buyer_id != request.user.id:
+                    return Response(
+                        {"detail": _("Idempotency key conflict.")},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+                same_payload = (
+                    existing_order.product_id == product.id
+                    and existing_order.customer_name.strip() == ser.validated_data["customer_name"].strip()
+                    and existing_order.phone.strip() == ser.validated_data["phone"].strip()
+                    and existing_order.address.strip() == ser.validated_data["address"].strip()
+                )
+                if not same_payload:
+                    return Response(
+                        {"detail": _("Idempotency key reused with different payload.")},
+                        status=status.HTTP_409_CONFLICT,
+                    )
                 return Response(
-                    OrderSerializer(existing.order).data,
+                    OrderSerializer(existing_order).data,
                     status=status.HTTP_200_OK,
                 )
 

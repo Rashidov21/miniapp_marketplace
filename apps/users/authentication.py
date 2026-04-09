@@ -52,4 +52,6 @@ class TelegramInitDataAuthentication(BaseAuthentication):
         if not payload:
             raise AuthenticationFailed("Invalid initData")
         user = upsert_user_from_telegram_user(payload["user"])
+        if not user.is_active:
+            raise AuthenticationFailed("User is inactive")
         return (user, None)

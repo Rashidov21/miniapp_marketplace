@@ -57,8 +57,16 @@
   </table>
 </div>
 {% if page.has_other_pages %}
-  <p class="mt-4 text-sm text-slate-600">
-    {% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}
-  </p>
+  <div class="mt-4 flex items-center justify-between text-sm">
+    <p class="text-slate-600">{% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}</p>
+    <div class="flex gap-2">
+      {% if page.has_previous %}
+        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.previous_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}">{% trans "Oldingi" %}</a>
+      {% endif %}
+      {% if page.has_next %}
+        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.next_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}">{% trans "Keyingi" %}</a>
+      {% endif %}
+    </div>
+  </div>
 {% endif %}
 {% endblock %}

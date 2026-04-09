@@ -50,7 +50,7 @@ def me(request):
 def become_seller(request):
     """Promote current user to seller (MVP onboarding)."""
     user: User = request.user
-    if user.role == User.Role.ADMIN:
+    if user.role in {User.Role.ADMIN, User.Role.PLATFORM_OWNER} or user.is_superuser:
         return Response(UserSerializer(user).data)
     user.role = User.Role.SELLER
     user.save(update_fields=["role"])
