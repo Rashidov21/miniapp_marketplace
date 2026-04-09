@@ -63,14 +63,17 @@ def shop_update(request, shop_id):
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     data = request.data.copy()
-    if not (request.user.is_superuser or request.user.role == User.Role.ADMIN):
+    if not (
+        request.user.is_superuser
+        or request.user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
+    ):
         data.pop("is_active", None)
     ser = ShopSerializer(shop, data=data, partial=True, context={"request": request})
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     ser.save()
     shop.refresh_from_db()
-    if request.user.is_superuser or request.user.role == User.Role.ADMIN:
+    if request.user.is_superuser or request.user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER):
         if "is_active" in request.data:
             shop.is_active = bool(request.data.get("is_active"))
             shop.save(update_fields=["is_active"])
@@ -92,7 +95,11 @@ def shop_link(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id).first()
     if not shop:
         return Response({"detail": _("Shop not found.")}, status=status.HTTP_404_NOT_FOUND)
-    if shop.owner_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:
+    if (
+        shop.owner_id != request.user.id
+        and request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
+        and not request.user.is_superuser
+    ):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     from django.conf import settings as dj_settings
 
