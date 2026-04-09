@@ -159,6 +159,10 @@ def buyer_order_detail(request, order_id):
     )
     if not order:
         return Response({"detail": _("Order not found.")}, status=status.HTTP_404_NOT_FOUND)
-    if order.buyer_id != request.user.id and request.user.role != User.Role.ADMIN and not request.user.is_superuser:
+    if (
+        order.buyer_id != request.user.id
+        and request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
+        and not request.user.is_superuser
+    ):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     return Response(OrderSerializer(order).data)

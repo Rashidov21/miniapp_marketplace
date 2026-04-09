@@ -113,7 +113,10 @@ def product_detail_manage(request, product_id):
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def product_admin_block(request, product_id):
-    if request.user.role != User.Role.ADMIN and not request.user.is_superuser:
+    if (
+        request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
+        and not request.user.is_superuser
+    ):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     product = Product.objects.filter(pk=product_id).select_related("shop").first()
     if not product:
