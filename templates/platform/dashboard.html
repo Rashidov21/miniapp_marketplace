@@ -12,12 +12,12 @@
   <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
     <p class="text-xs font-medium uppercase text-slate-500">{% trans "Do‘konlar" %}</p>
     <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats.shops_total }}</p>
-    <p class="text-xs text-slate-500">{% trans "faol" %}: {{ stats.shops_active }}</p>
+    <p class="text-xs text-slate-500">{% trans "faol" %}: {{ stats.shops_active }} · {% trans "7 kun yangi" %}: {{ stats.shops_week }}</p>
   </div>
   <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
     <p class="text-xs font-medium uppercase text-slate-500">{% trans "Buyurtmalar" %}</p>
     <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats.orders_total }}</p>
-    <p class="text-xs text-slate-500">{% trans "7 kun" %}: {{ stats.orders_week }}</p>
+    <p class="text-xs text-slate-500">{% trans "bugun" %}: {{ stats.orders_today }} · {% trans "7 kun" %}: {{ stats.orders_week }}</p>
   </div>
   <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
     <p class="text-xs font-medium uppercase text-slate-500">{% trans "Kutilayotgan to‘lov" %}</p>

@@ -22,6 +22,12 @@
     <div class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
       {% trans "Mahsulotni bosing va 1 daqiqada buyurtma bering." %}
     </div>
+    <label class="mt-3 block">
+      <span class="sr-only">{% trans "Qidiruv" %}</span>
+      <input id="product-search" type="search" autocomplete="off"
+             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+             placeholder="{% trans 'Mahsulot qidirish…' %}">
+    </label>
   </header>
 
   <div id="skeleton-list" class="space-y-3" aria-hidden="true">
@@ -74,15 +80,31 @@
   const tVerified = "{% trans 'Tasdiqlangan do‘kon' %}";
   const tLoadErr = "{% trans 'Yuklashda muammo. Internetni tekshiring.' %}";
   let nextUrl = null;
+  function normalizeApiPath(fullOrPath) {
+    if (!fullOrPath) return null;
+    if (String(fullOrPath).startsWith("http")) {
+      const u = new URL(fullOrPath);
+      let p = u.pathname;
+      if (p.startsWith("/api")) p = p.slice(4);
+      return p + u.search;
+    }
+    return fullOrPath;
+  }
   async function loadProducts(url, append) {
     const box = document.getElementById("products");
     const empty = document.getElementById("empty");
     const msg = document.getElementById("msg");
     const moreBtn = document.getElementById("load-more");
     try {
-      const list = await MiniApp.apiFetch(url || ("/shops/" + shopId + "/products/"), { method: "GET" });
+      let fetchPath = normalizeApiPath(url);
+      if (!fetchPath) {
+        const q = (document.getElementById("product-search") && document.getElementById("product-search").value || "").trim();
+        fetchPath = "/shops/" + shopId + "/products/";
+        if (q) fetchPath += "?q=" + encodeURIComponent(q);
+      }
+      const list = await MiniApp.apiFetch(fetchPath, { method: "GET" });
       const items = list.results || [];
-      nextUrl = list.next || null;
+      nextUrl = list.next ? normalizeApiPath(list.next) : null;
       if (!append) box.innerHTML = "";
       if (!items.length && !append) {
         empty.classList.remove("hidden");
@@ -171,5 +193,17 @@
     this.disabled = false;
     this.textContent = old;
   });
+  (function searchDebounce() {
+    const inp = document.getElementById("product-search");
+    if (!inp) return;
+    let t = null;
+    inp.addEventListener("input", function () {
+      if (t) clearTimeout(t);
+      t = setTimeout(function () {
+        nextUrl = null;
+        loadProducts(null, false);
+      }, 350);
+    });
+  })();
 </script>
 {% endblock %}

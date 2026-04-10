@@ -151,6 +151,20 @@ def seller_order_update(request, order_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+def buyer_orders_mine(request):
+    qs = (
+        Order.objects.filter(buyer=request.user)
+        .select_related("product", "shop")
+        .order_by("-created_at")
+    )
+    paginator = OrderListPagination()
+    page = paginator.paginate_queryset(qs, request)
+    ser = OrderSerializer(page, many=True)
+    return paginator.get_paginated_response(ser.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def buyer_order_detail(request, order_id):
     order = (
         Order.objects.filter(pk=order_id)

@@ -43,7 +43,7 @@
       }
     })();
   </script>
-  <script src="{% static 'js/app.js' %}"></script>
+  <script src="{% static 'js/app.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

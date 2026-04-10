@@ -24,6 +24,22 @@
 
   <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
 
+  <section id="checklist" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+    <p class="text-sm font-semibold text-slate-900">{% trans "Yo‘l xaritasi" %}</p>
+    <p id="checklist-stats" class="mt-1 hidden text-xs text-slate-500"></p>
+    <ul class="mt-3 space-y-2 text-sm text-slate-700">
+      <li id="ck-step-seller" class="flex items-center gap-2">
+        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Sotuvchi roli" %}</span>
+      </li>
+      <li id="ck-step-shop" class="flex items-center gap-2">
+        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Do‘kon yaratish" %}</span>
+      </li>
+      <li id="ck-step-product" class="flex items-center gap-2">
+        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Birinchi mahsulot" %}</span>
+      </li>
+    </ul>
+  </section>
+
   <section id="shop-panel" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
     <h2 class="text-sm font-semibold text-slate-900">{% trans "Do‘koningiz" %}</h2>
     <p id="shop-panel-name" class="mt-1 text-lg font-bold text-brand"></p>
@@ -35,9 +51,26 @@
         {% trans "Nusxalash" %}
       </button>
     </div>
+    <details class="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700 ring-1 ring-slate-200/80">
+      <summary class="cursor-pointer font-medium text-slate-800">{% trans "Havolani qanday ulashaman?" %}</summary>
+      <p class="mt-2 leading-relaxed">{% trans "Havolani nusxalang va Telegramda guruh yoki shaxsiy chatga yuboring. Mijozlar havola orqali to‘g‘ridan-to‘g‘ri katalogga kiradi." %}</p>
+    </details>
   </section>
 
   <section id="onboarding" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+    <div id="terms-block" class="mb-4 hidden rounded-xl border border-slate-200 bg-slate-50/90 p-3 text-xs text-slate-700">
+      <p class="font-medium text-slate-900">{% trans "Huquqiy rozilik" %}</p>
+      <p class="mt-1">{% trans "Davom etishdan oldin quyidagi hujjatlarni o‘qing." %}</p>
+      <p class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        <a href="/webapp/legal/terms/" class="font-semibold text-brand underline">{% trans "Shartlar" %}</a>
+        <a href="/webapp/legal/privacy/" class="font-semibold text-brand underline">{% trans "Maxfiylik" %}</a>
+        <a href="/webapp/legal/seller/" class="font-semibold text-brand underline">{% trans "Sotuvchi ofertasi" %}</a>
+      </p>
+      <label class="mt-3 flex cursor-pointer items-start gap-2">
+        <input type="checkbox" id="terms-checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand">
+        <span>{% trans "Men shartlar va sotuvchi ofertasi bilan tanishdim va roziman." %}</span>
+      </label>
+    </div>
     <div class="mb-3 flex flex-wrap gap-2 text-xs">
       <span class="rounded-full bg-brand/10 px-2.5 py-1 font-semibold text-brand">1. {% trans "Sotuvchi bo‘ling" %}</span>
       <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">2. {% trans "Do‘kon yarating" %}</span>
@@ -69,11 +102,15 @@
     </div>
   </section>
 
-  <a id="add-product-cta" href="/webapp/seller/products/new/"
-     class="touch-target flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-base font-semibold text-white shadow-md active:scale-[0.99]">
-    <span class="text-xl leading-none">＋</span>
-    {% trans "Mahsulot qo‘shish" %}
-  </a>
+  <div class="flex flex-col gap-2">
+    <a id="seller-products-link" href="/webapp/seller/products/"
+       class="touch-target hidden text-center text-sm font-semibold text-brand underline">{% trans "Barcha mahsulotlar" %}</a>
+    <a id="add-product-cta" href="/webapp/seller/products/new/"
+       class="touch-target flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-base font-semibold text-white shadow-md active:scale-[0.99]">
+      <span class="text-xl leading-none">＋</span>
+      {% trans "Mahsulot qo‘shish" %}
+    </a>
+  </div>
 
   <section>
     <div class="mb-3 flex items-end justify-between gap-2">
@@ -244,12 +281,85 @@
     const shopPanel = document.getElementById("shop-panel");
     const subtitle = document.getElementById("dash-subtitle");
     const addProductCta = document.getElementById("add-product-cta");
+    const productsLink = document.getElementById("seller-products-link");
     onboarding.classList.add("hidden");
     shopPanel.classList.remove("hidden");
     subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
     document.getElementById("shop-panel-name").textContent = shop.name;
     addProductCta.classList.remove("hidden");
+    if (productsLink) productsLink.classList.remove("hidden");
     loadShopPanelLink(shop.id);
+  }
+
+  function syncTermsBlock(me) {
+    const termsBlock = document.getElementById("terms-block");
+    if (!termsBlock) return;
+    const elevated = me.role === "admin" || me.role === "platform_owner";
+    if (elevated || me.seller_terms_ok) {
+      termsBlock.classList.add("hidden");
+    } else {
+      termsBlock.classList.remove("hidden");
+    }
+  }
+
+  async function ensureTermsAcceptedOrSubmit() {
+    const termsBlock = document.getElementById("terms-block");
+    if (!termsBlock || termsBlock.classList.contains("hidden")) return true;
+    const cb = document.getElementById("terms-checkbox");
+    if (!cb || !cb.checked) {
+      MiniApp.showToast("{% trans 'Shartlarga rozilik belgisini qo‘ying.' %}", "warning");
+      return false;
+    }
+    await MiniApp.apiFetch("/me/accept-seller-terms/", { method: "POST", body: JSON.stringify({}) });
+    termsBlock.classList.add("hidden");
+    if (cb) cb.checked = false;
+    return true;
+  }
+
+  function setCk(el, done) {
+    if (!el) return;
+    const icon = el.querySelector(".ck-icon");
+    if (icon) icon.textContent = done ? "✓" : "○";
+    el.classList.toggle("text-emerald-800", done);
+    el.classList.toggle("font-semibold", done);
+  }
+
+  async function refreshChecklist(me, shop) {
+    const checklist = document.getElementById("checklist");
+    if (!checklist || !me) return;
+    checklist.classList.remove("hidden");
+    setCk(document.getElementById("ck-step-seller"), isPanelRole(me.role));
+    setCk(document.getElementById("ck-step-shop"), !!shop);
+    let pc = 0;
+    if (shop) {
+      try {
+        await ensureAuth();
+        const pr = await MiniApp.apiFetch("/seller/products/?page_size=1", { method: "GET" });
+        pc = typeof pr.count === "number" ? pr.count : (pr.results || []).length;
+      } catch (x) {}
+    }
+    setCk(document.getElementById("ck-step-product"), pc > 0);
+    const hint = document.getElementById("checklist-stats");
+    if (!hint) return;
+    if (shop) {
+      try {
+        await ensureAuth();
+        const stRes = await MiniApp.apiFetch("/seller/stats/", { method: "GET" });
+        if (typeof stRes.shop_views_week === "number") {
+          hint.textContent =
+            "{% trans '7 kun' %}: " +
+            stRes.shop_views_week +
+            " {% trans 'ko‘rish' %} · " +
+            stRes.orders_week +
+            " {% trans 'buyurtma' %} · " +
+            stRes.products_total +
+            " {% trans 'mahsulot' %}";
+          hint.classList.remove("hidden");
+          return;
+        }
+      } catch (x) {}
+    }
+    hint.classList.add("hidden");
   }
 
   (async function init() {
@@ -260,37 +370,47 @@
     const addProductCta = document.getElementById("add-product-cta");
     const subtitle = document.getElementById("dash-subtitle");
     const quickLinks = document.getElementById("dash-quick-links");
+    let lastMe = null;
+    let lastShop = null;
     try {
       await ensureAuth();
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
+      lastMe = me;
       let shop = null;
       try {
         shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
       } catch (x) {
         shop = null;
       }
+      lastShop = shop;
+      const productsLink = document.getElementById("seller-products-link");
       if (shop) {
         if (quickLinks) quickLinks.classList.remove("hidden");
+        syncTermsBlock(me);
         showShopDashboardUi(shop);
         applySubscriptionBanner(shop, banner);
       } else if (isPanelRole(me.role)) {
         if (quickLinks) quickLinks.classList.remove("hidden");
         shopPanel.classList.add("hidden");
         onboarding.classList.remove("hidden");
+        syncTermsBlock(me);
         subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
         banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
         btnSeller.classList.add("hidden");
         const intro = onboarding.querySelector("p");
         if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
         addProductCta.classList.add("hidden");
+        if (productsLink) productsLink.classList.add("hidden");
       } else {
         if (quickLinks) quickLinks.classList.add("hidden");
         shopPanel.classList.add("hidden");
         onboarding.classList.remove("hidden");
+        syncTermsBlock(me);
         subtitle.textContent = "{% trans 'Yangi sotuvchilar: bir qadamda ro‘yxatdan o‘ting, do‘kon oching.' %}";
         banner.textContent = "{% trans 'Sotuvchi bo‘lish uchun bosing — 1 qadam.' %}";
         btnSeller.classList.remove("hidden");
         addProductCta.classList.add("hidden");
+        if (productsLink) productsLink.classList.add("hidden");
       }
     } catch (e) {
       const txt = MiniApp.parseApiError(e, "{% trans 'Kirish xatosi' %}");
@@ -301,10 +421,13 @@
       return;
     }
 
+    await refreshChecklist(lastMe, lastShop);
+
     btnSeller.onclick = async function () {
       setBtnLoading(btnSeller, "{% trans 'Kutilmoqda…' %}", true);
       try {
         await ensureAuth();
+        if (!(await ensureTermsAcceptedOrSubmit())) return;
         await MiniApp.apiFetch("/me/become-seller/", { method: "POST", body: JSON.stringify({}) });
         MiniApp.showToast("{% trans 'Endi do‘kon yarating.' %}", "success");
         await MiniApp.apiFetch("/me/", { method: "GET" });
@@ -327,6 +450,7 @@
       setBtnLoading(createBtn, "{% trans 'Yaratilmoqda…' %}", true);
       try {
         await ensureAuth();
+        if (!(await ensureTermsAcceptedOrSubmit())) return;
         const name = document.getElementById("shop-name").value.trim();
         if (!name) {
           MiniApp.showToast("{% trans 'Do‘kon nomini yozing.' %}", "warning");
@@ -389,9 +513,12 @@
     document.getElementById("orders").addEventListener("click", async function (ev) {
       const t = ev.target.closest("button[data-oid]");
       if (!t) return;
+      if (t.disabled) return;
       try {
         await ensureAuth();
         MiniApp.hapticLight();
+        t.disabled = true;
+        t.classList.add("opacity-50");
         await MiniApp.apiFetch("/seller/orders/" + t.getAttribute("data-oid") + "/", {
           method: "PATCH",
           body: JSON.stringify({ status: t.getAttribute("data-st") }),
@@ -399,6 +526,9 @@
         await loadOrders();
       } catch (e) {
         MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Buyurtma holatini yangilab bo‘lmadi.' %}"), "error");
+      } finally {
+        t.disabled = false;
+        t.classList.remove("opacity-50");
       }
     });
 

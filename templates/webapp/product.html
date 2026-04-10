@@ -135,6 +135,13 @@
       const t = "{% trans 'Mahsulot topilmadi.' %}";
       msg.textContent = t;
       MiniApp.showToast(MiniApp.parseApiError(e, t), "error");
+      const sticky = document.querySelector(".app-sticky-bottom");
+      if (sticky) sticky.classList.add("hidden");
+      const ob = document.getElementById("order-btn");
+      if (ob) {
+        ob.classList.add("pointer-events-none", "opacity-40");
+        ob.removeAttribute("href");
+      }
     }
   })();
 </script>

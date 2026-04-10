@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
@@ -24,8 +25,11 @@ def product_list_public(request, shop_id):
     qs = (
         Product.objects.filter(shop=shop, is_active=True)
         .select_related("shop")
-        .order_by("-created_at")
+        .order_by("sort_order", "-created_at")
     )
+    q = (request.GET.get("q") or "").strip()
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
     paginator = ProductListPagination()
     page = paginator.paginate_queryset(qs, request)
     ser = ProductPublicSerializer(page, many=True, context={"request": request})
@@ -60,7 +64,7 @@ def product_list_manage(request):
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     if request.method == "GET":
-        qs = Product.objects.filter(shop=shop).select_related("shop").order_by("-created_at")
+        qs = Product.objects.filter(shop=shop).select_related("shop").order_by("sort_order", "-created_at")
         paginator = ProductListPagination()
         page = paginator.paginate_queryset(qs, request)
         ser = ProductSerializer(page, many=True, context={"request": request})

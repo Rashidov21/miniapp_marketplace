@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Foydalanish shartlari" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button type="button" class="app-topbar-back" onclick="history.back()" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Huquqiy" %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<article class="prose prose-sm max-w-none text-slate-800">
+  <h1 class="text-xl font-bold text-slate-900">{% trans "Foydalanish shartlari" %}</h1>
+  <p class="text-xs text-slate-500">{% trans "Versiya" %} {{ terms_version }}</p>
+  <p class="mt-4 text-sm leading-relaxed">
+    {% blocktrans %}Bu matn namunaviy hisoblanadi. Real loyiha uchun yuridik maslahat bilan tasdiqlangan to‘liq shartlar joylashtiring. Platforma foydalanuvchilarga mini-do‘kon xizmatini taqdim etadi; sotuvchi va mijoz o‘rtasidagi munosabatlar qonun va ofertaga muvofiq hal qilinadi.{% endblocktrans %}
+  </p>
+  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+    <li>{% trans "Akkaunt va Telegram ma’lumotlari xavfsiz saqlanishi uchun texnik choralarni qo‘llaymiz." %}</li>
+    <li>{% trans "Taqiqlangan mahsulot va kontent joylashtirish mumkin emas." %}</li>
+    <li>{% trans "Platforma moderatsiya va bloklash huquqini o‘zida saqlaydi." %}</li>
+  </ul>
+  <p class="mt-6 text-xs text-slate-500">
+    {% trans "Batafsil maxfiylik:" %} <a class="font-medium text-brand underline" href="/webapp/legal/privacy/">{% trans "Maxfiylik siyosati" %}</a>
+  </p>
+</article>
+{% endblock %}

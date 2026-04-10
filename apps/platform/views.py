@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from datetime import timedelta
 
 from django.contrib import messages
@@ -7,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
+from django.core.cache import cache
 from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -81,7 +83,11 @@ def dashboard(request: HttpRequest) -> HttpResponse:
             "shops_total": Shop.objects.count(),
             "shops_active": Shop.objects.filter(is_active=True).count(),
             "orders_total": Order.objects.count(),
+            "orders_today": Order.objects.filter(
+                created_at__gte=timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
+            ).count(),
             "orders_week": Order.objects.filter(created_at__gte=week_ago).count(),
+            "shops_week": Shop.objects.filter(created_at__gte=week_ago).count(),
             "payments_pending": SubscriptionPayment.objects.filter(
                 status=SubscriptionPayment.Status.PENDING
             ).count(),
@@ -324,6 +330,9 @@ def broadcast(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = BroadcastForm(request.POST)
         if form.is_valid():
+            if not cache.add(f"platform_broadcast:{request.user.pk}", "1", timeout=60):
+                messages.error(request, _("Please wait about a minute before sending another broadcast."))
+                return redirect("platform_broadcast")
             msg = form.cleaned_data["message"]
             seg = form.cleaned_data["segment"]
             qs = UserModel.objects.filter(is_active=True)
@@ -408,3 +417,47 @@ def orders_list(request: HttpRequest) -> HttpResponse:
             "status_choices": Order.Status.choices,
         },
     )
+
+
+@_staff_required
+def export_orders_csv(request: HttpRequest) -> HttpResponse:
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="orders_export.csv"'
+    w = csv.writer(response)
+    w.writerow(["id", "shop", "product", "status", "customer_name", "phone", "created_at"])
+    qs = Order.objects.select_related("shop", "product").order_by("-created_at")[:8000]
+    for o in qs.iterator():
+        w.writerow(
+            [
+                o.id,
+                o.shop.name,
+                o.product.name,
+                o.status,
+                o.customer_name,
+                o.phone,
+                o.created_at.isoformat(),
+            ]
+        )
+    return response
+
+
+@_staff_required
+def export_payments_csv(request: HttpRequest) -> HttpResponse:
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="payments_export.csv"'
+    w = csv.writer(response)
+    w.writerow(["id", "shop", "plan", "amount", "status", "created_at", "reviewed_at"])
+    qs = SubscriptionPayment.objects.select_related("shop", "plan").order_by("-created_at")[:8000]
+    for p in qs.iterator():
+        w.writerow(
+            [
+                p.id,
+                p.shop.name,
+                p.plan.name if p.plan_id else "",
+                str(p.amount),
+                p.status,
+                p.created_at.isoformat(),
+                p.reviewed_at.isoformat() if p.reviewed_at else "",
+            ]
+        )
+    return response

@@ -7,11 +7,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.drf_errors import error_response
 from apps.core.initdata import verify_init_data
 from apps.core.telegram import send_message_with_markup
 from apps.users.authentication import upsert_user_from_telegram_user
 from apps.users.models import User
 from apps.users.serializers import UserSerializer
+from apps.users.terms import record_seller_terms_acceptance, user_has_current_seller_terms
 
 
 @api_view(["POST"])
@@ -55,9 +57,23 @@ def become_seller(request):
     user: User = request.user
     if user.role in {User.Role.ADMIN, User.Role.PLATFORM_OWNER} or user.is_superuser:
         return Response(UserSerializer(user).data)
+    if not user_has_current_seller_terms(user):
+        return error_response(
+            str(_("Please accept the seller and marketplace terms first.")),
+            status=status.HTTP_403_FORBIDDEN,
+            code="terms_required",
+        )
     user.role = User.Role.SELLER
     user.save(update_fields=["role"])
     return Response(UserSerializer(user).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def accept_seller_terms(request):
+    """Record acceptance of the current seller/marketplace terms version."""
+    record_seller_terms_acceptance(request.user)
+    return Response(UserSerializer(request.user).data)
 
 
 def _build_webapp_url(start_param: str) -> str:

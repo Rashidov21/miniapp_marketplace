@@ -16,6 +16,8 @@ class UserAdmin(BaseUserAdmin):
         "last_name",
         "role",
         "shop_count_display",
+        "seller_terms_version",
+        "seller_terms_accepted_at",
         "is_active",
         "is_staff",
         "created_at",
@@ -37,6 +39,7 @@ class UserAdmin(BaseUserAdmin):
         (_("Personal info"), {"fields": ("first_name", "last_name", "username")}),
         (_("Permissions"), {"fields": ("role", "is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         (_("Important dates"), {"fields": ("last_login", "created_at")}),
+        (_("Seller terms"), {"fields": ("seller_terms_version", "seller_terms_accepted_at")}),
     )
 
     add_fieldsets = (

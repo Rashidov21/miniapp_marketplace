@@ -1,10 +1,16 @@
-from django.db import IntegrityError
+from datetime import timedelta
+
+from django.db import IntegrityError, transaction
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from apps.orders.models import Order
+from apps.platform.models import AnalyticsEvent
+from apps.products.models import Product
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
 from apps.shops.serializers import (
@@ -13,8 +19,10 @@ from apps.shops.serializers import (
     SubscriptionPaymentCreateSerializer,
     SubscriptionPlanSerializer,
 )
+from apps.core.drf_errors import error_response
 from apps.shops.services import apply_trial_for_new_shop
 from apps.users.models import User
+from apps.users.terms import user_has_current_seller_terms
 
 
 def _require_auth_user(request):
@@ -30,6 +38,13 @@ def shop_create(request):
     name = (request.data or {}).get("name", "").strip()
     if not name:
         return Response({"name": [_("This field is required.")]}, status=status.HTTP_400_BAD_REQUEST)
+    elevated = user.is_superuser or user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
+    if not elevated and not user_has_current_seller_terms(user):
+        return error_response(
+            str(_("Please accept the seller and marketplace terms before creating a shop.")),
+            status=status.HTTP_403_FORBIDDEN,
+            code="terms_required",
+        )
     if Shop.objects.filter(owner=user).exists():
         return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -41,6 +56,29 @@ def shop_create(request):
     return Response(
         ShopSerializer(shop, context={"request": request}).data,
         status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_stats(request):
+    shop = Shop.objects.filter(owner=request.user).first()
+    if not shop:
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+    week_ago = timezone.now() - timedelta(days=7)
+    shop_views_week = AnalyticsEvent.objects.filter(
+        event_type=AnalyticsEvent.EventType.SHOP_VIEW,
+        shop_id=shop.id,
+        created_at__gte=week_ago,
+    ).count()
+    orders_week = Order.objects.filter(shop=shop, created_at__gte=week_ago).count()
+    products_total = Product.objects.filter(shop=shop).count()
+    return Response(
+        {
+            "shop_views_week": shop_views_week,
+            "orders_week": orders_week,
+            "products_total": products_total,
+        }
     )
 
 
@@ -133,19 +171,28 @@ def subscription_payment_create(request):
         shop=shop,
         status=SubscriptionPayment.Status.PENDING,
     ).exists():
-        return Response(
-            {"detail": _("You already sent a payment. Please wait for review.")},
-            status=status.HTTP_400_BAD_REQUEST,
+        return error_response(
+            str(_("You already sent a payment. Please wait for review.")),
+            status=status.HTTP_409_CONFLICT,
+            code="payment_pending_exists",
         )
-    payment = SubscriptionPayment.objects.create(
-        shop=shop,
-        plan=plan,
-        amount=plan.price,
-        proof_image=ser.validated_data["proof_image"],
-        notes=ser.validated_data.get("notes") or "",
-    )
-    shop.subscription_status = Shop.SubscriptionStatus.PAYMENT_PENDING
-    shop.save(update_fields=["subscription_status"])
+    try:
+        with transaction.atomic():
+            payment = SubscriptionPayment.objects.create(
+                shop=shop,
+                plan=plan,
+                amount=plan.price,
+                proof_image=ser.validated_data["proof_image"],
+                notes=ser.validated_data.get("notes") or "",
+            )
+            shop.subscription_status = Shop.SubscriptionStatus.PAYMENT_PENDING
+            shop.save(update_fields=["subscription_status"])
+    except IntegrityError:
+        return error_response(
+            str(_("You already sent a payment. Please wait for review.")),
+            status=status.HTTP_409_CONFLICT,
+            code="payment_pending_exists",
+        )
     return Response(
         {"id": payment.id, "status": payment.status, "amount": str(payment.amount)},
         status=status.HTTP_201_CREATED,

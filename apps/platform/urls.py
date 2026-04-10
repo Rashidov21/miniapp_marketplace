@@ -22,4 +22,6 @@ urlpatterns = [
     path("orders/", views.orders_list, name="platform_orders"),
     path("broadcast/", views.broadcast, name="platform_broadcast"),
     path("audit/", views.audit_log, name="platform_audit"),
+    path("export/orders.csv", views.export_orders_csv, name="platform_export_orders"),
+    path("export/payments.csv", views.export_payments_csv, name="platform_export_payments"),
 ]

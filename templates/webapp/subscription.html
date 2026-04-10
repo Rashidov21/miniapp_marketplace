@@ -18,7 +18,13 @@
     <p class="font-medium">{% trans "To‘lov rekvizitlari" %}</p>
     <p class="mt-1 font-mono text-xs">{% trans "Keyinroq admin sozlamalaridan o‘zgartirasiz — hozircha shu yerda ko‘rsating." %}</p>
   </div>
+  <div id="plans-empty" class="hidden rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-600">
+    {% trans "Hozircha tariflar yo‘q. Keyinroq urinib ko‘ring yoki qo‘llab-quvvatlashga yozing." %}
+  </div>
   <div id="plans" class="space-y-3"></div>
+  <div id="pending-note" class="hidden rounded-xl bg-sky-50 px-3 py-2 text-xs text-sky-950 ring-1 ring-sky-200">
+    {% trans "Sizda tasdiqlanishi kutilayotgan to‘lov bor — yangi skrin yuborish shart emas." %}
+  </div>
   <form id="pay-form" class="hidden space-y-3 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
     <input type="hidden" name="plan_id" id="plan_id" />
     <p id="plan-label" class="text-sm font-semibold text-slate-800"></p>
@@ -52,9 +58,20 @@
     const err = document.getElementById("err");
     try {
       await auth();
+      try {
+        const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+        if (shop.subscription_status === "payment_pending") {
+          document.getElementById("pending-note").classList.remove("hidden");
+        }
+      } catch (ignore) {}
       const res = await MiniApp.apiFetch("/subscription/plans/", { method: "GET" });
       const box = document.getElementById("plans");
-      (res.results || []).forEach(function (p) {
+      const plans = res.results || [];
+      if (!plans.length) {
+        document.getElementById("plans-empty").classList.remove("hidden");
+        return;
+      }
+      plans.forEach(function (p) {
         const b = document.createElement("button");
         b.type = "button";
         b.className =

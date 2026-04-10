@@ -32,10 +32,14 @@ class Product(models.Model):
         help_text=_("Optional social proof line for the product card."),
     )
     is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveSmallIntegerField(
+        default=0,
+        help_text=_("Lower numbers appear first in the catalog (0 = default)."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["sort_order", "-created_at"]
         verbose_name = _("product")
         verbose_name_plural = _("products")
         indexes = [

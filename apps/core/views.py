@@ -4,6 +4,7 @@ from django.views.decorators.http import require_GET
 
 from apps.products.models import Product
 from apps.shops.models import Shop
+from apps.users.terms import current_terms_version
 
 
 @require_GET
@@ -14,6 +15,11 @@ def webapp_home(request):
 @require_GET
 def seller_dashboard(request):
     return render(request, "webapp/seller_dashboard.html")
+
+
+@require_GET
+def seller_products_list_page(request):
+    return render(request, "webapp/seller_products.html")
 
 
 @require_GET
@@ -86,3 +92,36 @@ def shop_settings_page(request):
 @require_GET
 def subscription_page(request):
     return render(request, "webapp/subscription.html")
+
+
+@require_GET
+def legal_terms(request):
+    return render(
+        request,
+        "webapp/legal_terms.html",
+        {"terms_version": current_terms_version()},
+    )
+
+
+@require_GET
+def legal_privacy(request):
+    return render(request, "webapp/legal_privacy.html", {})
+
+
+@require_GET
+def legal_seller_agreement(request):
+    return render(
+        request,
+        "webapp/legal_seller_agreement.html",
+        {"terms_version": current_terms_version()},
+    )
+
+
+@require_GET
+def legal_content_policy(request):
+    return render(request, "webapp/legal_content_policy.html", {})
+
+
+@require_GET
+def my_orders_page(request):
+    return render(request, "webapp/my_orders.html")

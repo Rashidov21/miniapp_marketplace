@@ -169,7 +169,17 @@
     const fallback = fallbackText || "Xatolik yuz berdi.";
     if (!err) return fallback;
     if (err.data && typeof err.data === "object") {
+      const code = err.data.code;
+      if (code === "payment_pending_exists") {
+        return "To‘lov allaqachon yuborilgan — tasdiqlanishini kuting.";
+      }
+      if (code === "terms_required") {
+        return typeof err.data.detail === "string" && err.data.detail
+          ? err.data.detail
+          : "Avval shartlarga rozilik bering.";
+      }
       if (typeof err.data.detail === "string" && err.data.detail) return err.data.detail;
+      if (Array.isArray(err.data.detail) && err.data.detail.length) return String(err.data.detail[0]);
       const k = Object.keys(err.data)[0];
       if (k) {
         const v = err.data[k];

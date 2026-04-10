@@ -38,6 +38,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    seller_terms_version = models.CharField(
+        max_length=16,
+        blank=True,
+        help_text=_("Last accepted marketplace / seller terms version (empty = not accepted)."),
+    )
+    seller_terms_accepted_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 

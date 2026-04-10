@@ -6,7 +6,9 @@ from apps.products.models import Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "shop", "price", "is_active", "created_at")
+    list_display = ("name", "shop", "price", "sort_order", "is_active", "created_at")
+    list_display_links = ("name",)
+    list_editable = ("sort_order",)
     list_filter = ("is_active", "created_at")
     search_fields = ("name", "shop__name", "scarcity_text", "social_proof_text")
     raw_id_fields = ("shop",)
@@ -16,6 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("shop", "name", "price", "image", "description")}),
         (_("Conversion (optional)"), {"fields": ("scarcity_text", "social_proof_text")}),
+        (_("Catalog"), {"fields": ("sort_order",)}),
         (_("Flags"), {"fields": ("is_active", "created_at")}),
     )
 

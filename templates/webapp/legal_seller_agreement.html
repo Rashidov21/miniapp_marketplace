@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Sotuvchi bilan shartnoma" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button type="button" class="app-topbar-back" onclick="history.back()" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Huquqiy" %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<article class="prose prose-sm max-w-none text-slate-800">
+  <h1 class="text-xl font-bold text-slate-900">{% trans "Sotuvchi ofertasi (marketplace)" %}</h1>
+  <p class="text-xs text-slate-500">{% trans "Versiya" %} {{ terms_version }}</p>
+  <p class="mt-4 text-sm leading-relaxed">
+    {% blocktrans %}Namunaviy matn. Sotuvchi platformadan foydalanish, obuna/to‘lov, vitrina boshqaruvi, moderatsiya, javobgarlik chegarasi va nizolarni hal qilish tartibi yuridik jihatdan bu yerda batafsil yozilishi kerak.{% endblocktrans %}
+  </p>
+  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+    <li>{% trans "Sotuvchi mahsulot va narx uchun javobgar." %}</li>
+    <li>{% trans "Platforma texnik vositachi bo‘lib, sotuvchi-mijoz bitimiga to‘g‘ridan-to‘g‘ri tomon emas." %}</li>
+    <li>{% trans "Obuna shartlari alohida ko‘rsatiladi." %}</li>
+  </ul>
+  <p class="mt-6 text-xs text-slate-500">
+    <a class="font-medium text-brand underline" href="/webapp/legal/content/">{% trans "Kontent qoidalari" %}</a>
+  </p>
+</article>
+{% endblock %}

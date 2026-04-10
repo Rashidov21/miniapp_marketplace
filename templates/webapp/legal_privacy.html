@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Maxfiylik siyosati" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button type="button" class="app-topbar-back" onclick="history.back()" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Huquqiy" %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<article class="prose prose-sm max-w-none text-slate-800">
+  <h1 class="text-xl font-bold text-slate-900">{% trans "Maxfiylik siyosati" %}</h1>
+  <p class="mt-4 text-sm leading-relaxed">
+    {% blocktrans %}Namunaviy matn. Bu yerda qanday ma’lumotlar yig‘ilishi (Telegram ID, ism, buyurtma uchun telefon va manzil), saqlash muddati va uchinchi tomonlarga oshirish shartlari yoziladi.{% endblocktrans %}
+  </p>
+  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+    <li>{% trans "Buyurtma berishda kiritilgan telefon va manzil sotuvchiga yetkaziladi." %}</li>
+    <li>{% trans "Ma’lumotlarni qonun talab qilganda taqdim etish mumkin." %}</li>
+  </ul>
+</article>
+{% endblock %}

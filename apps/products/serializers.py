@@ -20,6 +20,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "scarcity_text",
             "social_proof_text",
             "is_active",
+            "sort_order",
             "created_at",
         )
         read_only_fields = ("id", "shop_id", "image_url", "created_at")

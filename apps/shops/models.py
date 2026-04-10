@@ -158,6 +158,13 @@ class SubscriptionPayment(models.Model):
         ordering = ["-created_at"]
         verbose_name = _("subscription payment")
         verbose_name_plural = _("subscription payments")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["shop"],
+                condition=models.Q(status="pending"),
+                name="uniq_subscriptionpayment_pending_per_shop",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"Payment {self.pk} ({self.status})"

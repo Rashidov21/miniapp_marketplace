@@ -61,6 +61,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
+                "apps.core.context_processors.static_asset_version",
             ],
         },
     },
@@ -111,6 +112,8 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Query string for /static/js/app.js etc. when not using ManifestStaticFilesStorage (e.g. misconfigured nginx).
+STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260410")
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -187,6 +190,9 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
+
+# Sotuvchi oferta / foydalanish shartlari versiyasi; yangilanganda foydalanuvchi qayta tasdiqlashi kerak.
+CURRENT_SELLER_TERMS_VERSION = os.environ.get("CURRENT_SELLER_TERMS_VERSION", "1").strip() or "1"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

@@ -55,10 +55,13 @@ Ilova: `http://localhost:8000`. Ma’lumotlar bazasi: `postgres:16`, media fayll
 
 - `POST /api/auth/telegram/` — `{ "init_data": "<Telegram.WebApp.initData>" }`
 - `GET /api/me/` — `X-Telegram-Init-Data` sarlavhasi bilan
-- `POST /api/me/become-seller/` — sotuvchi roliga o‘tish
+- `POST /api/me/become-seller/` — sotuvchi roliga o‘tish (oldingi `POST /api/me/accept-seller-terms/`)
+- `POST /api/me/accept-seller-terms/` — joriy sotuvchi/marketplace shartlari versiyasini qabul qilish
 - `POST /api/shops/` — do‘kon yaratish
+- `GET /api/orders/mine/` — mijozning buyurtmalari (pagination)
+- `GET /api/seller/stats/` — sotuvchi: 7 kunlik ko‘rishlar, buyurtmalar, mahsulotlar soni
 - `GET /api/shops/<id>/public/` — ochiq do‘kon
-- `GET /api/shops/<id>/products/` — mahsulotlar ro‘yxati
+- `GET /api/shops/<id>/products/` — mahsulotlar ro‘yxati (ixtiyoriy `?q=` qidiruv)
 - `POST /api/orders/` — buyurtma (autentifikatsiya talab qilinadi)
 
 Barcha himoyalangan so‘rovlar: sarlavha `X-Telegram-Init-Data: <initData>`.
@@ -92,6 +95,22 @@ python manage.py load_sample_data
 4. `python manage.py migrate`, `python manage.py collectstatic`, media katalogiga yozish huquqi.
 5. Gunicorn (namuna): `deploy/gunicorn.conf.py` bilan `config.wsgi:application`.
 6. Nginx: `deploy/nginx.conf` ni domen va SSL ga moslang; static va media ni fayl tizimidan bering.
+
+## Huquqiy sahifalar (WebApp)
+
+- `/webapp/legal/terms/`, `/webapp/legal/privacy/`, `/webapp/legal/seller/`, `/webapp/legal/content/` — namunaviy matnlar; ishga tushirishdan oldin yuridik tekshiruv.
+- `.env`: `CURRENT_SELLER_TERMS_VERSION` (masalan `1`) — yangilanganda sotuvchilar qayta rozilik berishi kerak.
+
+## Statik fayl keshi
+
+- `DEBUG=false` da `ManifestStaticFilesStorage` ishlatiladi.
+- Agar Nginx oddiy `app.js` ni eski versiyada bersa: `STATIC_ASSET_VERSION` ni `.env` da o‘zgartiring yoki `collectstatic` + Gunicorn qayta yuklash.
+
+## Monitoring (tavsiya)
+
+- Gunicorn access/error loglarini aylantirish; `DisallowedHost` va 5xx uchun signal.
+- Ixtiyoriy: Sentry (`sentry-sdk` + DSN), PostgreSQL backup, disk va `media/` hajmi.
+- `ALLOWED_HOSTS`, `DJANGO_ALLOWED_HOSTS` va `SECURE_PROXY_SSL_HEADER` (Nginx orqali HTTPS) tekshirilsin.
 
 ## Xavfsizlik
 
