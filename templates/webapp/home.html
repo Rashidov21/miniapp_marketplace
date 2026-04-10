@@ -66,6 +66,13 @@
           return;
         }
       }
+      if (sp && sp.indexOf("product_") === 0) {
+        const parts = sp.split("_");
+        if (parts.length === 3 && parts[1] && parts[2]) {
+          window.location.replace("/webapp/shop/" + parts[1] + "/product/" + parts[2] + "/");
+          return;
+        }
+      }
       await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
       let hasShop = false;

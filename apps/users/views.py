@@ -82,6 +82,10 @@ def _build_webapp_url(start_param: str) -> str:
         sid = start_param.replace("shop_", "", 1)
         if sid.isdigit():
             return f"{base}/webapp/shop/{sid}/"
+    if start_param.startswith("product_"):
+        parts = start_param.split("_", 2)
+        if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+            return f"{base}/webapp/shop/{parts[1]}/product/{parts[2]}/"
     return f"{base}/webapp/"
 
 

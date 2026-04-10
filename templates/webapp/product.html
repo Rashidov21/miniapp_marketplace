@@ -41,6 +41,10 @@
         <h1 id="name" class="text-2xl font-bold leading-tight tracking-tight text-slate-900"></h1>
         <p id="price" class="text-3xl font-extrabold tabular-nums text-brand"></p>
         <p id="desc" class="hidden text-[15px] leading-relaxed text-slate-600"></p>
+        <div id="share-row" class="hidden grid grid-cols-2 gap-2 pt-1">
+          <button id="copy-product-link" type="button" class="touch-target rounded-xl bg-slate-900 px-3 py-3 text-sm font-semibold text-white">{% trans "Havolani nusxalash" %}</button>
+          <button id="share-product-link" type="button" class="touch-target rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-800">{% trans "Ulashish" %}</button>
+        </div>
       </div>
     </div>
   </div>
@@ -75,6 +79,7 @@
     verified: "{% trans 'Tasdiqlangan do‘kon' %}",
     delivery: "{% trans 'Tez yetkazib berish' %}",
   };
+  const tCopyLink = "{% trans 'Havola nusxalandi' %}";
   (async function () {
     const loading = document.getElementById("loading");
     const content = document.getElementById("content");
@@ -128,6 +133,28 @@
         d.textContent = desc;
         d.classList.remove("hidden");
       }
+      try {
+        const share = await MiniApp.apiFetch("/shops/" + shopId + "/products/" + productId + "/public/link/", { method: "GET" });
+        const deep = share.telegram_deep_link || share.url || "";
+        if (deep) {
+          const shareRow = document.getElementById("share-row");
+          shareRow.classList.remove("hidden");
+          document.getElementById("copy-product-link").addEventListener("click", function () {
+            navigator.clipboard.writeText(deep).then(function () {
+              MiniApp.showToast(tCopyLink, "success");
+            });
+          });
+          document.getElementById("share-product-link").addEventListener("click", function () {
+            if (navigator.share) {
+              navigator.share({ url: deep, title: p.name || "" }).catch(function () {});
+              return;
+            }
+            navigator.clipboard.writeText(deep).then(function () {
+              MiniApp.showToast(tCopyLink, "success");
+            });
+          });
+        }
+      } catch (ignoreShare) {}
       document.getElementById("order-btn").href =
         "/webapp/shop/" + shopId + "/product/" + productId + "/order/";
     } catch (e) {

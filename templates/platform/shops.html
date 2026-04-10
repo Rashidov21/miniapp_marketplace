@@ -49,12 +49,12 @@
           <td class="px-3 py-2 text-slate-500">{{ s.created_at|date:"Y-m-d" }}</td>
           <td class="px-3 py-2">
             <div class="space-y-2">
-              <form method="post" action="{% url 'platform_shop_toggle_active' s.id %}" class="flex gap-1">{% csrf_token %}
-                <input required name="reason" placeholder="{% trans 'Sabab' %}" class="w-28 rounded border border-slate-300 px-2 py-1 text-xs" />
+              <form method="post" action="{% url 'platform_shop_toggle_active' s.id %}" class="flex gap-1" data-confirm="{% trans 'Do‘kon holatini o‘zgartirasizmi?' %}">{% csrf_token %}
+                <input required name="reason" placeholder="{% trans 'Sabab (masalan: moderatsiya)' %}" class="w-40 rounded border border-slate-300 px-2 py-1 text-xs" />
                 <button type="submit" class="text-xs text-teal-700 underline">{% if s.is_active %}{% trans "Bloklash" %}{% else %}{% trans "Ochish" %}{% endif %}</button>
               </form>
-              <form method="post" action="{% url 'platform_shop_toggle_verified' s.id %}" class="flex gap-1">{% csrf_token %}
-                <input required name="reason" placeholder="{% trans 'Sabab' %}" class="w-28 rounded border border-slate-300 px-2 py-1 text-xs" />
+              <form method="post" action="{% url 'platform_shop_toggle_verified' s.id %}" class="flex gap-1" data-confirm="{% trans 'Verifikatsiya holatini o‘zgartirasizmi?' %}">{% csrf_token %}
+                <input required name="reason" placeholder="{% trans 'Sabab (masalan: hujjat tekshirildi)' %}" class="w-40 rounded border border-slate-300 px-2 py-1 text-xs" />
                 <button type="submit" class="text-xs text-slate-700 underline">{% if s.is_verified %}{% trans "Tasdiqni olish" %}{% else %}{% trans "Tasdiqlash" %}{% endif %}</button>
               </form>
             </div>

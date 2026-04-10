@@ -23,6 +23,9 @@
     <p class="text-xs font-medium uppercase text-slate-500">{% trans "Kutilayotgan to‘lov" %}</p>
     <p class="mt-2 text-3xl font-bold text-amber-700">{{ stats.payments_pending }}</p>
     <p class="text-xs text-slate-500">{% trans "tasdiqlangan (7 kun)" %}: {{ stats.payments_approved_week }}</p>
+    {% if stats.pending_oldest_at %}
+      <p class="text-xs text-amber-800">{% trans "eng eski pending" %}: {{ stats.pending_oldest_at|date:"Y-m-d H:i" }}</p>
+    {% endif %}
   </div>
 </div>
 
@@ -34,6 +37,7 @@
   </div>
   <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
     <h2 class="font-semibold text-slate-900">{% trans "Tariflar" %}</h2>
+    <p class="mt-1 text-xs text-slate-500">{% trans "3 kun ichida trial tugaydigan do‘konlar" %}: <strong>{{ stats.trial_expiring_3d }}</strong></p>
     <ul class="mt-2 space-y-1 text-sm">
       {% for p in plans %}
         <li>{{ p.name }} — {{ p.price }} {{ p.currency }} / {{ p.duration_months }} {% trans "oy" %}</li>
@@ -41,6 +45,26 @@
         <li class="text-slate-500">—</li>
       {% endfor %}
     </ul>
+  </div>
+</div>
+
+<div class="mt-6 rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+  <div class="mb-3 flex items-center justify-between gap-2">
+    <h2 class="font-semibold text-slate-900">{% trans "Action queue" %}</h2>
+    <p class="text-xs text-slate-500">{% trans "Avval bajariladigan ishlar" %}</p>
+  </div>
+  <div class="space-y-2">
+    {% for a in action_queue %}
+      <a href="{{ a.url }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">
+        <div>
+          <p class="font-medium text-slate-900">{{ a.title }}</p>
+          <p class="text-xs text-slate-500">{{ a.meta }}</p>
+        </div>
+        <span class="text-xs text-teal-700">{% trans "Ochish" %} →</span>
+      </a>
+    {% empty %}
+      <p class="rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-500">{% trans "Hozircha tezkor navbat yo‘q." %}</p>
+    {% endfor %}
   </div>
 </div>
 

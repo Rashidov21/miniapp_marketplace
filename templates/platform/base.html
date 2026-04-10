@@ -35,5 +35,16 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  <script>
+    (function () {
+      document.addEventListener("submit", function (ev) {
+        var form = ev.target;
+        if (!form || !form.getAttribute) return;
+        var text = form.getAttribute("data-confirm");
+        if (!text) return;
+        if (!window.confirm(text)) ev.preventDefault();
+      });
+    })();
+  </script>
 </body>
 </html>

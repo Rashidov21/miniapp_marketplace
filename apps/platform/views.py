@@ -75,6 +75,35 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         .order_by("-c")[:10]
     )
     shop_names = {s.id: s.name for s in Shop.objects.filter(id__in=[x["shop_id"] for x in top_shops])}
+    pending_payments_qs = SubscriptionPayment.objects.filter(
+        status=SubscriptionPayment.Status.PENDING
+    ).select_related("shop", "plan")
+    pending_oldest = pending_payments_qs.order_by("created_at").first()
+    trial_expiring_qs = Shop.objects.filter(
+        subscription_status=Shop.SubscriptionStatus.TRIAL,
+        trial_ends_at__isnull=False,
+        trial_ends_at__gte=now,
+        trial_ends_at__lte=now + timedelta(days=3),
+    ).select_related("owner")
+    action_queue = []
+    for p in pending_payments_qs.order_by("created_at")[:6]:
+        action_queue.append(
+            {
+                "type": "payment_pending",
+                "title": f"{p.shop.name} · {p.plan.name}",
+                "meta": str(_("Pending payment since %(dt)s")) % {"dt": timezone.localtime(p.created_at).strftime("%Y-%m-%d %H:%M")},
+                "url": f"/platform/payments/?status=pending&q={p.id}",
+            }
+        )
+    for s in trial_expiring_qs.order_by("trial_ends_at")[:6]:
+        action_queue.append(
+            {
+                "type": "trial_expiring",
+                "title": s.name,
+                "meta": str(_("Trial ends at %(dt)s")) % {"dt": timezone.localtime(s.trial_ends_at).strftime("%Y-%m-%d %H:%M")},
+                "url": f"/platform/shops/?q={s.id}",
+            }
+        )
 
     ctx = {
         "stats": {
@@ -95,6 +124,8 @@ def dashboard(request: HttpRequest) -> HttpResponse:
                 status=SubscriptionPayment.Status.APPROVED,
                 reviewed_at__gte=week_ago,
             ).count(),
+            "pending_oldest_at": pending_oldest.created_at if pending_oldest else None,
+            "trial_expiring_3d": trial_expiring_qs.count(),
             "shop_views_day": shop_views_day,
             "shop_views_week": shop_views_week,
         },
@@ -103,6 +134,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
             for row in top_shops
         ],
         "plans": SubscriptionPlan.objects.filter(is_active=True),
+        "action_queue": action_queue[:10],
     }
     return render(request, "platform/dashboard.html", ctx)
 
@@ -124,12 +156,22 @@ def payments_list(request: HttpRequest) -> HttpResponse:
         else:
             qs = qs.filter(Q(shop__name__icontains=q) | Q(plan__name__icontains=q))
 
+    pending_count = SubscriptionPayment.objects.filter(status=SubscriptionPayment.Status.PENDING).count()
+    approved_count = SubscriptionPayment.objects.filter(status=SubscriptionPayment.Status.APPROVED).count()
+    rejected_count = SubscriptionPayment.objects.filter(status=SubscriptionPayment.Status.REJECTED).count()
     paginator = Paginator(qs, 25)
     page = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "platform/payments.html",
-        {"page": page, "status_filter": status_filter, "q": q},
+        {
+            "page": page,
+            "status_filter": status_filter,
+            "q": q,
+            "pending_count": pending_count,
+            "approved_count": approved_count,
+            "rejected_count": rejected_count,
+        },
     )
 
 
@@ -327,6 +369,9 @@ def shop_toggle_verified(request: HttpRequest, shop_id: int) -> HttpResponse:
 @_staff_required
 @require_http_methods(["GET", "POST"])
 def broadcast(request: HttpRequest) -> HttpResponse:
+    buyers_count = UserModel.objects.filter(is_active=True, role=User.Role.BUYER).count()
+    sellers_count = UserModel.objects.filter(is_active=True, role=User.Role.SELLER).count()
+    all_count = UserModel.objects.filter(is_active=True).count()
     if request.method == "POST":
         form = BroadcastForm(request.POST)
         if form.is_valid():
@@ -353,7 +398,16 @@ def broadcast(request: HttpRequest) -> HttpResponse:
             return redirect("platform_broadcast")
     else:
         form = BroadcastForm()
-    return render(request, "platform/broadcast.html", {"form": form})
+    return render(
+        request,
+        "platform/broadcast.html",
+        {
+            "form": form,
+            "buyers_count": buyers_count,
+            "sellers_count": sellers_count,
+            "all_count": all_count,
+        },
+    )
 
 
 @_staff_required

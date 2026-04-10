@@ -152,6 +152,23 @@ def shop_link(request, shop_id):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+def shop_public_link(request, shop_id):
+    shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
+    if not shop or not shop.is_subscription_operational():
+        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+    from django.conf import settings as dj_settings
+
+    bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
+    base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
+    startapp = f"shop_{shop.id}"
+    path = f"/webapp/shop/{shop.id}/"
+    full_url = f"{base}{path}" if base else path
+    deep_link = f"https://t.me/{bot}?startapp={startapp}" if bot else ""
+    return Response({"url": full_url, "startapp": startapp, "telegram_deep_link": deep_link})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def subscription_plans_list(request):
     qs = SubscriptionPlan.objects.filter(is_active=True)
     return Response({"results": SubscriptionPlanSerializer(qs, many=True).data})
