@@ -12,8 +12,17 @@ class ProductAdmin(admin.ModelAdmin):
     raw_id_fields = ("shop",)
     list_select_related = ("shop",)
     readonly_fields = ("created_at",)
+    actions = ("activate_products", "deactivate_products")
     fieldsets = (
         (None, {"fields": ("shop", "name", "price", "image", "description")}),
         (_("Conversion (optional)"), {"fields": ("scarcity_text", "social_proof_text")}),
         (_("Flags"), {"fields": ("is_active", "created_at")}),
     )
+
+    @admin.action(description=_("Activate selected products"))
+    def activate_products(self, request, queryset):
+        queryset.update(is_active=True)
+
+    @admin.action(description=_("Deactivate selected products"))
+    def deactivate_products(self, request, queryset):
+        queryset.update(is_active=False)

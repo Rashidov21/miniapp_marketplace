@@ -12,10 +12,10 @@
   <header>
     <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Sotuvchi" %}</p>
     <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Kabinet" %}</h1>
-    <p class="mt-1 text-sm text-slate-600">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
+    <p id="dash-subtitle" class="mt-1 text-sm text-slate-600">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
   </header>
 
-  <div class="flex flex-wrap gap-2">
+  <div id="dash-quick-links" class="flex flex-wrap gap-2 hidden">
     <a href="/webapp/seller/shop/"
        class="touch-target rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-brand shadow-sm ring-1 ring-brand/25">{% trans "Do‘kon profili" %}</a>
     <a href="/webapp/seller/subscription/"
@@ -23,6 +23,19 @@
   </div>
 
   <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
+
+  <section id="shop-panel" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+    <h2 class="text-sm font-semibold text-slate-900">{% trans "Do‘koningiz" %}</h2>
+    <p id="shop-panel-name" class="mt-1 text-lg font-bold text-brand"></p>
+    <p class="mt-2 text-xs text-slate-500">{% trans "Yuqoridagi «Do‘kon profili» va «Obuna» orqali sozlang. Pastda — mijoz havolasi." %}</p>
+    <div id="shop-panel-link-box" class="mt-4 hidden rounded-xl bg-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-700 ring-1 ring-slate-200/80">
+      <p class="font-medium text-slate-800">{% trans "Mijozlar uchun havola" %}</p>
+      <p id="shop-panel-link-text" class="mt-1 break-all font-mono text-[13px]"></p>
+      <button type="button" id="shop-panel-btn-copy" class="mt-2 w-full rounded-lg bg-white py-2 text-sm font-semibold text-brand ring-1 ring-slate-200">
+        {% trans "Nusxalash" %}
+      </button>
+    </div>
+  </section>
 
   <section id="onboarding" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
     <div class="mb-3 flex flex-wrap gap-2 text-xs">
@@ -187,39 +200,96 @@
     );
   }
 
+  function isPanelRole(role) {
+    return role === "seller" || role === "admin" || role === "platform_owner";
+  }
+
+  function applySubscriptionBanner(shop, banner) {
+    if (shop.subscription_status === "trial" && shop.trial_days_left != null) {
+      banner.innerHTML =
+        "{% trans 'Demo muddati:' %} <strong>" +
+        shop.trial_days_left +
+        "</strong> {% trans 'kun qoldi.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obuna' %}</a>";
+    } else if (shop.subscription_status === "payment_pending") {
+      banner.textContent = "{% trans 'To‘lov tasdiqlanmoqda. Tez orada javob beramiz.' %}";
+    } else if (!shop.subscription_operational) {
+      banner.innerHTML =
+        "{% trans 'Obuna/demo tugadi — vitrina yopiq.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obunani yangilash' %}</a>";
+    } else {
+      banner.textContent = "{% trans 'Do‘koningiz va buyurtmalaringiz pastda.' %}";
+    }
+  }
+
+  async function loadShopPanelLink(shopId) {
+    const box = document.getElementById("shop-panel-link-box");
+    const textEl = document.getElementById("shop-panel-link-text");
+    const copyBtn = document.getElementById("shop-panel-btn-copy");
+    try {
+      const link = await MiniApp.apiFetch("/shops/" + shopId + "/link/", { method: "GET" });
+      const href = link.telegram_deep_link || link.url;
+      textEl.textContent = href;
+      box.classList.remove("hidden");
+      copyBtn.onclick = function () {
+        navigator.clipboard.writeText(href).then(function () {
+          MiniApp.showToast("{% trans 'Nusxalandi' %}", "success");
+        });
+      };
+    } catch (ignore) {
+      box.classList.add("hidden");
+    }
+  }
+
+  function showShopDashboardUi(shop) {
+    const onboarding = document.getElementById("onboarding");
+    const shopPanel = document.getElementById("shop-panel");
+    const subtitle = document.getElementById("dash-subtitle");
+    const addProductCta = document.getElementById("add-product-cta");
+    onboarding.classList.add("hidden");
+    shopPanel.classList.remove("hidden");
+    subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
+    document.getElementById("shop-panel-name").textContent = shop.name;
+    addProductCta.classList.remove("hidden");
+    loadShopPanelLink(shop.id);
+  }
+
   (async function init() {
     const banner = document.getElementById("banner");
     const onboarding = document.getElementById("onboarding");
+    const shopPanel = document.getElementById("shop-panel");
     const btnSeller = document.getElementById("btn-seller");
     const addProductCta = document.getElementById("add-product-cta");
+    const subtitle = document.getElementById("dash-subtitle");
+    const quickLinks = document.getElementById("dash-quick-links");
     try {
       await ensureAuth();
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
-      if (me.role === "seller" || me.role === "admin") {
-        banner.textContent = "{% trans 'Do‘koningiz va buyurtmalaringiz pastda.' %}";
+      let shop = null;
+      try {
+        shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      } catch (x) {
+        shop = null;
+      }
+      if (shop) {
+        if (quickLinks) quickLinks.classList.remove("hidden");
+        showShopDashboardUi(shop);
+        applySubscriptionBanner(shop, banner);
+      } else if (isPanelRole(me.role)) {
+        if (quickLinks) quickLinks.classList.remove("hidden");
+        shopPanel.classList.add("hidden");
+        onboarding.classList.remove("hidden");
+        subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
+        banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
         btnSeller.classList.add("hidden");
         const intro = onboarding.querySelector("p");
-        if (intro) intro.textContent = "{% trans 'Do‘kon nomini yozing yoki yangi mahsulot qo‘shing.' %}";
-        try {
-          const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
-          addProductCta.classList.remove("hidden");
-          if (shop.subscription_status === "trial" && shop.trial_days_left != null) {
-            banner.innerHTML =
-              "{% trans 'Demo muddati:' %} <strong>" +
-              shop.trial_days_left +
-              "</strong> {% trans 'kun qoldi.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obuna' %}</a>";
-          } else if (shop.subscription_status === "payment_pending") {
-            banner.textContent = "{% trans 'To‘lov tasdiqlanmoqda. Tez orada javob beramiz.' %}";
-          } else if (!shop.subscription_operational) {
-            banner.innerHTML =
-              "{% trans 'Obuna/demo tugadi — vitrina yopiq.' %} <a class=\"font-semibold text-amber-900 underline\" href=\"/webapp/seller/subscription/\">{% trans 'Obunani yangilash' %}</a>";
-          }
-        } catch (x) {
-          addProductCta.classList.add("hidden");
-          banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
-        }
+        if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
+        addProductCta.classList.add("hidden");
       } else {
+        if (quickLinks) quickLinks.classList.add("hidden");
+        shopPanel.classList.add("hidden");
+        onboarding.classList.remove("hidden");
+        subtitle.textContent = "{% trans 'Yangi sotuvchilar: bir qadamda ro‘yxatdan o‘ting, do‘kon oching.' %}";
         banner.textContent = "{% trans 'Sotuvchi bo‘lish uchun bosing — 1 qadam.' %}";
+        btnSeller.classList.remove("hidden");
         addProductCta.classList.add("hidden");
       }
     } catch (e) {
@@ -240,8 +310,10 @@
         await MiniApp.apiFetch("/me/", { method: "GET" });
         banner.textContent = "{% trans 'Endi do‘kon nomini yozing.' %}";
         btnSeller.classList.add("hidden");
+        if (quickLinks) quickLinks.classList.remove("hidden");
+        subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
         const intro = onboarding.querySelector("p");
-        if (intro) intro.textContent = "{% trans 'Do‘kon nomini yozing yoki yangi mahsulot qo‘shing.' %}";
+        if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
         MiniApp.hapticLight();
       } catch (e) {
         MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Xatolik yuz berdi.' %}"), "error");
@@ -261,20 +333,11 @@
           return;
         }
         const shop = await MiniApp.apiFetch("/shops/", { method: "POST", body: JSON.stringify({ name: name }) });
-        document.getElementById("shop-info").classList.remove("hidden");
-        document.getElementById("shop-info").textContent =
-          "{% trans 'Do‘kon tayyor:' %} " + shop.name;
-        const link = await MiniApp.apiFetch("/shops/" + shop.id + "/link/", { method: "GET" });
-        const href = link.telegram_deep_link || link.url;
-        document.getElementById("link-box").classList.remove("hidden");
-        document.getElementById("link-text").textContent = href;
-        document.getElementById("btn-copy").onclick = function () {
-          navigator.clipboard.writeText(href).then(function () {
-            MiniApp.showToast("{% trans 'Nusxalandi' %}", "success");
-          });
-        };
+        MiniApp.showToast("{% trans 'Do‘kon tayyor!' %}", "success");
+        subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
+        applySubscriptionBanner(shop, banner);
+        showShopDashboardUi(shop);
         MiniApp.hapticLight();
-        addProductCta.classList.remove("hidden");
         loadOrders();
       } catch (e) {
         MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Do‘konni yaratib bo‘lmadi.' %}"), "error");
