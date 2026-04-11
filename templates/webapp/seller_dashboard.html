@@ -55,6 +55,16 @@
   <section id="shop-panel" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
     <h2 class="text-sm font-semibold text-slate-900">{% trans "Do‘koningiz" %}</h2>
     <p id="shop-panel-name" class="mt-1 text-lg font-bold text-brand"></p>
+    <div id="shop-panel-metrics" class="mt-3 grid grid-cols-2 gap-2">
+      <div class="rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200/80">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Buyurtmalar" %}</p>
+        <p id="shop-panel-orders-count" class="mt-0.5 text-lg font-bold tabular-nums text-slate-900">—</p>
+      </div>
+      <div class="rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200/80">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Jami summa" %}</p>
+        <p id="shop-panel-orders-sum" class="mt-0.5 text-sm font-bold tabular-nums leading-snug text-slate-900">—</p>
+      </div>
+    </div>
     <div id="shop-panel-meta" class="mt-3 hidden space-y-2 rounded-xl bg-slate-50/90 px-3 py-3 text-sm leading-relaxed text-slate-700 ring-1 ring-slate-200/70"></div>
     <p class="mt-2 text-xs text-slate-500">{% trans "Yuqoridagi «Do‘kon profili» va «Obuna» orqali sozlang. Pastda — mijoz havolasi." %}</p>
     <div id="shop-panel-link-box" class="mt-4 hidden rounded-xl bg-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-700 ring-1 ring-slate-200/80">
@@ -182,6 +192,12 @@
     btn.classList.toggle("opacity-60", !!isLoading);
   }
 
+  function fmtMoneyAmount(numStr) {
+    const n = parseFloat(numStr, 10);
+    if (isNaN(n)) return numStr;
+    return new Intl.NumberFormat("uz-UZ").format(n) + " UZS";
+  }
+
   function statusLabel(st) {
     if (st === "NEW") return L.new;
     if (st === "ACCEPTED") return L.accepted;
@@ -238,6 +254,12 @@
       MiniApp.escapeHtml(statusLabel(o.status)) +
       "</span>" +
       "</div>" +
+      (o.total_amount != null && o.total_amount !== ""
+        ? '<p class="mt-2 text-sm font-semibold text-slate-800">' +
+          "{% trans 'Summa:' %} " +
+          fmtMoneyAmount(String(o.total_amount)) +
+          "</p>"
+        : "") +
       '<div class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm">' +
       '<p class="text-xs font-medium text-slate-500">' +
       L.phone +
@@ -357,6 +379,15 @@
     shopPanel.classList.remove("hidden");
     subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
     document.getElementById("shop-panel-name").textContent = shop.name;
+    const oc = document.getElementById("shop-panel-orders-count");
+    const os = document.getElementById("shop-panel-orders-sum");
+    if (oc) {
+      oc.textContent = shop.orders_total_count != null ? String(shop.orders_total_count) : "0";
+    }
+    if (os) {
+      os.textContent =
+        shop.orders_total_amount != null ? fmtMoneyAmount(String(shop.orders_total_amount)) : "—";
+    }
     const meta = document.getElementById("shop-panel-meta");
     if (meta) {
       const parts = [];
@@ -454,7 +485,11 @@
         updateMonetizationBanners(shop, stRes);
         if (typeof stRes.shop_views_week === "number") {
           let line =
-            "{% trans '7 kun' %}: " +
+            "{% trans 'Jami:' %} " +
+            (stRes.orders_total_count != null ? stRes.orders_total_count : "0") +
+            " {% trans 'buyurtma' %} · " +
+            fmtMoneyAmount(String(stRes.orders_total_amount != null ? stRes.orders_total_amount : "0")) +
+            " · {% trans '7 kun' %}: " +
             stRes.shop_views_week +
             " {% trans 'ko‘rish' %} · " +
             stRes.orders_week +

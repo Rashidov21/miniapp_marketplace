@@ -1,6 +1,8 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django.db import IntegrityError, transaction
+from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
@@ -74,6 +76,9 @@ def seller_stats(request):
     ).count()
     orders_week = Order.objects.filter(shop=shop, created_at__gte=week_ago).count()
     products_total = Product.objects.filter(shop=shop).count()
+    rev = Order.objects.filter(shop=shop).aggregate(s=Sum("total_amount"))["s"]
+    orders_total_amount = f"{Decimal(str(rev or 0)):.2f}"
+    orders_total_count = Order.objects.filter(shop=shop).count()
     min_v = monetization.upsell_min_views_week()
     traffic_upsell = (
         shop_views_week >= min_v and not monetization.plan_includes_analytics(shop)
@@ -82,6 +87,8 @@ def seller_stats(request):
         {
             "shop_views_week": shop_views_week,
             "orders_week": orders_week,
+            "orders_total_count": orders_total_count,
+            "orders_total_amount": orders_total_amount,
             "products_total": products_total,
             "plan_includes_analytics": monetization.plan_includes_analytics(shop),
             "traffic_upsell_suggested": traffic_upsell,

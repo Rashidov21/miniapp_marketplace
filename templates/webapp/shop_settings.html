@@ -14,6 +14,16 @@
     <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Do‘kon" %}</h1>
     <p class="mt-2 text-sm text-slate-600">{% trans "Logo, aloqa va ijtimoiy tarmoqlar — mijoz ishonchi uchun." %}</p>
   </div>
+  <div id="shop-metrics" class="hidden grid grid-cols-2 gap-2">
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Buyurtmalar" %}</p>
+      <p id="shop-metrics-count" class="mt-1 text-xl font-bold tabular-nums text-slate-900">—</p>
+    </div>
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Jami summa" %}</p>
+      <p id="shop-metrics-sum" class="mt-1 text-sm font-bold tabular-nums leading-snug text-slate-900">—</p>
+    </div>
+  </div>
   <form id="f" class="space-y-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
     <div>
       <label class="block text-sm font-medium text-slate-800">{% trans "Do‘kon nomi" %}</label>
@@ -83,6 +93,17 @@
       document.getElementById("social_telegram").value = shop.social_telegram || "";
       document.getElementById("social_instagram").value = shop.social_instagram || "";
       document.getElementById("social_facebook").value = shop.social_facebook || "";
+      const mc = document.getElementById("shop-metrics-count");
+      const ms = document.getElementById("shop-metrics-sum");
+      const box = document.getElementById("shop-metrics");
+      if (box && mc && ms) {
+        mc.textContent = shop.orders_total_count != null ? String(shop.orders_total_count) : "0";
+        const n = parseFloat(shop.orders_total_amount || "0", 10);
+        ms.textContent = isNaN(n)
+          ? "—"
+          : new Intl.NumberFormat("uz-UZ").format(n) + " UZS";
+        box.classList.remove("hidden");
+      }
     } catch (e) {
       const noShop = e && e.status === 404;
       const txt = noShop

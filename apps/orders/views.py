@@ -99,6 +99,7 @@ def order_create(request):
             phone=ser.validated_data["phone"].strip(),
             address=ser.validated_data["address"].strip(),
             status=Order.Status.NEW,
+            total_amount=product.price,
         )
         Shop.objects.filter(pk=order.shop_id, first_order_completed_at__isnull=True).update(
             first_order_completed_at=timezone.now()

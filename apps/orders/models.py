@@ -34,6 +34,12 @@ class Order(models.Model):
         choices=Status.choices,
         default=Status.NEW,
     )
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text=_("Snapshot of line total at order time (product price × qty)."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

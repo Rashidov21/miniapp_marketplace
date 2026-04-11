@@ -30,6 +30,8 @@ class ShopSerializer(serializers.ModelSerializer):
     max_products = serializers.SerializerMethodField()
     can_add_product = serializers.SerializerMethodField()
     plan_includes_analytics = serializers.SerializerMethodField()
+    orders_total_count = serializers.SerializerMethodField()
+    orders_total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Shop
@@ -61,6 +63,8 @@ class ShopSerializer(serializers.ModelSerializer):
             "max_products",
             "can_add_product",
             "plan_includes_analytics",
+            "orders_total_count",
+            "orders_total_amount",
         )
         read_only_fields = (
             "id",
@@ -80,6 +84,8 @@ class ShopSerializer(serializers.ModelSerializer):
             "max_products",
             "can_add_product",
             "plan_includes_analytics",
+            "orders_total_count",
+            "orders_total_amount",
         )
         extra_kwargs = {
             "name": {"required": False},
@@ -108,6 +114,24 @@ class ShopSerializer(serializers.ModelSerializer):
 
     def get_plan_includes_analytics(self, obj: Shop) -> bool:
         return monetization.plan_includes_analytics(obj)
+
+    def get_orders_total_count(self, obj: Shop) -> int:
+        from apps.orders.models import Order
+
+        return Order.objects.filter(shop=obj).count()
+
+    def get_orders_total_amount(self, obj: Shop) -> str:
+        from decimal import Decimal
+
+        from django.db.models import Sum
+
+        from apps.orders.models import Order
+
+        r = Order.objects.filter(shop=obj).aggregate(s=Sum("total_amount"))
+        v = r["s"]
+        if v is None:
+            return "0.00"
+        return f"{Decimal(str(v)):.2f}"
 
     def validate_slug(self, value: str | None) -> str | None:
         if value is None:

@@ -22,9 +22,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "phone",
             "address",
             "status",
+            "total_amount",
             "created_at",
         )
-        read_only_fields = ("id", "product_name", "shop_name", "buyer", "created_at")
+        read_only_fields = ("id", "product_name", "shop_name", "buyer", "total_amount", "created_at")
 
 
 class OrderCreateSerializer(serializers.Serializer):

@@ -20,7 +20,7 @@ from apps.core.telegram import send_message
 from apps.orders.models import Order
 from apps.platform.forms import BroadcastForm, PlatformLoginForm
 from apps.platform.services import log_staff_action
-from apps.platform.utils import is_platform_staff
+from apps.platform.utils import is_platform_staff, is_platform_superuser
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.services import approve_subscription_payment
 from apps.users.models import User
@@ -266,8 +266,8 @@ def user_toggle_active(request: HttpRequest, user_id: int) -> HttpResponse:
     if u.is_superuser and u != request.user:
         messages.error(request, _("Cannot block superuser."))
         return redirect("platform_users")
-    if u.role == User.Role.PLATFORM_OWNER and not request.user.is_superuser:
-        messages.error(request, _("Only superuser can block platform owner."))
+    if u.role == User.Role.PLATFORM_OWNER and not is_platform_superuser(request.user):
+        messages.error(request, _("Only platform administrators can change this account."))
         return redirect("platform_users")
     reason = (request.POST.get("reason") or "").strip()
     if not reason:
