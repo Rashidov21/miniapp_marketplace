@@ -3,8 +3,10 @@ from django.utils.text import slugify
 
 
 def fill_product_slugs(apps, schema_editor):
+    # select_related("shop") kerak emas (faqat shop_id ishlatiladi) va shops_shop.slug
+    # hali yo‘q paytda JOIN xatosi beradi.
     Product = apps.get_model("products", "Product")
-    for p in Product.objects.select_related("shop").all():
+    for p in Product.objects.all():
         base = slugify(p.name or "")[:80].strip("-") or "mahsulot"
         slug = base
         n = 0
