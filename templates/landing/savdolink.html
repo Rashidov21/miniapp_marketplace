@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -7,13 +6,16 @@
   <title>SavdoLink — Telegramda 1 link bilan savdo | Bepul boshlash</title>
   <meta name="description" content="Chatda yo‘qolgan buyurtmalar tugadi. 1 daqiqada do‘kon, bitta link, tartibli buyurtmalar. Telegram Mini App — hozir bepul.">
   <meta name="theme-color" content="#0d9488">
-  <link rel="icon" href="{% static 'branding/favicon.svg' %}" type="image/svg+xml">
+  {# ManifestStaticFilesStorage: {% static %} manifestda bo‘lmasa 500. Favicon — inline data URI. #}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d9488'/%3E%3Cpath d='M10 22V10h3l4.5 7 4.5-7h3v12h-2.6v-8l-4 6.2h-1.8l-4-6.2v8H10z' fill='%23fff'/%3E%3C/svg%3E" type="image/svg+xml">
   <link rel="canonical" href="{{ public_base_url }}/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ public_base_url }}/">
   <meta property="og:title" content="SavdoLink — 1 link bilan Telegramda savdo">
   <meta property="og:description" content="Do‘kon oching, link ulashing, buyurtmalar tartibda. Bepul boshlash.">
-  <meta property="og:image" content="{{ public_base_url }}{% static 'branding/logo.svg' %}">
+  {% if public_base_url %}
+  <meta property="og:image" content="{{ public_base_url }}/static/branding/logo.svg">
+  {% endif %}
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"SoftwareApplication","name":"SavdoLink","applicationCategory":"BusinessApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"UZS"}}
@@ -43,8 +45,12 @@
   </div>
 
   <header class="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3 md:max-w-5xl">
-    <a href="/" class="flex items-center gap-2">
-      <img src="{% static 'branding/logo.svg' %}" alt="SavdoLink" width="120" height="32" class="h-8 w-auto" loading="eager" decoding="async">
+    <a href="/" class="flex items-center gap-2" aria-label="SavdoLink bosh sahifa">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" width="120" height="32" class="h-8 w-auto" fill="none" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="8" fill="#0d9488"/>
+        <path d="M10 22V10h3l4.5 7 4.5-7h3v12h-2.6v-8l-4 6.2h-1.8l-4-6.2v8H10z" fill="#fff"/>
+        <text x="38" y="22" fill="#0f172a" font-family="system-ui,sans-serif" font-size="15" font-weight="700">SavdoLink</text>
+      </svg>
     </a>
     <div class="flex items-center gap-2 text-sm">
       <a href="/webapp/" class="hidden rounded-xl px-3 py-2 font-medium text-slate-600 hover:bg-slate-100 sm:inline">Kirish</a>

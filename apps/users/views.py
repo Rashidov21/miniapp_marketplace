@@ -15,6 +15,11 @@ from apps.core.telegram import send_message, send_message_with_markup
 from apps.users.authentication import upsert_user_from_telegram_user
 from apps.users.models import User
 from apps.users.serializers import UserSerializer
+from apps.users.bot_onboarding import (
+    build_onboarding_nudges,
+    should_send_onboarding_nudges,
+    start_welcome_text,
+)
 from apps.users.terms import record_seller_terms_acceptance, user_has_current_seller_terms
 
 
@@ -101,32 +106,11 @@ def _build_webapp_url(start_param: str) -> str:
     return f"{base}/webapp/"
 
 
-def _start_text() -> str:
-    return (
-        "Assalomu alaykum!\n\n"
-        "SavdoLink — Telegramda 1 link bilan savdo boshlang.\n"
-        "Quyidagi tugma orqali Mini App'ni oching: do‘kon yarating, mahsulot qo‘shing, buyurtmalarni tartibda oling."
-    )
-
-
-def _spawn_onboarding_nudges(chat_id: int) -> None:
-    """Kechikkan xabarlar — foydalanuvchini do‘kon ochish va sinab ko‘rishga undaydi (daemon thread)."""
+def _spawn_onboarding_nudges(chat_id: int, telegram_user_id: int | None, start_param: str) -> None:
+    """Kechikkan xabarlar — DB holatiga qarab (daemon thread; Celery yo‘q)."""
 
     def run() -> None:
-        sequence = [
-            (
-                8,
-                "⏱ SavdoLink: 1 daqiqada do‘kon ochishingiz mumkin.\nPastdagi «Mini Appni ochish» tugmasidan kiring → Sotuvchi kabineti.",
-            ),
-            (
-                32,
-                "📦 Mahsulot qo‘shing va bitta havolani ulashing — buyurtmalar chatda yo‘qolmaydi.",
-            ),
-            (
-                85,
-                "✅ Tayyormisiz? Mini App → Sotuvchi kabineti — hozir sinab ko‘ring.",
-            ),
-        ]
+        sequence = build_onboarding_nudges(telegram_user_id, start_param)
         for wait_sec, msg in sequence:
             time.sleep(wait_sec)
             send_message(chat_id, msg)
@@ -161,11 +145,16 @@ def telegram_webhook(request, secret: str):
                 [{"text": "Sotuvchi kabineti", "web_app": {"url": f"{(getattr(settings, 'PUBLIC_BASE_URL', '') or '').rstrip('/')}/webapp/seller/"}}],
             ]
         }
+        from_user = message.get("from") or {}
+        tg_uid = from_user.get("id")
+        telegram_user_id = int(tg_uid) if tg_uid is not None else None
+
         send_message_with_markup(
             chat["id"],
-            _start_text() + "\n\nQuyidagi tugmalardan birini bosing.",
+            start_welcome_text(start_param) + "\n\nQuyidagi tugmalardan birini bosing.",
             reply_markup=inline_markup,
         )
-        _spawn_onboarding_nudges(int(chat["id"]))
+        if should_send_onboarding_nudges(int(chat["id"])):
+            _spawn_onboarding_nudges(int(chat["id"]), telegram_user_id, start_param)
 
     return Response({"ok": True})

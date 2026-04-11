@@ -194,6 +194,9 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
 # Landing arizalari — Telegram chat ID lar (vergul bilan), masalan: "123456789" yoki "111,222"
 LANDING_NOTIFY_TELEGRAM_IDS = os.environ.get("LANDING_NOTIFY_TELEGRAM_IDS", "")
 
+# Telegram: bir chat uchun kuniga maks. necha marta kechikkan onboarding xabarlari ketma-ketligi
+BOT_ONBOARDING_MAX_PER_DAY = int(os.environ.get("BOT_ONBOARDING_MAX_PER_DAY", "6"))
+
 # Sotuvchi oferta / foydalanish shartlari versiyasi; yangilanganda foydalanuvchi qayta tasdiqlashi kerak.
 CURRENT_SELLER_TERMS_VERSION = os.environ.get("CURRENT_SELLER_TERMS_VERSION", "1").strip() or "1"
 
