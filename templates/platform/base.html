@@ -1,4 +1,5 @@
-{% load i18n static %}
+{% load i18n %}
+{# ManifestStaticFilesStorage: {% static 'css/app.css' %} manifestda bo‘lmasa 500. Cache bust: STATIC_ASSET_VERSION. #}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -18,7 +19,7 @@
       },
     };
   </script>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="/static/css/app.css?v={{ STATIC_ASSET_VERSION }}">
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
   <header class="border-b border-slate-200 bg-white">
