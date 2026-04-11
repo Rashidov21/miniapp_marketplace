@@ -351,6 +351,8 @@
     const subtitle = document.getElementById("dash-subtitle");
     const addProductCta = document.getElementById("add-product-cta");
     const productsLink = document.getElementById("seller-products-link");
+    const quickLinks = document.getElementById("dash-quick-links");
+    if (quickLinks) quickLinks.classList.remove("hidden");
     onboarding.classList.add("hidden");
     shopPanel.classList.remove("hidden");
     subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
@@ -494,12 +496,11 @@
       lastShop = shop;
       const productsLink = document.getElementById("seller-products-link");
       if (shop) {
-        if (quickLinks) quickLinks.classList.remove("hidden");
         syncTermsBlock(me);
         showShopDashboardUi(shop);
         applySubscriptionBanner(shop, banner);
       } else if (isPanelRole(me.role)) {
-        if (quickLinks) quickLinks.classList.remove("hidden");
+        if (quickLinks) quickLinks.classList.add("hidden");
         shopPanel.classList.add("hidden");
         onboarding.classList.remove("hidden");
         syncTermsBlock(me);
@@ -542,7 +543,7 @@
         await MiniApp.apiFetch("/me/", { method: "GET" });
         banner.textContent = "{% trans 'Endi do‘kon nomini yozing.' %}";
         btnSeller.classList.add("hidden");
-        if (quickLinks) quickLinks.classList.remove("hidden");
+        if (quickLinks) quickLinks.classList.add("hidden");
         subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
         const intro = onboarding.querySelector("p");
         if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
@@ -566,13 +567,28 @@
           return;
         }
         const shop = await MiniApp.apiFetch("/shops/", { method: "POST", body: JSON.stringify({ name: name }) });
+        lastShop = shop;
         MiniApp.showToast("{% trans 'Do‘kon tayyor!' %}", "success");
         subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
         applySubscriptionBanner(shop, banner);
         showShopDashboardUi(shop);
         MiniApp.hapticLight();
+        await refreshChecklist(lastMe, shop);
         loadOrders();
       } catch (e) {
+        if (e && e.status === 400) {
+          try {
+            await ensureAuth();
+            const existing = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+            lastShop = existing;
+            MiniApp.showToast("{% trans 'Do‘kon allaqachon mavjud — kabinet yangilandi.' %}", "success");
+            applySubscriptionBanner(existing, banner);
+            showShopDashboardUi(existing);
+            loadOrders();
+            await refreshChecklist(lastMe, existing);
+            return;
+          } catch (ignore) {}
+        }
         MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Do‘konni yaratib bo‘lmadi.' %}"), "error");
       } finally {
         setBtnLoading(createBtn, "", false);

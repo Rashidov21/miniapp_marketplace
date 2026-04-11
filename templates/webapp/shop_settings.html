@@ -84,11 +84,18 @@
       document.getElementById("social_instagram").value = shop.social_instagram || "";
       document.getElementById("social_facebook").value = shop.social_facebook || "";
     } catch (e) {
-      const txt = MiniApp.parseApiError(e, "{% trans 'Do‘kon topilmadi. Avval do‘kon yarating.' %}");
+      const noShop = e && e.status === 404;
+      const txt = noShop
+        ? "{% trans 'Hali do‘kon yaratilmagan. Sotuvchi kabinetida «Do‘konni yaratish» ni bosing.' %}"
+        : MiniApp.parseApiError(e, "{% trans 'Yuklab bo‘lmadi.' %}");
       document.getElementById("err").textContent = txt;
       document.getElementById("err").classList.remove("hidden");
-      MiniApp.showToast(txt, "warning");
-      window.location.href = "/webapp/seller/";
+      MiniApp.showToast(txt, noShop ? "warning" : "error");
+      if (noShop) {
+        setTimeout(function () {
+          window.location.href = "/webapp/seller/";
+        }, 1800);
+      }
     }
   })();
   document.getElementById("f").addEventListener("submit", async function (e) {
