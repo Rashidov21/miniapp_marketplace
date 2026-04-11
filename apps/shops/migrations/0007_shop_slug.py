@@ -22,12 +22,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # db_index=False: aks holda PGda indeks + _like yaratiladi, keyingi AlterField
+        # xuddi shu _like nomini qayta yaratishga urinadi (DuplicateTable).
         migrations.AddField(
             model_name="shop",
             name="slug",
             field=models.SlugField(
                 blank=True,
-                db_index=True,
+                db_index=False,
                 help_text="URL va havolalarda ko‘rinadi (lotin harflar, raqam, tire).",
                 max_length=80,
                 null=True,
