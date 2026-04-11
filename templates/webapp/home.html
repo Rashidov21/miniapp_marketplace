@@ -83,8 +83,12 @@
         hasShop = false;
       }
       if (hasShop) {
-        window.location.replace("/webapp/seller/");
-        return;
+        const panelRole =
+          me.role === "seller" || me.role === "admin" || me.role === "platform_owner";
+        if (panelRole) {
+          window.location.replace("/webapp/seller/");
+          return;
+        }
       }
       loading.classList.add("hidden");
       ready.classList.remove("hidden");

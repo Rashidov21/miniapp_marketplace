@@ -8,6 +8,7 @@ urlpatterns = [
     path("legal/privacy/", views.legal_privacy, name="legal_privacy"),
     path("legal/seller/", views.legal_seller_agreement, name="legal_seller_agreement"),
     path("legal/content/", views.legal_content_policy, name="legal_content_policy"),
+    path("my-orders/<int:order_id>/", views.buyer_order_detail_page, name="webapp_buyer_order_detail"),
     path("my-orders/", views.my_orders_page, name="webapp_my_orders"),
     path("seller/", views.seller_dashboard, name="seller_dashboard"),
     path("seller/products/", views.seller_products_list_page, name="seller_products_list"),

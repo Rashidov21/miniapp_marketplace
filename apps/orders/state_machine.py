@@ -8,7 +8,7 @@ def allowed_next_statuses(current: str) -> frozenset[str]:
     """Return valid target statuses from *current*."""
     s = Order.Status
     if current == s.NEW:
-        return frozenset({s.ACCEPTED})
+        return frozenset({s.ACCEPTED, s.CANCELLED})
     if current == s.ACCEPTED:
         return frozenset({s.DELIVERED})
     return frozenset()

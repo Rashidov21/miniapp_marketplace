@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Buyurtma" %}{% endblock %}
+{% block topbar %}
+<div class="app-topbar">
+  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
+  <p class="text-xs font-medium text-slate-500">{% trans "Buyurtma" %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4 pb-36">
+  <div id="loading" class="space-y-3">
+    <div class="skeleton h-40 rounded-2xl bg-slate-200/80"></div>
+    <div class="skeleton h-24 rounded-2xl bg-slate-200/80"></div>
+  </div>
+
+  <div id="panel" class="hidden flex flex-col gap-4">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <p class="text-xs font-medium text-slate-500">{% trans "Buyurtma" %} #<span id="oid"></span></p>
+        <p id="st-badge" class="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ring-1"></p>
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Jarayon" %}</p>
+      <div class="order-timeline-row mt-3">
+        <div class="order-timeline-step" id="tl-step-0"><div class="order-timeline-node"></div></div>
+        <div class="order-timeline-bar" id="tl-bar-0"></div>
+        <div class="order-timeline-step" id="tl-step-1"><div class="order-timeline-node"></div></div>
+        <div class="order-timeline-bar" id="tl-bar-1"></div>
+        <div class="order-timeline-step" id="tl-step-2"><div class="order-timeline-node"></div></div>
+        <div class="order-timeline-bar" id="tl-bar-2"></div>
+        <div class="order-timeline-step" id="tl-step-3"><div class="order-timeline-node"></div></div>
+      </div>
+      <div class="order-timeline-labels" id="tl-labels">
+        <span class="flex-1 text-center" id="tl-lbl-0">{% trans "Yangi" %}</span>
+        <span class="flex-1 text-center" id="tl-lbl-1">{% trans "Qabul" %}</span>
+        <span class="flex-1 text-center" id="tl-lbl-2">{% trans "Yetkazildi" %}</span>
+        <span class="flex-1 text-center" id="tl-lbl-3">{% trans "Bekor" %}</span>
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Mahsulot" %}</p>
+      <p id="pname" class="mt-1 text-lg font-bold text-slate-900"></p>
+      <p id="psum" class="mt-2 text-xl font-extrabold tabular-nums text-brand"></p>
+      <a id="plink" href="#" class="mt-3 inline-flex text-sm font-semibold text-brand underline hidden">{% trans "Mahsulot sahifasi" %}</a>
+    </div>
+
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Do‘kon" %}</p>
+      <p id="sname" class="mt-1 font-semibold text-slate-900"></p>
+    </div>
+
+    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
+      <p class="text-xs font-medium text-slate-500">{% trans "Yetkazib berish" %}</p>
+      <p id="cname" class="mt-2 font-semibold text-slate-900"></p>
+      <a id="tel" href="#" class="mt-1 inline-flex text-lg font-bold text-brand"></a>
+      <p id="addr" class="mt-3 whitespace-pre-wrap text-sm text-slate-700"></p>
+      <p id="ctime" class="mt-3 text-xs text-slate-500"></p>
+    </div>
+  </div>
+
+  <p id="err" class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-800"></p>
+</div>
+
+<div id="sticky-actions" class="app-sticky-bottom hidden">
+  <div class="mx-auto max-w-lg px-4">
+    <button type="button" id="btn-cancel"
+            class="touch-target w-full rounded-2xl border-2 border-rose-200 bg-white py-4 text-base font-semibold text-rose-800 ring-1 ring-rose-100">
+      {% trans "Buyurtmani bekor qilish" %}
+    </button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  const orderId = {{ order_id }};
+  const L = {
+    NEW: "{% trans 'Yangi' %}",
+    ACCEPTED: "{% trans 'Qabul qilindi' %}",
+    DELIVERED: "{% trans 'Yetkazildi' %}",
+    CANCELLED: "{% trans 'Bekor qilindi' %}",
+  };
+  MiniApp.bindBackButton("back-btn", "/webapp/my-orders/");
+  async function auth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  function fmtSum(amount) {
+    if (amount == null || amount === "") return "—";
+    const n = parseFloat(String(amount), 10);
+    if (isNaN(n)) return String(amount);
+    return new Intl.NumberFormat("uz-UZ").format(n) + " UZS";
+  }
+  function badgeClass(st) {
+    if (st === "NEW") return "bg-amber-50 text-amber-900 ring-amber-200";
+    if (st === "ACCEPTED") return "bg-sky-50 text-sky-900 ring-sky-200";
+    if (st === "DELIVERED") return "bg-emerald-50 text-emerald-900 ring-emerald-200";
+    if (st === "CANCELLED") return "bg-rose-50 text-rose-900 ring-rose-200";
+    return "bg-slate-100 text-slate-800 ring-slate-200";
+  }
+  function applyOrderTimeline(st) {
+    var i;
+    var el;
+    for (i = 0; i < 4; i++) {
+      el = document.getElementById("tl-step-" + i);
+      if (el) el.classList.remove("is-done", "is-current", "is-cancel");
+    }
+    for (i = 0; i < 3; i++) {
+      el = document.getElementById("tl-bar-" + i);
+      if (el) el.classList.remove("is-done", "is-cancel");
+    }
+    for (i = 0; i < 4; i++) {
+      el = document.getElementById("tl-lbl-" + i);
+      if (el) el.classList.remove("is-active", "is-muted", "is-cancelled");
+    }
+    if (st === "CANCELLED") {
+      el = document.getElementById("tl-step-3");
+      if (el) el.classList.add("is-cancel");
+      for (i = 0; i < 3; i++) {
+        el = document.getElementById("tl-bar-" + i);
+        if (el) el.classList.add("is-cancel");
+      }
+      el = document.getElementById("tl-lbl-3");
+      if (el) el.classList.add("is-cancelled");
+      for (i = 0; i < 3; i++) {
+        el = document.getElementById("tl-lbl-" + i);
+        if (el) el.classList.add("is-muted");
+      }
+      return;
+    }
+    if (st === "NEW") {
+      el = document.getElementById("tl-step-0");
+      if (el) el.classList.add("is-current");
+      el = document.getElementById("tl-lbl-0");
+      if (el) el.classList.add("is-active");
+      return;
+    }
+    if (st === "ACCEPTED") {
+      el = document.getElementById("tl-step-0");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-bar-0");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-step-1");
+      if (el) el.classList.add("is-current");
+      el = document.getElementById("tl-lbl-0");
+      if (el) el.classList.add("is-muted");
+      el = document.getElementById("tl-lbl-1");
+      if (el) el.classList.add("is-active");
+      return;
+    }
+    if (st === "DELIVERED") {
+      el = document.getElementById("tl-step-0");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-step-1");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-step-2");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-bar-0");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-bar-1");
+      if (el) el.classList.add("is-done");
+      el = document.getElementById("tl-lbl-0");
+      if (el) el.classList.add("is-muted");
+      el = document.getElementById("tl-lbl-1");
+      if (el) el.classList.add("is-muted");
+      el = document.getElementById("tl-lbl-2");
+      if (el) el.classList.add("is-active");
+    }
+  }
+  function render(o) {
+    document.getElementById("oid").textContent = String(o.id);
+    const badge = document.getElementById("st-badge");
+    badge.textContent = L[o.status] || o.status;
+    badge.className = "mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ring-1 " + badgeClass(o.status);
+    applyOrderTimeline(o.status);
+    document.getElementById("pname").textContent = o.product_name || "";
+    document.getElementById("psum").textContent = fmtSum(o.total_amount);
+    document.getElementById("sname").textContent = o.shop_name || "";
+    document.getElementById("cname").textContent = o.customer_name || "";
+    const tel = (o.phone || "").replace(/\s/g, "");
+    const telEl = document.getElementById("tel");
+    if (tel) {
+      telEl.href = "tel:" + tel;
+      telEl.textContent = o.phone || "";
+    } else {
+      telEl.classList.add("hidden");
+    }
+    document.getElementById("addr").textContent = o.address || "";
+    document.getElementById("ctime").textContent = o.created_at ? String(o.created_at) : "";
+
+    const plink = document.getElementById("plink");
+    if (o.shop_slug && o.product_slug) {
+      plink.href =
+        "/webapp/s/" + encodeURIComponent(o.shop_slug) + "/p/" + encodeURIComponent(o.product_slug) + "/";
+      plink.classList.remove("hidden");
+    } else {
+      plink.classList.add("hidden");
+    }
+
+    const sticky = document.getElementById("sticky-actions");
+    if (o.status === "NEW") {
+      sticky.classList.remove("hidden");
+    } else {
+      sticky.classList.add("hidden");
+    }
+  }
+  (async function load() {
+    const loading = document.getElementById("loading");
+    const panel = document.getElementById("panel");
+    const err = document.getElementById("err");
+    try {
+      await auth();
+      const o = await MiniApp.apiFetch("/orders/" + orderId + "/", { method: "GET" });
+      loading.classList.add("hidden");
+      panel.classList.remove("hidden");
+      render(o);
+    } catch (e) {
+      loading.classList.add("hidden");
+      err.textContent = MiniApp.parseApiError(e, "{% trans 'Yuklab bo‘lmadi.' %}");
+      err.classList.remove("hidden");
+      MiniApp.showToast(err.textContent, "error");
+    }
+  })();
+
+  document.getElementById("btn-cancel").addEventListener("click", async function () {
+    if (!confirm("{% trans 'Buyurtmani bekor qilasizmi?' %}")) return;
+    const btn = this;
+    btn.disabled = true;
+    try {
+      await auth();
+      const o = await MiniApp.apiFetch("/orders/" + orderId + "/cancel/", { method: "POST", body: JSON.stringify({}) });
+      MiniApp.showToast("{% trans 'Buyurtma bekor qilindi.' %}", "success");
+      render(o);
+      MiniApp.hapticLight();
+    } catch (e) {
+      MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Bekor qilib bo‘lmadi.' %}"), "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

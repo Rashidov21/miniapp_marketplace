@@ -51,3 +51,26 @@ def notify_order_status(order: Order) -> None:
         ]
     )
     send_message(buyer_tid, text)
+
+
+def notify_seller_buyer_cancelled_order(order: Order) -> None:
+    """Mijoz buyurtmani bekor qilganda sotuvchiga."""
+    seller = order.shop.owner
+    lines = [
+        "❌ " + str(_("Order #{id} cancelled by customer.")).format(id=order.pk),
+        _divider(),
+        _("Shop: {name}").format(name=order.shop.name),
+        _("Product: {name}").format(name=order.product.name),
+        _("Customer: {name}").format(name=order.customer_name),
+        _("Phone: {phone}").format(phone=order.phone),
+    ]
+    send_message(seller.telegram_id, "\n".join(lines))
+
+
+def notify_buyer_cancel_confirmed(order: Order) -> None:
+    if not order.buyer_id:
+        return
+    send_message(
+        order.buyer.telegram_id,
+        "🚫 " + str(_("Order #{id} has been cancelled.")).format(id=order.pk),
+    )

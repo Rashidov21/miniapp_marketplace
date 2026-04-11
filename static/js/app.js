@@ -213,14 +213,40 @@
     });
   }
 
+  function applyTelegramTheme() {
+    try {
+      const tw = window.Telegram && window.Telegram.WebApp;
+      if (!tw) return;
+      const p = tw.themeParams || {};
+      const bg = p.bg_color || "#f8fafc";
+      const text = p.text_color || "#0f172a";
+      document.documentElement.style.setProperty("--tg-bg", bg);
+      document.documentElement.style.setProperty("--tg-text", text);
+      if (p.button_color) {
+        document.documentElement.style.setProperty("--brand", p.button_color);
+      } else {
+        document.documentElement.style.removeProperty("--brand");
+      }
+      document.documentElement.classList.add("tg-themed");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute("content", p.bg_color || p.button_color || "#0d9488");
+      }
+      if (tw.setHeaderColor) tw.setHeaderColor(bg);
+      if (tw.setBackgroundColor) tw.setBackgroundColor(bg);
+    } catch (e) {}
+  }
+
   function ready() {
     try {
       if (window.Telegram && window.Telegram.WebApp) {
         const tw = window.Telegram.WebApp;
         tw.ready();
         tw.expand();
-        if (tw.setHeaderColor) tw.setHeaderColor("#f8fafc");
-        if (tw.setBackgroundColor) tw.setBackgroundColor("#f8fafc");
+        applyTelegramTheme();
+        if (typeof tw.onEvent === "function") {
+          tw.onEvent("themeChanged", applyTelegramTheme);
+        }
       }
     } catch (e) {}
   }

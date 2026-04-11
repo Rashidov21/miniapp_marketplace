@@ -62,10 +62,10 @@
     {% trans "Yana ko‘rsatish" %}
   </button>
 
-  <div id="empty" class="hidden rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-10 text-center">
-    <p class="text-4xl" aria-hidden="true">📦</p>
-    <p class="mt-3 text-sm font-medium text-slate-800">{% trans "Hozircha mahsulot yo‘q" %}</p>
-    <p class="mt-1 text-xs text-slate-500">{% trans "Keyinroq kirib ko‘ring yoki do‘kon egasiga yozing." %}</p>
+  <div id="empty" class="app-empty-state hidden">
+    <p class="app-empty-state-icon" aria-hidden="true">📦</p>
+    <p class="app-empty-state-title">{% trans "Hozircha mahsulot yo‘q" %}</p>
+    <p class="app-empty-state-desc">{% trans "Keyinroq kirib ko‘ring yoki do‘kon egasiga yozing." %}</p>
   </div>
 
   <p id="msg" class="text-center text-sm text-red-600" role="alert"></p>
@@ -82,7 +82,14 @@
   const tFast = "{% trans 'Tez yetkazib berish' %}";
   const tVerified = "{% trans 'Tasdiqlangan do‘kon' %}";
   const tLoadErr = "{% trans 'Yuklashda muammo. Internetni tekshiring.' %}";
+  const tShopUnavailable = "{% trans 'Do‘kon topilmadi yoki vaqtincha yopiq.' %}";
   const tCopyLink = "{% trans 'Havola nusxalandi' %}";
+  function msgForCatalogError(e, fallback) {
+    if (e && (e.status === 404 || e.status === 410)) {
+      return tShopUnavailable;
+    }
+    return MiniApp.parseApiError(e, fallback);
+  }
   let nextUrl = null;
   function normalizeApiPath(fullOrPath) {
     if (!fullOrPath) return null;
@@ -154,8 +161,9 @@
       if (nextUrl) moreBtn.classList.remove("hidden");
       else moreBtn.classList.add("hidden");
     } catch (e) {
-      msg.textContent = tLoadErr;
-      MiniApp.showToast(MiniApp.parseApiError(e, tLoadErr), "error");
+      const txt = msgForCatalogError(e, tLoadErr);
+      msg.textContent = txt;
+      MiniApp.showToast(txt, "error");
     }
   }
   (async function () {
@@ -224,8 +232,9 @@
       await loadProducts(null, false);
     } catch (e) {
       skel.classList.add("hidden");
-      msg.textContent = tLoadErr;
-      MiniApp.showToast(MiniApp.parseApiError(e, tLoadErr), "error");
+      const txt = msgForCatalogError(e, tLoadErr);
+      msg.textContent = txt;
+      MiniApp.showToast(txt, "error");
     }
   })();
   document.getElementById("load-more").addEventListener("click", async function () {

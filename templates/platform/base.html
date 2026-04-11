@@ -1,17 +1,45 @@
-{% load i18n %}
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d9488">
   <title>{% block title %}{% trans "Platforma" %}{% endblock %} — miniapp</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#0d9488', dark: '#0f766e', light: '#ccfbf1' },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
   <header class="border-b border-slate-200 bg-white">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-      <a href="{% url 'platform_dashboard' %}" class="text-lg font-bold text-teal-700">{% trans "Platform boshqaruvi" %}</a>
-      <nav class="flex flex-wrap gap-2 text-sm">
+    <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="{% url 'platform_dashboard' %}" class="text-lg font-bold text-brand">{% trans "Platform boshqaruvi" %}</a>
+        <details class="relative z-40 md:hidden">
+          <summary class="cursor-pointer list-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm">{% trans "Menyu" %}</summary>
+          <nav class="absolute right-0 mt-2 flex min-w-[14rem] flex-col gap-0.5 rounded-xl border border-slate-200 bg-white p-2 text-sm shadow-lg">
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_dashboard' %}">{% trans "Bosh sahifa" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_payments' %}">{% trans "To‘lovlar" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_orders' %}">{% trans "Buyurtmalar" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_users' %}">{% trans "Foydalanuvchilar" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_shops' %}">{% trans "Do‘konlar" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_broadcast' %}">{% trans "Xabar" %}</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-slate-100" href="{% url 'platform_audit' %}">{% trans "Audit" %}</a>
+            <a class="rounded-lg px-3 py-2 text-red-700 hover:bg-red-50" href="{% url 'platform_logout' %}">{% trans "Chiqish" %}</a>
+          </nav>
+        </details>
+      </div>
+      <nav class="hidden flex-wrap gap-2 text-sm md:flex">
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_dashboard' %}">{% trans "Bosh sahifa" %}</a>
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_payments' %}">{% trans "To‘lovlar" %}</a>
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_orders' %}">{% trans "Buyurtmalar" %}</a>
@@ -19,8 +47,6 @@
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_shops' %}">{% trans "Do‘konlar" %}</a>
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_broadcast' %}">{% trans "Xabar" %}</a>
         <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_audit' %}">{% trans "Audit" %}</a>
-        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_export_orders' %}">{% trans "CSV buyurtmalar" %}</a>
-        <a class="rounded-lg px-2 py-1 hover:bg-slate-100" href="{% url 'platform_export_payments' %}">{% trans "CSV to‘lovlar" %}</a>
         <a class="rounded-lg px-2 py-1 text-red-700 hover:bg-red-50" href="{% url 'platform_logout' %}">{% trans "Chiqish" %}</a>
       </nav>
     </div>

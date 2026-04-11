@@ -8,6 +8,8 @@ from apps.products.models import Product
 class OrderSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
     shop_name = serializers.CharField(source="shop.name", read_only=True)
+    shop_slug = serializers.CharField(source="shop.slug", read_only=True)
+    product_slug = serializers.CharField(source="product.slug", read_only=True)
 
     class Meta:
         model = Order
@@ -17,6 +19,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "shop",
             "product_name",
             "shop_name",
+            "shop_slug",
+            "product_slug",
             "buyer",
             "customer_name",
             "phone",
@@ -25,7 +29,16 @@ class OrderSerializer(serializers.ModelSerializer):
             "total_amount",
             "created_at",
         )
-        read_only_fields = ("id", "product_name", "shop_name", "buyer", "total_amount", "created_at")
+        read_only_fields = (
+            "id",
+            "product_name",
+            "shop_name",
+            "shop_slug",
+            "product_slug",
+            "buyer",
+            "total_amount",
+            "created_at",
+        )
 
 
 class OrderCreateSerializer(serializers.Serializer):

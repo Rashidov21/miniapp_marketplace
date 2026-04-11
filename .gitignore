@@ -3,6 +3,8 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+
+node_modules/
 # C extensions
 *.so
 
@@ -194,6 +196,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Node (Tailwind CSS build)
+node_modules/
 
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to

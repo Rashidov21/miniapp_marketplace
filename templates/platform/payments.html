@@ -44,7 +44,7 @@
           <td class="px-3 py-2 text-slate-500">{{ p.created_at|date:"Y-m-d H:i" }}</td>
           <td class="px-3 py-2">
             {% if p.status == "pending" %}
-              <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline" data-confirm="{% trans 'To‘lovni tasdiqlaysizmi?' %}">{% csrf_token %}<button type="submit" class="text-teal-700 underline">{% trans "Tasdiqlash" %}</button></form>
+              <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline" data-confirm="{% trans 'To‘lovni tasdiqlaysizmi?' %}">{% csrf_token %}<button type="submit" class="text-brand underline">{% trans "Tasdiqlash" %}</button></form>
               <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline-flex items-center gap-1" data-confirm="{% trans 'To‘lovni rad etasizmi?' %}">{% csrf_token %}
                 <input required name="admin_note" placeholder="{% trans 'Rad sababi' %}" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs" />
                 <button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button>

@@ -4,14 +4,13 @@
 {% block topbar %}
 <div class="app-topbar">
   <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Sotuvchi paneli" %}</p>
+  <p class="text-xs font-medium text-slate-500">{% trans "Kabinet" %}</p>
 </div>
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-5">
   <header>
-    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Sotuvchi" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Kabinet" %}</h1>
+    <h1 class="text-2xl font-bold text-slate-900">{% trans "Kabinet" %}</h1>
     <p id="dash-subtitle" class="mt-1 text-sm text-slate-600">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
   </header>
 
@@ -167,6 +166,8 @@
     accepted: "{% trans 'Qabul qilindi' %}",
     delivered: "{% trans 'Yetkazildi' %}",
     accept: "{% trans 'Qabul qildim' %}",
+    reject: "{% trans 'Rad etish' %}",
+    cancelled: "{% trans 'Bekor qilindi' %}",
     markDelivered: "{% trans 'Yetkazildi' %}",
     phone: "{% trans 'Telefon' %}",
     address: "{% trans 'Manzil' %}",
@@ -202,6 +203,7 @@
     if (st === "NEW") return L.new;
     if (st === "ACCEPTED") return L.accepted;
     if (st === "DELIVERED") return L.delivered;
+    if (st === "CANCELLED") return L.cancelled;
     return st;
   }
 
@@ -211,15 +213,25 @@
         ? "bg-amber-100 text-amber-900 ring-amber-200"
         : o.status === "ACCEPTED"
         ? "bg-sky-100 text-sky-900 ring-sky-200"
-        : "bg-emerald-100 text-emerald-900 ring-emerald-200";
+        : o.status === "DELIVERED"
+        ? "bg-emerald-100 text-emerald-900 ring-emerald-200"
+        : o.status === "CANCELLED"
+        ? "bg-rose-100 text-rose-900 ring-rose-200"
+        : "bg-slate-100 text-slate-800 ring-slate-200";
     let actions = "";
     if (o.status === "NEW") {
       actions =
+        '<div class="flex w-full flex-col gap-2 sm:flex-row">' +
         '<button type="button" data-oid="' +
         o.id +
         '" data-st="ACCEPTED" class="flex-1 rounded-xl bg-brand px-3 py-3 text-sm font-semibold text-white shadow-sm">' +
         L.accept +
-        "</button>";
+        "</button>" +
+        '<button type="button" data-oid="' +
+        o.id +
+        '" data-st="CANCELLED" class="flex-1 rounded-xl border-2 border-rose-200 bg-white px-3 py-3 text-sm font-semibold text-rose-800 ring-1 ring-rose-100">' +
+        L.reject +
+        "</button></div>";
     } else if (o.status === "ACCEPTED") {
       actions =
         '<button type="button" data-oid="' +
@@ -321,14 +333,19 @@
     const fo = document.getElementById("first-order-upsell");
     const tr = document.getElementById("traffic-upsell");
     const addBtn = document.getElementById("add-product-cta");
+    var showLim = false;
+    var showFo = false;
+    var showTr = false;
     if (lim) {
       lim.classList.add("hidden");
+      lim.innerHTML = "";
       if (
         shop &&
         shop.can_add_product === false &&
         shop.max_products != null &&
         shop.max_products !== 0
       ) {
+        showLim = true;
         lim.innerHTML =
           '<p class="font-medium">' +
           MiniApp.escapeHtml(L.limitReached) +
@@ -339,18 +356,28 @@
           '</p><a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-semibold text-white">' +
           MiniApp.escapeHtml(L.upgradePlan) +
           "</a>";
+      }
+    }
+    if (shop && shop.first_order_completed_at && shop.plan_includes_analytics === false) {
+      showFo = true;
+    }
+    if (stats && stats.traffic_upsell_suggested && shop && shop.plan_includes_analytics === false) {
+      showTr = true;
+    }
+    if (lim) {
+      if (showLim) {
         lim.classList.remove("hidden");
       }
     }
     if (fo) {
       fo.classList.add("hidden");
-      if (shop && shop.first_order_completed_at && shop.plan_includes_analytics === false) {
+      if (!showLim && showFo) {
         fo.classList.remove("hidden");
       }
     }
     if (tr) {
       tr.classList.add("hidden");
-      if (stats && stats.traffic_upsell_suggested && shop && shop.plan_includes_analytics === false) {
+      if (!showLim && !showFo && showTr) {
         tr.classList.remove("hidden");
       }
     }
@@ -476,6 +503,14 @@
       } catch (x) {}
     }
     setCk(document.getElementById("ck-step-product"), pc > 0);
+    var sellerDone = isPanelRole(me.role);
+    var shopDone = !!shop;
+    var productDone = pc > 0;
+    if (sellerDone && shopDone && productDone) {
+      checklist.classList.add("hidden");
+    } else {
+      checklist.classList.remove("hidden");
+    }
     const hint = document.getElementById("checklist-stats");
     if (!hint) return;
     if (shop) {
@@ -539,11 +574,23 @@
         shopPanel.classList.add("hidden");
         onboarding.classList.remove("hidden");
         syncTermsBlock(me);
-        subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
-        banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
+        const elevatedStaff = me.role === "admin" || me.role === "platform_owner";
+        if (elevatedStaff) {
+          subtitle.textContent =
+            "{% trans 'Do‘kon profilini boshqarish uchun avval do‘kon yarating.' %}";
+          banner.textContent =
+            "{% trans 'Operator: do‘kon nomini kiriting va yarating — keyin boshqaruv paneli bilan ishlang.' %}";
+        } else {
+          subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
+          banner.textContent = "{% trans 'Avval do‘kon yarating, keyin mahsulot qo‘shing.' %}";
+        }
         btnSeller.classList.add("hidden");
         const intro = onboarding.querySelector("p");
-        if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
+        if (intro) {
+          intro.textContent = elevatedStaff
+            ? "{% trans 'Quyida do‘kon nomini kiriting va «Do‘konni yaratish» ni bosing.' %}"
+            : "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
+        }
         addProductCta.classList.add("hidden");
         if (productsLink) productsLink.classList.add("hidden");
       } else {
@@ -674,6 +721,10 @@
       const t = ev.target.closest("button[data-oid]");
       if (!t) return;
       if (t.disabled) return;
+      const st = t.getAttribute("data-st");
+      if (st === "CANCELLED" && !confirm("{% trans 'Buyurtmani rad etasizmi? Mijozga xabar boradi.' %}")) {
+        return;
+      }
       try {
         await ensureAuth();
         MiniApp.hapticLight();
@@ -681,7 +732,7 @@
         t.classList.add("opacity-50");
         await MiniApp.apiFetch("/seller/orders/" + t.getAttribute("data-oid") + "/", {
           method: "PATCH",
-          body: JSON.stringify({ status: t.getAttribute("data-st") }),
+          body: JSON.stringify({ status: st }),
         });
         await loadOrders();
       } catch (e) {

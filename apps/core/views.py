@@ -178,3 +178,13 @@ def legal_content_policy(request):
 @require_GET
 def my_orders_page(request):
     return render(request, "webapp/my_orders.html")
+
+
+@require_GET
+def buyer_order_detail_page(request, order_id: int):
+    return render(request, "webapp/buyer_order_detail.html", {"order_id": order_id})
+
+
+def page_not_found(request, exception):
+    """DEBUG=False paytida slug bo‘yicha 404 uchun do‘stona sahifa."""
+    return render(request, "404.html", status=404)

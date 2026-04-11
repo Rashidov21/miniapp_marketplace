@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Topilmadi" %}{% endblock %}
+{% block topbar %}{% endblock %}
+{% block content %}
+<div class="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-2 text-center">
+  <p class="text-5xl font-bold text-slate-300" aria-hidden="true">404</p>
+  <h1 class="text-xl font-bold text-slate-900">{% trans "Sahifa yoki do‘kon topilmadi" %}</h1>
+  <p class="max-w-sm text-sm text-slate-600">
+    {% trans "Havola eskirgan bo‘lishi yoki do‘kon vaqtincha yopilgan bo‘lishi mumkin." %}
+  </p>
+  <a href="/webapp/"
+     class="touch-target mt-2 inline-flex rounded-2xl bg-brand px-6 py-3 text-base font-semibold text-white shadow-md">
+    {% trans "Bosh sahifaga" %}
+  </a>
+</div>
+{% endblock %}

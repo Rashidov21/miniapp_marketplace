@@ -8,19 +8,7 @@
   <title>{% block title %}{% trans "Mini do‘kon" %}{% endblock %}</title>
   {% block extra_head %}{% endblock %}
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: { DEFAULT: '#0d9488', dark: '#0f766e', light: '#ccfbf1' },
-          },
-          boxShadow: { card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)' },
-        },
-      },
-    };
-  </script>
+  <link rel="stylesheet" href="{% static 'css/tailwind-built.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand/20">

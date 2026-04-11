@@ -8,6 +8,7 @@ class Order(models.Model):
         NEW = "NEW", _("New")
         ACCEPTED = "ACCEPTED", _("Accepted")
         DELIVERED = "DELIVERED", _("Delivered")
+        CANCELLED = "CANCELLED", _("Cancelled")
 
     product = models.ForeignKey(
         "products.Product",

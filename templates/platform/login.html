@@ -6,6 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% trans "Platform kirish" %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#0d9488', dark: '#0f766e', light: '#ccfbf1' },
+          },
+        },
+      },
+    };
+  </script>
 </head>
 <body class="flex min-h-screen items-center justify-center bg-slate-100 px-4">
   <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg ring-1 ring-slate-200">
@@ -27,7 +38,7 @@
         {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors }}</p>{% endif %}
       </div>
       <input type="hidden" name="next" value="{{ next }}" />
-      <button type="submit" class="w-full rounded-xl bg-teal-600 py-3 text-base font-semibold text-white hover:bg-teal-700">
+      <button type="submit" class="w-full rounded-xl bg-brand py-3 text-base font-semibold text-white hover:bg-brand-dark">
         {% trans "Kirish" %}
       </button>
     </form>

@@ -2,6 +2,135 @@
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+  --tg-bg: #f8fafc;
+  --tg-text: #0f172a;
+  --brand: #0d9488;
+}
+
+html.tg-themed body {
+  background-color: var(--tg-bg) !important;
+  color: var(--tg-text) !important;
+}
+
+/* Keyboard focus — visible ring, matches brand */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--brand, #0d9488);
+  outline-offset: 2px;
+}
+
+.touch-target:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Shared empty states (my_orders, shop, …) */
+.app-empty-state {
+  border-radius: 1rem;
+  border: 1px dashed rgb(226 232 240);
+  background: #fff;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.app-empty-state-icon {
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.app-empty-state-title {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(30 41 59);
+}
+
+.app-empty-state-desc {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(100 116 139);
+}
+
+/* Buyer order detail — status timeline (nodes + connectors) */
+.order-timeline-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.order-timeline-step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.order-timeline-node {
+  height: 0.75rem;
+  width: 0.75rem;
+  border-radius: 999px;
+  background: rgb(226 232 240);
+  border: 2px solid rgb(226 232 240);
+}
+
+.order-timeline-step.is-done .order-timeline-node {
+  background: var(--brand, #0d9488);
+  border-color: var(--brand, #0d9488);
+}
+
+.order-timeline-step.is-current .order-timeline-node {
+  box-shadow: 0 0 0 3px rgb(20 184 166 / 0.35);
+}
+
+.order-timeline-step.is-cancel .order-timeline-node {
+  background: rgb(244 63 94);
+  border-color: rgb(244 63 94);
+}
+
+.order-timeline-bar {
+  flex: 0.75 1 0%;
+  min-width: 0.25rem;
+  height: 2px;
+  align-self: center;
+  background: rgb(226 232 240);
+}
+
+.order-timeline-bar.is-done {
+  background: var(--brand, #0d9488);
+}
+
+.order-timeline-bar.is-cancel {
+  background: rgb(251 113 133);
+}
+
+.order-timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgb(100 116 139);
+}
+
+.order-timeline-labels span.is-active {
+  color: rgb(30 41 59);
+}
+
+.order-timeline-labels span.is-muted {
+  opacity: 0.55;
+}
+
+.order-timeline-labels span.is-cancelled {
+  color: rgb(190 18 60);
 }
 
 .touch-target {

@@ -59,6 +59,9 @@ Ilova: `http://localhost:8000`. Ma’lumotlar bazasi: `postgres:16`, media fayll
 - `POST /api/me/accept-seller-terms/` — joriy sotuvchi/marketplace shartlari versiyasini qabul qilish
 - `POST /api/shops/` — do‘kon yaratish
 - `GET /api/orders/mine/` — mijozning buyurtmalari (pagination)
+- `GET /api/orders/<id>/` — bitta buyurtma (mijoz yoki admin)
+- `POST /api/orders/<id>/cancel/` — mijoz: faqat **NEW** holatda bekor qilish (`CANCELLED`)
+- Mini App: `/webapp/my-orders/<id>/` — buyurtma detali va bekor qilish
 - `GET /api/seller/stats/` — sotuvchi: 7 kunlik ko‘rishlar, buyurtmalar, mahsulotlar soni
 - `GET /api/shops/<id>/public/` — ochiq do‘kon
 - `GET /api/shops/<id>/products/` — mahsulotlar ro‘yxati (ixtiyoriy `?q=` qidiruv)
@@ -66,14 +69,29 @@ Ilova: `http://localhost:8000`. Ma’lumotlar bazasi: `postgres:16`, media fayll
 
 Barcha himoyalangan so‘rovlar: sarlavha `X-Telegram-Init-Data: <initData>`.
 
-## Django admin
+## Django admin va platform paneli
+
+Bitta `User` modeli: login **maydoni — `telegram_id`**, parol: `python manage.py changepassword <telegram_id>`.
+
+### `/admin/` (Django Admin)
 
 ```bash
 python manage.py createsuperuser
-# telegram_id ni unikal raqam sifatida kiriting (masalan, o‘z Telegram ID)
+# telegram_id — unikal raqam (masalan, o‘z Telegram ID)
 ```
 
-Admin: `/admin/` — foydalanuvchilar, do‘konlar (`is_active`, `is_verified`), buyurtmalar.
+`createsuperuser` odatda **`is_staff`**, **`is_superuser`**, **`role=admin`** beradi — `/admin/` va `/platform/` ikkalasiga ham kirish mumkin (parol bilan).
+
+- **`/admin/`** ochilishi uchun odatda **`is_staff=True`** yoki **`is_superuser=True`** kerak.
+- Agar foydalanuvchida faqat **`role=admin`** bo‘lib, **`is_staff=False`** qolgan bo‘lsa, **platform panel** ochilishi mumkin, lekin **klassik Django Admin** — yo‘q: admin orqali `is_staff` ni yoqing yoki `createsuperuser` dan foydalaning.
+
+### `/platform/` (boshqaruv paneli)
+
+- Kirish: **`telegram_id` + parol** (`/platform/login/`).
+- Ruxsat: **`is_superuser`** yoki **`role`** = `admin` yoki `platform_owner` (`is_platform_staff`).
+- Bu **`/admin/`** dan mustaqil: masalan operator **`is_staff` siz** ham platform orqali to‘lovlarni tasdiqlashi mumkin (agar roli va paroli mos bo‘lsa).
+
+Qisqacha: **to‘liq operator** — `createsuperuser` + parol; **faqat platform** — `role` + parol, kerak bo‘lsa `is_staff` siz.
 
 ## Ko‘p tillilik
 

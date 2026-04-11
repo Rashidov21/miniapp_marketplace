@@ -14,7 +14,13 @@ from apps.core.pagination import OrderListPagination
 from apps.orders.locks import advisory_xact_lock_for_string
 from apps.orders.models import Order, OrderIdempotency
 from apps.orders.serializers import OrderCreateSerializer, OrderSerializer
-from apps.orders.services import notify_new_order, notify_order_confirmation, notify_order_status
+from apps.orders.services import (
+    notify_buyer_cancel_confirmed,
+    notify_new_order,
+    notify_order_confirmation,
+    notify_order_status,
+    notify_seller_buyer_cancelled_order,
+)
 from apps.orders.state_machine import can_transition
 from apps.orders.throttles import OrderCreateThrottle
 from apps.products.models import Product
@@ -154,6 +160,27 @@ def seller_order_update(request, order_id):
     return Response(OrderSerializer(order).data)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def buyer_order_cancel(request, order_id):
+    order = get_object_or_404(
+        Order.objects.select_related("product", "shop", "shop__owner", "buyer"),
+        pk=order_id,
+        buyer=request.user,
+    )
+    if order.status != Order.Status.NEW:
+        return Response(
+            {"detail": _("Only pending orders can be cancelled.")},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    order.status = Order.Status.CANCELLED
+    order.save(update_fields=["status"])
+    notify_seller_buyer_cancelled_order(order)
+    notify_buyer_cancel_confirmed(order)
+    order = Order.objects.select_related("product", "shop", "buyer").get(pk=order.pk)
+    return Response(OrderSerializer(order, context={"request": request}).data)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def buyer_orders_mine(request):
@@ -184,4 +211,4 @@ def buyer_order_detail(request, order_id):
         and not request.user.is_superuser
     ):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
-    return Response(OrderSerializer(order).data)
+    return Response(OrderSerializer(order, context={"request": request}).data)

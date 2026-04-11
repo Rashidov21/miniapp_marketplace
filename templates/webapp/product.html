@@ -161,9 +161,15 @@
         "/webapp/s/" + encodeURIComponent(shopSlug) + "/p/" + encodeURIComponent(productSlug) + "/order/";
     } catch (e) {
       loading.classList.add("hidden");
-      const t = "{% trans 'Mahsulot topilmadi.' %}";
+      const t =
+        e && (e.status === 404 || e.status === 410)
+          ? "{% trans 'Mahsulot topilmadi yoki sotuvda emas.' %}"
+          : "{% trans 'Mahsulotni yuklab bo‘lmadi. Internetni tekshiring.' %}";
       msg.textContent = t;
-      MiniApp.showToast(MiniApp.parseApiError(e, t), "error");
+      MiniApp.showToast(
+        e && (e.status === 404 || e.status === 410) ? t : MiniApp.parseApiError(e, t),
+        "error"
+      );
       const sticky = document.querySelector(".app-sticky-bottom");
       if (sticky) sticky.classList.add("hidden");
       const ob = document.getElementById("order-btn");
