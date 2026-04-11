@@ -20,6 +20,7 @@ from apps.shops.serializers import (
     SubscriptionPlanSerializer,
 )
 from apps.core.drf_errors import error_response
+from apps.shops import monetization
 from apps.shops.services import apply_trial_for_new_shop
 from apps.users.models import User
 from apps.users.terms import user_has_current_seller_terms
@@ -73,11 +74,18 @@ def seller_stats(request):
     ).count()
     orders_week = Order.objects.filter(shop=shop, created_at__gte=week_ago).count()
     products_total = Product.objects.filter(shop=shop).count()
+    min_v = monetization.upsell_min_views_week()
+    traffic_upsell = (
+        shop_views_week >= min_v and not monetization.plan_includes_analytics(shop)
+    )
     return Response(
         {
             "shop_views_week": shop_views_week,
             "orders_week": orders_week,
             "products_total": products_total,
+            "plan_includes_analytics": monetization.plan_includes_analytics(shop),
+            "traffic_upsell_suggested": traffic_upsell,
+            "upsell_min_views_week": min_v,
         }
     )
 
@@ -143,7 +151,7 @@ def shop_link(request, shop_id):
 
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
-    path = f"/webapp/shop/{shop.id}/"
+    path = f"/webapp/s/{shop.slug}/"
     full_url = f"{base}{path}" if base else path
     startapp = f"shop_{shop.id}"
     deep_link = f"https://t.me/{bot}?startapp={startapp}" if bot else ""
@@ -161,7 +169,7 @@ def shop_public_link(request, shop_id):
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     startapp = f"shop_{shop.id}"
-    path = f"/webapp/shop/{shop.id}/"
+    path = f"/webapp/s/{shop.slug}/"
     full_url = f"{base}{path}" if base else path
     deep_link = f"https://t.me/{bot}?startapp={startapp}" if bot else ""
     return Response({"url": full_url, "startapp": startapp, "telegram_deep_link": deep_link})

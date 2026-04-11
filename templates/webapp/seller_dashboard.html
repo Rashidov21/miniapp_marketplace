@@ -24,6 +24,18 @@
 
   <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
 
+  <div id="paywall-limit-banner" class="hidden rounded-2xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/90"></div>
+  <div id="first-order-upsell" class="hidden rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-slate-800 ring-1 ring-brand/20">
+    <p class="font-semibold text-brand">{% trans "Birinchi buyurtma qabul qilindi!" %}</p>
+    <p class="mt-1">{% trans "Kengaytirilgan analytics va cheksiz mahsulot uchun Pro tarifni ko‘ring." %}</p>
+    <a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white">{% trans "Tariflar" %}</a>
+  </div>
+  <div id="traffic-upsell" class="hidden rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 ring-1 ring-sky-200/80">
+    <p class="font-medium">{% trans "Trafik oshmoqda" %}</p>
+    <p class="mt-1 text-sky-900/90">{% trans "Haftalik ko‘rishlar yuqori — analytics va cheksiz mahsulot uchun Pro." %}</p>
+    <a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-sky-800 px-4 py-2.5 text-sm font-semibold text-white">{% trans "Pro tarif" %}</a>
+  </div>
+
   <section id="checklist" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
     <p class="text-sm font-semibold text-slate-900">{% trans "Yo‘l xaritasi" %}</p>
     <p id="checklist-stats" class="mt-1 hidden text-xs text-slate-500"></p>
@@ -43,6 +55,7 @@
   <section id="shop-panel" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
     <h2 class="text-sm font-semibold text-slate-900">{% trans "Do‘koningiz" %}</h2>
     <p id="shop-panel-name" class="mt-1 text-lg font-bold text-brand"></p>
+    <div id="shop-panel-meta" class="mt-3 hidden space-y-2 rounded-xl bg-slate-50/90 px-3 py-3 text-sm leading-relaxed text-slate-700 ring-1 ring-slate-200/70"></div>
     <p class="mt-2 text-xs text-slate-500">{% trans "Yuqoridagi «Do‘kon profili» va «Obuna» orqali sozlang. Pastda — mijoz havolasi." %}</p>
     <div id="shop-panel-link-box" class="mt-4 hidden rounded-xl bg-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-700 ring-1 ring-slate-200/80">
       <p class="font-medium text-slate-800">{% trans "Mijozlar uchun havola" %}</p>
@@ -148,6 +161,11 @@
     phone: "{% trans 'Telefon' %}",
     address: "{% trans 'Manzil' %}",
     product: "{% trans 'Mahsulot' %}",
+    shopPhone: "{% trans 'Telefon' %}",
+    shopAddress: "{% trans 'Manzil' %}",
+    limitReached: "{% trans 'Mahsulot limiti to‘ldi.' %}",
+    upgradePlan: "{% trans 'Obunani kengaytirish' %}",
+    addProduct: "{% trans 'Mahsulot qo‘shish' %}",
   };
 
   async function ensureAuth() {
@@ -276,6 +294,57 @@
     }
   }
 
+  function updateMonetizationBanners(shop, stats) {
+    const lim = document.getElementById("paywall-limit-banner");
+    const fo = document.getElementById("first-order-upsell");
+    const tr = document.getElementById("traffic-upsell");
+    const addBtn = document.getElementById("add-product-cta");
+    if (lim) {
+      lim.classList.add("hidden");
+      if (
+        shop &&
+        shop.can_add_product === false &&
+        shop.max_products != null &&
+        shop.max_products !== 0
+      ) {
+        lim.innerHTML =
+          '<p class="font-medium">' +
+          MiniApp.escapeHtml(L.limitReached) +
+          '</p><p class="mt-1 text-xs">' +
+          (shop.products_active_count || 0) +
+          " / " +
+          shop.max_products +
+          '</p><a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-semibold text-white">' +
+          MiniApp.escapeHtml(L.upgradePlan) +
+          "</a>";
+        lim.classList.remove("hidden");
+      }
+    }
+    if (fo) {
+      fo.classList.add("hidden");
+      if (shop && shop.first_order_completed_at && shop.plan_includes_analytics === false) {
+        fo.classList.remove("hidden");
+      }
+    }
+    if (tr) {
+      tr.classList.add("hidden");
+      if (stats && stats.traffic_upsell_suggested && shop && shop.plan_includes_analytics === false) {
+        tr.classList.remove("hidden");
+      }
+    }
+    if (addBtn && shop) {
+      if (shop.can_add_product === false && shop.max_products != null && shop.max_products !== 0) {
+        addBtn.href = "/webapp/seller/subscription/";
+        addBtn.innerHTML =
+          '<span class="text-xl leading-none">↑</span> ' + MiniApp.escapeHtml(L.upgradePlan);
+      } else {
+        addBtn.href = "/webapp/seller/products/new/";
+        addBtn.innerHTML =
+          '<span class="text-xl leading-none">＋</span> ' + MiniApp.escapeHtml(L.addProduct);
+      }
+    }
+  }
+
   function showShopDashboardUi(shop) {
     const onboarding = document.getElementById("onboarding");
     const shopPanel = document.getElementById("shop-panel");
@@ -286,9 +355,44 @@
     shopPanel.classList.remove("hidden");
     subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";
     document.getElementById("shop-panel-name").textContent = shop.name;
+    const meta = document.getElementById("shop-panel-meta");
+    if (meta) {
+      const parts = [];
+      const d = (shop.description || "").trim();
+      if (d) {
+        const short = d.length > 320 ? d.slice(0, 320) + "…" : d;
+        parts.push("<p>" + MiniApp.escapeHtml(short) + "</p>");
+      }
+      if ((shop.phone || "").trim()) {
+        parts.push(
+          "<p><span class='font-medium text-slate-800'>" +
+            MiniApp.escapeHtml(L.shopPhone) +
+            ":</span> " +
+            MiniApp.escapeHtml(shop.phone) +
+            "</p>"
+        );
+      }
+      if ((shop.address || "").trim()) {
+        parts.push(
+          "<p><span class='font-medium text-slate-800'>" +
+            MiniApp.escapeHtml(L.shopAddress) +
+            ":</span> " +
+            MiniApp.escapeHtml(shop.address) +
+            "</p>"
+        );
+      }
+      if (parts.length) {
+        meta.innerHTML = parts.join("");
+        meta.classList.remove("hidden");
+      } else {
+        meta.innerHTML = "";
+        meta.classList.add("hidden");
+      }
+    }
     addProductCta.classList.remove("hidden");
     if (productsLink) productsLink.classList.remove("hidden");
     loadShopPanelLink(shop.id);
+    updateMonetizationBanners(shop, null);
   }
 
   function syncTermsBlock(me) {
@@ -345,8 +449,9 @@
       try {
         await ensureAuth();
         const stRes = await MiniApp.apiFetch("/seller/stats/", { method: "GET" });
+        updateMonetizationBanners(shop, stRes);
         if (typeof stRes.shop_views_week === "number") {
-          hint.textContent =
+          let line =
             "{% trans '7 kun' %}: " +
             stRes.shop_views_week +
             " {% trans 'ko‘rish' %} · " +
@@ -354,6 +459,10 @@
             " {% trans 'buyurtma' %} · " +
             stRes.products_total +
             " {% trans 'mahsulot' %}";
+          if (stRes.plan_includes_analytics === false) {
+            line += " · {% trans 'Analytics: Pro' %}";
+          }
+          hint.textContent = line;
           hint.classList.remove("hidden");
           return;
         }

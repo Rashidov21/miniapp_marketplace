@@ -110,7 +110,12 @@
     try {
       await ensureAuth();
       if (!productId) {
-        await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+        const sm = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+        if (sm.can_add_product === false && sm.max_products != null && sm.max_products !== 0) {
+          MiniApp.showToast("{% trans 'Mahsulot limiti — obunani kengaytiring.' %}", "warning");
+          window.location.href = "/webapp/seller/subscription/";
+          return;
+        }
       }
     } catch (e) {
       MiniApp.showToast("{% trans 'Avval do‘kon yarating.' %}", "warning");

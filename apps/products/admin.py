@@ -10,13 +10,13 @@ class ProductAdmin(admin.ModelAdmin):
     list_display_links = ("name",)
     list_editable = ("sort_order",)
     list_filter = ("is_active", "created_at")
-    search_fields = ("name", "shop__name", "scarcity_text", "social_proof_text")
+    search_fields = ("name", "slug", "shop__name", "scarcity_text", "social_proof_text")
     raw_id_fields = ("shop",)
     list_select_related = ("shop",)
     readonly_fields = ("created_at",)
     actions = ("activate_products", "deactivate_products")
     fieldsets = (
-        (None, {"fields": ("shop", "name", "price", "image", "description")}),
+        (None, {"fields": ("shop", "name", "slug", "price", "image", "description")}),
         (_("Conversion (optional)"), {"fields": ("scarcity_text", "social_proof_text")}),
         (_("Catalog"), {"fields": ("sort_order",)}),
         (_("Flags"), {"fields": ("is_active", "created_at")}),

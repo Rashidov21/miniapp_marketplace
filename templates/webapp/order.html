@@ -76,7 +76,7 @@
   <a href="/webapp/my-orders/" class="touch-target inline-flex w-full max-w-sm items-center justify-center rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md">
     {% trans "Mening buyurtmalarim" %}
   </a>
-  <a href="/webapp/shop/{{ shop_id }}/" class="touch-target inline-flex w-full max-w-sm items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-base font-semibold text-slate-800">
+  <a href="/webapp/s/{{ shop_slug }}/" class="touch-target inline-flex w-full max-w-sm items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-base font-semibold text-slate-800">
     {% trans "Do‘konga qaytish" %}
   </a>
 </div>
@@ -86,7 +86,12 @@
   MiniApp.ready();
   const shopId = {{ shop_id }};
   const productId = {{ product_id }};
-  MiniApp.bindBackButton("back-btn", "/webapp/shop/" + shopId + "/product/" + productId + "/");
+  const shopSlug = "{{ shop_slug|escapejs }}";
+  const productSlug = "{{ product_slug|escapejs }}";
+  MiniApp.bindBackButton(
+    "back-btn",
+    "/webapp/s/" + encodeURIComponent(shopSlug) + "/p/" + encodeURIComponent(productSlug) + "/"
+  );
   document.getElementById("product-id").value = String(productId);
 
   (function prefill() {

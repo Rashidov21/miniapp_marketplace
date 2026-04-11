@@ -71,9 +71,11 @@
 {% block scripts %}
 <script>
   MiniApp.ready();
-  MiniApp.bindBackButton("back-btn", "/webapp/shop/" + {{ shop_id }} + "/");
+  MiniApp.bindBackButton("back-btn", "/webapp/s/{{ shop_slug|escapejs }}/");
   const shopId = {{ shop_id }};
   const productId = {{ product_id }};
+  const shopSlug = "{{ shop_slug|escapejs }}";
+  const productSlug = "{{ product_slug|escapejs }}";
   const uzSum = "{% trans 'so‘m' %}";
   const labels = {
     verified: "{% trans 'Tasdiqlangan do‘kon' %}",
@@ -156,7 +158,7 @@
         }
       } catch (ignoreShare) {}
       document.getElementById("order-btn").href =
-        "/webapp/shop/" + shopId + "/product/" + productId + "/order/";
+        "/webapp/s/" + encodeURIComponent(shopSlug) + "/p/" + encodeURIComponent(productSlug) + "/order/";
     } catch (e) {
       loading.classList.add("hidden");
       const t = "{% trans 'Mahsulot topilmadi.' %}";

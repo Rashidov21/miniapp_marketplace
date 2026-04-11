@@ -77,14 +77,24 @@ def accept_seller_terms(request):
 
 
 def _build_webapp_url(start_param: str) -> str:
+    from apps.products.models import Product
+    from apps.shops.models import Shop
+
     base = (getattr(settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     if start_param.startswith("shop_"):
         sid = start_param.replace("shop_", "", 1)
         if sid.isdigit():
+            shop = Shop.objects.filter(pk=int(sid)).first()
+            if shop:
+                return f"{base}/webapp/s/{shop.slug}/"
             return f"{base}/webapp/shop/{sid}/"
     if start_param.startswith("product_"):
         parts = start_param.split("_", 2)
         if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+            shop = Shop.objects.filter(pk=int(parts[1])).first()
+            product = Product.objects.filter(pk=int(parts[2]), shop_id=int(parts[1])).first()
+            if shop and product:
+                return f"{base}/webapp/s/{shop.slug}/p/{product.slug}/"
             return f"{base}/webapp/shop/{parts[1]}/product/{parts[2]}/"
     return f"{base}/webapp/"
 
@@ -124,14 +134,10 @@ def telegram_webhook(request, secret: str):
                 [{"text": "Sotuvchi kabineti", "web_app": {"url": f"{(getattr(settings, 'PUBLIC_BASE_URL', '') or '').rstrip('/')}/webapp/seller/"}}],
             ]
         }
-        reply_markup = {
-            "keyboard": [
-                [{"text": "Mini Appni ochish", "web_app": {"url": webapp_url}}],
-            ],
-            "resize_keyboard": True,
-            "is_persistent": True,
-        }
-        send_message_with_markup(chat["id"], _start_text(), reply_markup=inline_markup)
-        send_message_with_markup(chat["id"], "Yoki pastdagi tugma bilan ham ochishingiz mumkin:", reply_markup=reply_markup)
+        send_message_with_markup(
+            chat["id"],
+            _start_text() + "\n\nQuyidagi tugmalardan birini bosing.",
+            reply_markup=inline_markup,
+        )
 
     return Response({"ok": True})

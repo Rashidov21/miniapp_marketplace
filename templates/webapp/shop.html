@@ -76,6 +76,7 @@
   MiniApp.ready();
   MiniApp.bindBackButton("back-btn", "/webapp/");
   const shopId = {{ shop_id }};
+  const shopSlug = "{{ shop_slug|escapejs }}";
   const uzSum = "{% trans 'so‘m' %}";
   const tOrder = "{% trans 'Buyurtma berish' %}";
   const tFast = "{% trans 'Tez yetkazib berish' %}";
@@ -118,7 +119,12 @@
       box.classList.remove("hidden");
       items.forEach(function (p) {
         const a = document.createElement("a");
-        a.href = "/webapp/shop/" + shopId + "/product/" + p.id + "/";
+        a.href =
+          "/webapp/s/" +
+          encodeURIComponent(shopSlug) +
+          "/p/" +
+          encodeURIComponent(p.slug || String(p.id)) +
+          "/";
         a.className =
           "rounded-2xl bg-white p-3 shadow-card ring-1 ring-slate-200/80 active:bg-slate-50";
         const img = p.image

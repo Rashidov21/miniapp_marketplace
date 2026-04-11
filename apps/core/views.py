@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET
 
 from apps.products.models import Product
@@ -28,20 +28,47 @@ def product_form(request, product_id=None):
     return render(request, "webapp/product_form.html", ctx)
 
 
-@require_GET
-def shop_page(request, shop_id):
-    get_object_or_404(Shop, pk=shop_id)
-    return render(request, "webapp/shop.html", {"shop_id": shop_id})
+def _shop_page_ctx(shop: Shop) -> dict:
+    return {"shop_id": shop.id, "shop_slug": shop.slug}
 
 
 @require_GET
-def product_page(request, shop_id, product_id):
+def shop_legacy_redirect(request, shop_id):
+    shop = get_object_or_404(Shop, pk=shop_id)
+    return redirect("webapp_shop_slug", shop_slug=shop.slug, permanent=True)
+
+
+@require_GET
+def shop_page(request, shop_slug):
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    if not shop.is_active or not shop.is_subscription_operational():
+        raise Http404()
+    return render(request, "webapp/shop.html", _shop_page_ctx(shop))
+
+
+@require_GET
+def product_legacy_redirect(request, shop_id, product_id):
     product = get_object_or_404(
         Product.objects.select_related("shop"),
         pk=product_id,
         shop_id=shop_id,
     )
-    shop = product.shop
+    return redirect(
+        "webapp_product_slug",
+        shop_slug=product.shop.slug,
+        product_slug=product.slug,
+        permanent=True,
+    )
+
+
+@require_GET
+def product_page(request, shop_slug, product_slug):
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    product = get_object_or_404(
+        Product.objects.select_related("shop"),
+        slug=product_slug,
+        shop=shop,
+    )
     if (
         not shop.is_active
         or not product.is_active
@@ -57,8 +84,10 @@ def product_page(request, shop_id, product_id):
         request,
         "webapp/product.html",
         {
-            "shop_id": shop_id,
-            "product_id": product_id,
+            "shop_id": shop.id,
+            "product_id": product.id,
+            "shop_slug": shop.slug,
+            "product_slug": product.slug,
             "og_title": product.name,
             "og_description": og_desc[:300],
             "og_image": og_image,
@@ -68,20 +97,44 @@ def product_page(request, shop_id, product_id):
 
 
 @require_GET
-def order_page(request, shop_id, product_id):
+def order_legacy_redirect(request, shop_id, product_id):
     product = get_object_or_404(
         Product.objects.select_related("shop"),
         pk=product_id,
         shop_id=shop_id,
     )
-    shop = product.shop
+    return redirect(
+        "webapp_order_slug",
+        shop_slug=product.shop.slug,
+        product_slug=product.slug,
+        permanent=True,
+    )
+
+
+@require_GET
+def order_page(request, shop_slug, product_slug):
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    product = get_object_or_404(
+        Product.objects.select_related("shop"),
+        slug=product_slug,
+        shop=shop,
+    )
     if (
         not shop.is_active
         or not product.is_active
         or not shop.is_subscription_operational()
     ):
         raise Http404()
-    return render(request, "webapp/order.html", {"shop_id": shop_id, "product_id": product_id})
+    return render(
+        request,
+        "webapp/order.html",
+        {
+            "shop_id": shop.id,
+            "product_id": product.id,
+            "shop_slug": shop.slug,
+            "product_slug": product.slug,
+        },
+    )
 
 
 @require_GET

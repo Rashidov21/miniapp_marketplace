@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.products.models import Product
@@ -13,6 +14,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "id",
             "shop_id",
             "name",
+            "slug",
             "price",
             "image",
             "image_url",
@@ -24,6 +26,29 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "shop_id", "image_url", "created_at")
+        extra_kwargs = {"slug": {"required": False}}
+
+    def validate_slug(self, value: str | None) -> str | None:
+        if value is None:
+            return None
+        v = str(value).strip()
+        if not v:
+            return ""
+        from django.core.validators import validate_slug
+
+        validate_slug(v)
+        shop = self.context.get("shop")
+        if shop is None and self.instance:
+            shop = self.instance.shop
+        if shop is not None:
+            qs = Product.objects.filter(shop=shop, slug=v)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    _("A product with this slug already exists in this shop.")
+                )
+        return v
 
     def get_image_url(self, obj: Product):
         request = self.context.get("request")
@@ -42,6 +67,7 @@ class ProductPublicSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "slug",
             "price",
             "image",
             "description",
@@ -54,6 +80,7 @@ class ProductPublicSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "name",
+            "slug",
             "price",
             "image",
             "description",

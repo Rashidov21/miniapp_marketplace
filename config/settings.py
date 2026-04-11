@@ -194,6 +194,10 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
 # Sotuvchi oferta / foydalanish shartlari versiyasi; yangilanganda foydalanuvchi qayta tasdiqlashi kerak.
 CURRENT_SELLER_TERMS_VERSION = os.environ.get("CURRENT_SELLER_TERMS_VERSION", "1").strip() or "1"
 
+# Monetizatsiya: FREE tier (trial ham shu limitda), trafik upsell bosqichi
+MONETIZATION_FREE_MAX_PRODUCTS = int(os.environ.get("MONETIZATION_FREE_MAX_PRODUCTS", "5"))
+MONETIZATION_UPSELL_MIN_VIEWS_WEEK = int(os.environ.get("MONETIZATION_UPSELL_MIN_VIEWS_WEEK", "80"))
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 LOGIN_URL = "/platform/login/"

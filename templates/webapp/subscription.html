@@ -76,12 +76,29 @@
         b.type = "button";
         b.className =
           "w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm ring-1 ring-slate-100 active:bg-slate-50";
+        let sub = "";
+        if (p.max_products != null) {
+          sub =
+            '<p class="mt-1 text-xs text-slate-600">' +
+            "{% trans 'Faol mahsulotgacha:' %} " +
+            p.max_products +
+            "</p>";
+        } else {
+          sub =
+            '<p class="mt-1 text-xs text-slate-600">' +
+            "{% trans 'Cheksiz mahsulot' %}" +
+            (p.includes_advanced_analytics
+              ? " · {% trans 'Analytics' %}"
+              : "") +
+            "</p>";
+        }
         b.innerHTML =
           '<p class="font-semibold text-slate-900">' +
           p.name +
           '</p><p class="mt-1 text-lg font-bold text-brand">' +
           fmt(p.price, p.currency) +
-          "</p>";
+          "</p>" +
+          sub;
         b.addEventListener("click", function () {
           selectedPlan = p;
           document.getElementById("pay-form").classList.remove("hidden");

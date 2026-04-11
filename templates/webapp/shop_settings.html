@@ -20,6 +20,11 @@
       <input name="name" id="name" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
     </div>
     <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Havola (slug)" %}</label>
+      <p class="mt-1 text-xs text-slate-500">{% trans "Lotin harflar, raqam va tire. Mijoz havolasida ko‘rinadi." %}</p>
+      <input name="slug" id="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="80" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 font-mono text-sm" />
+    </div>
+    <div>
       <label class="block text-sm font-medium text-slate-800">{% trans "Qisqa tavsif" %}</label>
       <textarea name="description" id="description" rows="3" class="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
     </div>
@@ -70,6 +75,7 @@
       await auth();
       const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
       document.getElementById("name").value = shop.name || "";
+      document.getElementById("slug").value = shop.slug || "";
       document.getElementById("description").value = shop.description || "";
       document.getElementById("phone").value = shop.phone || "";
       document.getElementById("phone_secondary").value = shop.phone_secondary || "";

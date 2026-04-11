@@ -1,5 +1,7 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from apps.shops import monetization
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 
 
@@ -13,6 +15,8 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
             "price",
             "currency",
             "sort_order",
+            "max_products",
+            "includes_advanced_analytics",
         )
         read_only_fields = fields
 
@@ -22,6 +26,10 @@ class ShopSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(required=False, allow_null=True)
     subscription_operational = serializers.SerializerMethodField()
     trial_days_left = serializers.SerializerMethodField()
+    products_active_count = serializers.SerializerMethodField()
+    max_products = serializers.SerializerMethodField()
+    can_add_product = serializers.SerializerMethodField()
+    plan_includes_analytics = serializers.SerializerMethodField()
 
     class Meta:
         model = Shop
@@ -29,6 +37,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "id",
             "owner_id",
             "name",
+            "slug",
             "description",
             "phone",
             "phone_secondary",
@@ -42,11 +51,16 @@ class ShopSerializer(serializers.ModelSerializer):
             "trial_ends_at",
             "subscription_ends_at",
             "current_plan",
+            "first_order_completed_at",
             "is_active",
             "is_verified",
             "created_at",
             "subscription_operational",
             "trial_days_left",
+            "products_active_count",
+            "max_products",
+            "can_add_product",
+            "plan_includes_analytics",
         )
         read_only_fields = (
             "id",
@@ -59,11 +73,17 @@ class ShopSerializer(serializers.ModelSerializer):
             "trial_ends_at",
             "subscription_ends_at",
             "current_plan",
+            "first_order_completed_at",
             "subscription_operational",
             "trial_days_left",
+            "products_active_count",
+            "max_products",
+            "can_add_product",
+            "plan_includes_analytics",
         )
         extra_kwargs = {
             "name": {"required": False},
+            "slug": {"required": False},
             "description": {"required": False},
             "phone": {"required": False},
             "phone_secondary": {"required": False},
@@ -75,6 +95,35 @@ class ShopSerializer(serializers.ModelSerializer):
 
     def get_subscription_operational(self, obj: Shop) -> bool:
         return obj.is_subscription_operational()
+
+    def get_products_active_count(self, obj: Shop) -> int:
+        return monetization.active_product_count(obj)
+
+    def get_max_products(self, obj: Shop) -> int | None:
+        return monetization.effective_max_products(obj)
+
+    def get_can_add_product(self, obj: Shop) -> bool:
+        ok, _ = monetization.can_add_product(obj)
+        return ok
+
+    def get_plan_includes_analytics(self, obj: Shop) -> bool:
+        return monetization.plan_includes_analytics(obj)
+
+    def validate_slug(self, value: str | None) -> str | None:
+        if value is None:
+            return None
+        v = str(value).strip()
+        if not v:
+            raise serializers.ValidationError(_("This field may not be blank."))
+        from django.core.validators import validate_slug
+
+        validate_slug(v)
+        qs = Shop.objects.filter(slug=v)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(_("A shop with this slug already exists."))
+        return v
 
     def get_trial_days_left(self, obj: Shop) -> int | None:
         if obj.subscription_status != Shop.SubscriptionStatus.TRIAL or not obj.trial_ends_at:
@@ -95,6 +144,7 @@ class ShopPublicSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "slug",
             "description",
             "phone",
             "phone_secondary",

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.image_utils import SHOP_LOGO_MAX_SIDE, file_to_optimized_content
+from apps.core.slug_utils import unique_shop_slug
 
 try:
     from PIL import Image
@@ -14,7 +15,7 @@ except ImportError:  # pragma: no cover
 
 
 class SubscriptionPlan(models.Model):
-    """Obuna tariflari (masalan 3 / 6 / 12 oy)."""
+    """Obuna tariflari: mahsulot limiti va analytics huquqi."""
 
     name = models.CharField(max_length=128)
     duration_months = models.PositiveSmallIntegerField()
@@ -22,6 +23,15 @@ class SubscriptionPlan(models.Model):
     currency = models.CharField(max_length=8, default="UZS")
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
+    max_products = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("Null — cheksiz mahsulot (Pro). Raqam — faol mahsulot limiti."),
+    )
+    includes_advanced_analytics = models.BooleanField(
+        default=False,
+        help_text=_("Haftalik analytics va keyingi bosqichdagi hisobotlar."),
+    )
 
     class Meta:
         ordering = ["sort_order", "duration_months"]
@@ -46,6 +56,12 @@ class Shop(models.Model):
         related_name="shops",
     )
     name = models.CharField(max_length=255)
+    slug = models.SlugField(
+        max_length=80,
+        unique=True,
+        db_index=True,
+        help_text=_("URL va havolalarda ko‘rinadi (lotin harflar, raqam, tire)."),
+    )
     description = models.TextField(blank=True)
     phone = models.CharField(max_length=32, blank=True)
     phone_secondary = models.CharField(max_length=32, blank=True)
@@ -77,6 +93,11 @@ class Shop(models.Model):
 
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
+    first_order_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("Birinchi muvaffaqiyatli buyurtma vaqti (upsell / CRO)."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -91,6 +112,8 @@ class Shop(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        if not (self.slug or "").strip():
+            self.slug = unique_shop_slug(self.name, self.pk)
         update_fields = kwargs.get("update_fields")
         if self.logo and Image and (update_fields is None or "logo" in update_fields):
             try:

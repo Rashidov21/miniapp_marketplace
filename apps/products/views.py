@@ -9,8 +9,10 @@ from rest_framework.response import Response
 
 from apps.core.pagination import ProductListPagination
 from apps.products.cache_utils import product_public_cache_key
+from apps.core.drf_errors import error_response
 from apps.products.models import Product
 from apps.products.serializers import ProductPublicSerializer, ProductSerializer
+from apps.shops import monetization
 from apps.shops.models import Shop
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
 from apps.users.models import User
@@ -74,7 +76,18 @@ def product_list_manage(request):
             {"detail": _("To add products, activate your subscription.")},
             status=status.HTTP_403_FORBIDDEN,
         )
-    ser = ProductSerializer(data=request.data, context={"request": request})
+    ok, lim_code = monetization.can_add_product(shop)
+    if not ok:
+        return error_response(
+            _("Active product limit reached. Upgrade your subscription."),
+            status=status.HTTP_409_CONFLICT,
+            code=lim_code or "product_limit_reached",
+            extra={
+                "products_active_count": monetization.active_product_count(shop),
+                "max_products": monetization.effective_max_products(shop),
+            },
+        )
+    ser = ProductSerializer(data=request.data, context={"request": request, "shop": shop})
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     product = ser.save(shop=shop)
@@ -105,10 +118,23 @@ def product_detail_manage(request, product_id):
         product,
         data=request.data,
         partial=True,
-        context={"request": request},
+        context={"request": request, "shop": shop},
     )
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    wants_active = ser.validated_data.get("is_active")
+    if wants_active is True and not product.is_active:
+        ok, lim_code = monetization.can_activate_product(shop)
+        if not ok:
+            return error_response(
+                _("Active product limit reached. Deactivate another product or upgrade."),
+                status=status.HTTP_409_CONFLICT,
+                code=lim_code or "product_limit_reached",
+                extra={
+                    "products_active_count": monetization.active_product_count(shop),
+                    "max_products": monetization.effective_max_products(shop),
+                },
+            )
     ser.save()
     product.refresh_from_db()
     return Response(ProductSerializer(product, context={"request": request}).data)
@@ -145,7 +171,7 @@ def product_public_link(request, shop_id, product_id):
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     startapp = f"product_{shop.id}_{product.id}"
-    path = f"/webapp/shop/{shop.id}/product/{product.id}/"
+    path = f"/webapp/s/{shop.slug}/p/{product.slug}/"
     full_url = f"{base}{path}" if base else path
     deep_link = f"https://t.me/{bot}?startapp={startapp}" if bot else ""
     return Response({"url": full_url, "startapp": startapp, "telegram_deep_link": deep_link})

@@ -178,6 +178,11 @@
           ? err.data.detail
           : "Avval shartlarga rozilik bering.";
       }
+      if (code === "product_limit_reached") {
+        return typeof err.data.detail === "string" && err.data.detail
+          ? err.data.detail
+          : "Mahsulot limiti to‘ldi — obunani kengaytiring.";
+      }
       if (typeof err.data.detail === "string" && err.data.detail) return err.data.detail;
       if (Array.isArray(err.data.detail) && err.data.detail.length) return String(err.data.detail[0]);
       const k = Object.keys(err.data)[0];

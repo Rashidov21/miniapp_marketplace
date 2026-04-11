@@ -44,8 +44,8 @@ Ilova: `http://localhost:8000`. Ma’lumotlar bazasi: `postgres:16`, media fayll
 1. [@BotFather](https://t.me/BotFather) orqali bot yarating, token oling.
 2. Mini App URL ni HTTPS domeningizga qo‘ying (masalan: `https://your-domain.example/webapp/`).
 3. `.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (faqat username, @siz).
-4. Do‘kon havolasi: `https://t.me/<USERNAME>?startapp=shop_<ID>` (API: `GET /api/shops/<id>/link/`).
-5. `/start` uchun webhook (inline + reply webapp tugmalari):
+4. Do‘kon havolasi: `https://t.me/<USERNAME>?startapp=shop_<ID>` — ochilganda brauzer manzili `https://…/webapp/s/<slug>/` ko‘rinishida bo‘ladi (API: `GET /api/shops/<id>/link/`).
+5. `/start` uchun webhook (faqat **inline** Web App tugmalari — barcha mijozlar uchun barqaror ochiladi):
    - `.env`: `TELEGRAM_WEBHOOK_SECRET=<uzun-maxfiy-string>`
    - Endpoint: `POST /api/bot/webhook/<TELEGRAM_WEBHOOK_SECRET>/`
    - Webhook o‘rnatish:

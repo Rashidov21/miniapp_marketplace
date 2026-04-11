@@ -3,6 +3,7 @@ import threading
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -98,6 +99,9 @@ def order_create(request):
             phone=ser.validated_data["phone"].strip(),
             address=ser.validated_data["address"].strip(),
             status=Order.Status.NEW,
+        )
+        Shop.objects.filter(pk=order.shop_id, first_order_completed_at__isnull=True).update(
+            first_order_completed_at=timezone.now()
         )
         if idem_key:
             OrderIdempotency.objects.create(key=idem_key, order=order)

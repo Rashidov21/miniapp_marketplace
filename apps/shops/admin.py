@@ -20,7 +20,15 @@ class ShopAdmin(admin.ModelAdmin):
     )
     list_display_links = ("name",)
     list_filter = ("is_active", "is_verified", "subscription_status")
-    search_fields = ("name", "phone", "owner__telegram_id", "owner__username", "owner__first_name", "owner__last_name")
+    search_fields = (
+        "name",
+        "slug",
+        "phone",
+        "owner__telegram_id",
+        "owner__username",
+        "owner__first_name",
+        "owner__last_name",
+    )
     list_select_related = ("owner", "current_plan")
     date_hierarchy = "created_at"
     raw_id_fields = ("owner", "current_plan")
@@ -34,7 +42,7 @@ class ShopAdmin(admin.ModelAdmin):
         "extend_trial_7_days",
     )
     fieldsets = (
-        (None, {"fields": ("owner", "name", "description", "logo")}),
+        (None, {"fields": ("owner", "name", "slug", "description", "logo")}),
         (_("Contacts"), {"fields": ("phone", "phone_secondary", "address")}),
         (_("Social"), {"fields": ("social_telegram", "social_instagram", "social_facebook")}),
         (_("Subscription"), {"fields": ("subscription_status", "trial_started_at", "trial_ends_at", "current_plan", "subscription_ends_at")}),
@@ -76,8 +84,18 @@ class ShopAdmin(admin.ModelAdmin):
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ("name", "duration_months", "price", "currency", "is_active", "sort_order")
+    list_display = (
+        "name",
+        "duration_months",
+        "price",
+        "currency",
+        "max_products",
+        "includes_advanced_analytics",
+        "is_active",
+        "sort_order",
+    )
     list_editable = ("price", "is_active", "sort_order")
+    list_filter = ("is_active", "includes_advanced_analytics")
 
 
 @admin.register(SubscriptionPayment)
