@@ -1,0 +1,463 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SavdoLink — Telegramda 1 link bilan savdo | Bepul boshlash</title>
+  <meta name="description" content="Chatda yo‘qolgan buyurtmalar tugadi. 1 daqiqada do‘kon, bitta link, tartibli buyurtmalar. Telegram Mini App — hozir bepul.">
+  <meta name="theme-color" content="#0d9488">
+  <link rel="icon" href="{% static 'branding/favicon.svg' %}" type="image/svg+xml">
+  <link rel="canonical" href="{{ public_base_url }}/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ public_base_url }}/">
+  <meta property="og:title" content="SavdoLink — 1 link bilan Telegramda savdo">
+  <meta property="og:description" content="Do‘kon oching, link ulashing, buyurtmalar tartibda. Bepul boshlash.">
+  <meta property="og:image" content="{{ public_base_url }}{% static 'branding/logo.svg' %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"SavdoLink","applicationCategory":"BusinessApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"UZS"}}
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#0d9488', dark: '#0f766e', light: '#ccfbf1' },
+          },
+          fontFamily: { sans: ['ui-sans-serif', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased pb-28 md:pb-0">
+  <!-- Urgency: konkret foyda -->
+  <div class="bg-brand px-4 py-2.5 text-center text-sm font-semibold text-white">
+    <span class="mr-1 opacity-95" aria-hidden="true">⚡</span>Boshlash <strong>bepul</strong> · do‘kon ochish ~<strong>1 daqiqa</strong>
+  </div>
+
+  <header class="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3 md:max-w-5xl">
+    <a href="/" class="flex items-center gap-2">
+      <img src="{% static 'branding/logo.svg' %}" alt="SavdoLink" width="120" height="32" class="h-8 w-auto" loading="eager" decoding="async">
+    </a>
+    <div class="flex items-center gap-2 text-sm">
+      <a href="/webapp/" class="hidden rounded-xl px-3 py-2 font-medium text-slate-600 hover:bg-slate-100 sm:inline">Kirish</a>
+      {% if telegram_bot_username %}
+      <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="touch-manipulation rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-brand/20 hover:bg-brand-dark">Botga kirish</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO: bot birinchi = past ishonch, yuqori konversiya -->
+    <section class="relative overflow-hidden bg-gradient-to-b from-brand/5 via-slate-50 to-slate-50">
+      <div class="mx-auto max-w-lg px-4 pb-12 pt-4 md:max-w-5xl md:grid md:grid-cols-2 md:items-center md:gap-12 md:pb-20 md:pt-6">
+        <div>
+          <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand shadow-sm ring-1 ring-brand/20">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-hidden="true"></span>
+            Telegram ichida ishlaydi · karta shart emas
+          </p>
+          <h1 class="mt-4 text-[1.65rem] font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-4xl lg:text-[2.45rem]">
+            Chatda yo‘qolgan buyurtmalarni <span class="text-brand">to‘xtating</span> — bitta link bilan soting
+          </h1>
+          <p class="mt-4 text-lg font-medium leading-relaxed text-slate-700">
+            Do‘kon, mahsulot, buyurtma — hammasi tartibda. Instagram va Telegramdan kelgan mijozlar <strong>bitta joyda</strong>.
+          </p>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch">
+            {% if telegram_bot_username %}
+            <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="touch-manipulation inline-flex min-h-[52px] flex-1 items-center justify-center rounded-2xl bg-brand px-6 text-base font-bold text-white shadow-xl shadow-brand/30 ring-2 ring-brand/20 hover:bg-brand-dark sm:min-w-[220px]">
+              Telegramda bepul boshlash →
+            </a>
+            {% endif %}
+            <button type="button" id="cta-hero" class="touch-manipulation inline-flex min-h-[52px] flex-1 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-6 text-base font-bold text-slate-800 hover:border-brand/40 hover:bg-slate-50 sm:min-w-[200px]">
+              Raqam qoldirish
+            </button>
+          </div>
+          <p class="mt-3 text-center text-xs text-slate-500 sm:text-left">
+            Avvalo botni oching — keyin istasangiz qo‘ng‘iroq uchun raqam qoldiring.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3 text-xs text-slate-600">
+            <span class="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-slate-200/80"><span aria-hidden="true">✓</span> Boshlash 0 so‘m</span>
+            <span class="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-slate-200/80"><span aria-hidden="true">✓</span> Texnik bilim yo‘q</span>
+            <span class="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-slate-200/80"><span aria-hidden="true">✓</span> Mobil uchun qulay</span>
+          </div>
+        </div>
+        <div class="mt-10 md:mt-0">
+          <div class="mx-auto max-w-[280px] rounded-[2rem] border-4 border-slate-800 bg-slate-800 p-2 shadow-2xl shadow-slate-400/30">
+            <div class="overflow-hidden rounded-[1.25rem] bg-white">
+              <div class="bg-brand px-3 py-2 text-center text-xs font-semibold text-white">SavdoLink</div>
+              <div class="space-y-2 p-3">
+                <div class="h-14 rounded-xl bg-gradient-to-r from-brand/15 to-brand/5 ring-1 ring-brand/20"></div>
+                <div class="h-10 rounded-xl bg-slate-100"></div>
+                <div class="h-10 rounded-xl bg-slate-100"></div>
+                <div class="mt-2 rounded-xl bg-brand py-2.5 text-center text-xs font-bold text-white">Buyurtma berish</div>
+              </div>
+            </div>
+          </div>
+          <p class="mt-3 text-center text-xs font-medium text-slate-500">Haqiqiy mijozlar uchun shu ko‘rinishda ochiladi</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEM -->
+    <section class="border-y border-slate-200 bg-white py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <h2 class="text-xl font-bold text-slate-900 md:text-2xl">Tanishmi?</h2>
+        <p class="mt-2 max-w-2xl text-slate-600">Har kuni savdo bo‘lsa ham, buyurtmalar chatda aralashib ketadi — siz esa izlab yurasiz.</p>
+        <ul class="mt-6 space-y-3 text-slate-700">
+          <li class="flex gap-3 rounded-xl bg-rose-50/80 px-4 py-3 ring-1 ring-rose-100"><span class="text-rose-500" aria-hidden="true">✕</span> Xabarlar orasida buyurtma yo‘qoladi</li>
+          <li class="flex gap-3 rounded-xl bg-rose-50/80 px-4 py-3 ring-1 ring-rose-100"><span class="text-rose-500" aria-hidden="true">✕</span> Qaysi mijoz oldin — bilinmaydi</li>
+          <li class="flex gap-3 rounded-xl bg-rose-50/80 px-4 py-3 ring-1 ring-rose-100"><span class="text-rose-500" aria-hidden="true">✕</span> Vaqt ketadi, hafa mijoz ketadi</li>
+        </ul>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          {% if telegram_bot_username %}
+          <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-brand px-6 py-3 text-center text-base font-bold text-white hover:bg-brand-dark sm:flex-1">
+            Buni SavdoLink hal qiladi — botda ko‘ring
+          </a>
+          {% endif %}
+          <button type="button" data-open-modal data-source="landing_modal" class="inline-flex min-h-[48px] items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-3 text-base font-bold text-slate-800 hover:bg-slate-50 sm:flex-1">
+            Menga qo‘ng‘iroq qiling
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTION -->
+    <section class="py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <h2 class="text-xl font-bold text-slate-900 md:text-2xl">Bitta platforma — tartibli savdo</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <p class="text-2xl" aria-hidden="true">⚡</p>
+            <p class="mt-2 font-semibold text-slate-900">Tez boshlash</p>
+            <p class="mt-1 text-sm text-slate-600">Do‘kon nomi — va sizda tayyor vitrina.</p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <p class="text-2xl" aria-hidden="true">🔗</p>
+            <p class="mt-2 font-semibold text-slate-900">Bitta link</p>
+            <p class="mt-1 text-sm text-slate-600">Bio, story, guruh — hammasiga shu.</p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <p class="text-2xl" aria-hidden="true">📋</p>
+            <p class="mt-2 font-semibold text-slate-900">Buyurtma izi</p>
+            <p class="mt-1 text-sm text-slate-600">Yangi / qabul / yetkazildi.</p>
+          </div>
+        </div>
+        <div class="mt-8 text-center">
+          <button type="button" data-open-modal data-source="landing_modal" class="inline-flex min-h-[48px] min-w-[200px] items-center justify-center rounded-2xl border-2 border-brand bg-white px-8 py-3.5 text-base font-bold text-brand hover:bg-brand/5">
+            Qo‘llab-quvvatlash bilan bog‘lanish
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="border-y border-slate-200 bg-white py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <h2 class="text-xl font-bold text-slate-900 md:text-2xl">3 qadam — tayyor</h2>
+        <ol class="mt-8 space-y-5">
+          <li class="flex gap-4">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-bold text-white shadow-md shadow-brand/25">1</span>
+            <div><p class="font-semibold text-slate-900">Botda do‘kon oching</p><p class="text-sm text-slate-600">Mini App ochiladi — ro‘yxatdan o‘tasiz.</p></div>
+          </li>
+          <li class="flex gap-4">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-bold text-white shadow-md shadow-brand/25">2</span>
+            <div><p class="font-semibold text-slate-900">Mahsulot qo‘shing</p><p class="text-sm text-slate-600">Narx, rasm — mijoz darhol ko‘radi.</p></div>
+          </li>
+          <li class="flex gap-4">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-bold text-white shadow-md shadow-brand/25">3</span>
+            <div><p class="font-semibold text-slate-900">Linkni tarqating</p><p class="text-sm text-slate-600">Buyurtmalar tartibda keladi.</p></div>
+          </li>
+        </ol>
+        {% if telegram_bot_username %}
+        <div class="mt-10 text-center">
+          <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-slate-900 px-8 py-3.5 text-base font-bold text-white hover:bg-slate-800">
+            1-qadamni hozir qilish
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- BENEFITS -->
+    <section class="py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <h2 class="text-xl font-bold text-slate-900 md:text-2xl">Nima o‘zgaradi?</h2>
+        <ul class="mt-6 grid gap-3 sm:grid-cols-3">
+          <li class="rounded-2xl bg-brand/5 px-4 py-4 text-center text-sm font-semibold text-slate-800 ring-1 ring-brand/15">Kamroq yozish — ko‘proq sotish</li>
+          <li class="rounded-2xl bg-brand/5 px-4 py-4 text-center text-sm font-semibold text-slate-800 ring-1 ring-brand/15">Mijoz yo‘qotmaslik</li>
+          <li class="rounded-2xl bg-brand/5 px-4 py-4 text-center text-sm font-semibold text-slate-800 ring-1 ring-brand/15">Kechasi ham buyurtma qabul</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SOCIAL PROOF: ijtimoiy isbot + raqamlar -->
+    <section class="border-y border-slate-200 bg-slate-100 py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <div class="grid gap-8 md:grid-cols-2 md:items-start md:gap-12">
+          <div class="text-center md:text-left">
+            <p class="text-4xl font-extrabold tabular-nums text-brand md:text-5xl">1 200+</p>
+            <p class="mt-1 font-medium text-slate-700">aktiv foydalanuvchi</p>
+            <p class="mt-2 text-sm text-slate-500">(namuna statistika — o‘sishda)</p>
+            <div class="mt-4 flex justify-center gap-0.5 md:justify-start" aria-label="5 yulduz">
+              {% for i in "12345" %}<span class="text-lg text-amber-400" aria-hidden="true">★</span>{% endfor %}
+            </div>
+          </div>
+          <div class="space-y-4">
+            <blockquote class="rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-700 shadow-sm">
+              <p>«Endi buyurtmalarni qayta qidirishim shart emas — hammasi ilovada.»</p>
+              <footer class="mt-2 text-xs font-semibold text-slate-500">— kiyim sotuvchisi, Toshkent</footer>
+            </blockquote>
+            <blockquote class="rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-700 shadow-sm">
+              <p>«Instagramdan kelganlar shu link orqali buyurtma berdi, juda qulay.»</p>
+              <footer class="mt-2 text-xs font-semibold text-slate-500">— aksessuar, onlayn</footer>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-5xl">
+        <h2 class="text-center text-xl font-bold text-slate-900 md:text-2xl">Shaffof tariflar</h2>
+        <p class="mx-auto mt-2 max-w-md text-center text-sm text-slate-600">Kredit karta shart emas — avval bepul sinab ko‘ring.</p>
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <div class="rounded-2xl border-2 border-slate-200 bg-white p-6 text-center">
+            <p class="text-sm font-medium text-slate-500">Free</p>
+            <p class="mt-2 text-2xl font-bold text-slate-900">0 so‘m</p>
+            <p class="mt-2 text-sm text-slate-600">Boshlash va sinash</p>
+            {% if telegram_bot_username %}
+            <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="mt-4 inline-block w-full rounded-xl bg-slate-100 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-200">Boshlash</a>
+            {% endif %}
+          </div>
+          <div class="relative rounded-2xl border-2 border-brand bg-white p-6 text-center shadow-xl shadow-brand/15 ring-2 ring-brand/10">
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-0.5 text-xs font-bold text-white">Eng ko‘p tanlangan</span>
+            <p class="mt-2 text-sm font-medium text-brand">Standart</p>
+            <p class="mt-2 text-2xl font-bold text-slate-900">29 000</p>
+            <p class="text-xs text-slate-500">so‘m / oy</p>
+            <p class="mt-2 text-sm text-slate-600">Ko‘proq mahsulot</p>
+            <button type="button" data-open-modal data-source="landing_modal" class="mt-4 w-full rounded-xl bg-brand py-2.5 text-sm font-bold text-white hover:bg-brand-dark">Maslahat olish</button>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-200 bg-white p-6 text-center">
+            <p class="text-sm font-medium text-slate-500">Pro</p>
+            <p class="mt-2 text-2xl font-bold text-slate-900">59 000</p>
+            <p class="text-xs text-slate-500">so‘m / oy</p>
+            <p class="mt-2 text-sm text-slate-600">Analytics</p>
+            <button type="button" data-open-modal data-source="landing_modal" class="mt-4 w-full rounded-xl border-2 border-slate-200 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-50">Savol berish</button>
+          </div>
+        </div>
+        <p class="mt-4 text-center text-xs text-slate-500">To‘liq shartlar Mini App → <strong>Obuna</strong> bo‘limida.</p>
+        <div class="mt-6 text-center">
+          <button type="button" data-open-modal data-source="landing_modal" class="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-brand px-8 py-4 text-base font-bold text-white shadow-lg shadow-brand/25 hover:bg-brand-dark">
+            Bepul konsultatsiya olish
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="border-t border-slate-200 bg-white py-12">
+      <div class="mx-auto max-w-lg px-4 md:max-w-2xl">
+        <h2 class="text-xl font-bold text-slate-900 md:text-2xl">Savollar</h2>
+        <dl class="mt-8 space-y-6">
+          <div>
+            <dt class="font-semibold text-slate-900">Nega aynan Telegram?</dt>
+            <dd class="mt-1 text-sm leading-relaxed text-slate-600">Mijozlaringiz allaqachon u yerda. SavdoLink shu ichida ochiladi — alohida sayt ochish shart emas.</dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-slate-900">Qancha vaqt oladi?</dt>
+            <dd class="mt-1 text-sm leading-relaxed text-slate-600">Do‘kon ochish bir necha daqiqa. Birinchi mahsulotni qo‘shish — o‘zingizga bog‘liq.</dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-slate-900">To‘lov qachon kerak?</dt>
+            <dd class="mt-1 text-sm leading-relaxed text-slate-600">Boshlash bepul. Kengaytirish kerak bo‘lganda tarif tanlaysiz.</dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-slate-900">Qiyin emasmi?</dt>
+            <dd class="mt-1 text-sm leading-relaxed text-slate-600">Yo‘q. Hammasi tugmalar va oddiy formalar — telefon bilan boshqariladi.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="bg-gradient-to-b from-brand to-brand-dark py-14 text-white">
+      <div class="mx-auto max-w-lg px-4 text-center md:max-w-2xl">
+        <h2 class="text-2xl font-extrabold md:text-3xl">Bugun boshlang — ertaga emas</h2>
+        <p class="mt-3 text-base text-white/95">Bir necha daqiqada birinchi do‘koningizni ko‘rasiz. Keyin istasangiz jamoamiz bilan gaplashasiz.</p>
+        {% if telegram_bot_username %}
+        <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="mt-8 inline-flex min-h-[56px] w-full max-w-sm items-center justify-center rounded-2xl bg-white px-8 text-lg font-extrabold text-brand shadow-xl hover:bg-slate-50 sm:w-auto">
+          Telegramda bepul ochish
+        </a>
+        {% endif %}
+        <button type="button" data-open-modal data-source="landing_final" class="mt-4 block w-full max-w-sm rounded-2xl border-2 border-white/50 py-4 text-base font-bold text-white hover:bg-white/10 md:mx-auto">
+          Faqat telefon raqamim qolsin
+        </button>
+        <p class="mt-6 text-xs text-white/75">Ma’lumotlaringiz maxfiy saqlanadi · spam yo‘q</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-slate-50 py-8 text-center text-sm text-slate-500">
+    <p class="font-medium text-slate-600">SavdoLink · Telegram Mini App</p>
+    <p class="mt-2"><a href="/webapp/" class="font-medium text-brand hover:underline">Mavjud akkaunt bilan kirish</a></p>
+  </footer>
+
+  <!-- Sticky: bot birinchi -->
+  <div class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/90 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md md:hidden">
+    <div class="mx-auto flex max-w-lg gap-2">
+      {% if telegram_bot_username %}
+      <a href="https://t.me/{{ telegram_bot_username }}?start=landing" class="touch-manipulation flex-[1.35] rounded-2xl bg-brand py-3.5 text-center text-sm font-extrabold text-white shadow-md shadow-brand/25">
+        Botda boshlash
+      </a>
+      {% endif %}
+      <button type="button" data-open-modal data-source="landing_sticky" class="touch-manipulation flex-1 rounded-2xl border-2 border-brand py-3.5 text-center text-sm font-bold text-brand">
+        Ariza
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="lead-modal" class="fixed inset-0 z-50 hidden items-end justify-center bg-black/50 sm:items-center" aria-hidden="true">
+    <div class="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="modal-title" class="text-xl font-extrabold text-slate-900">Qo‘ng‘iroq uchun raqam</h2>
+          <p class="mt-1 text-sm text-emerald-700">Odatda <strong>15 daqiqa</strong> ichida aloqaga chiqamiz</p>
+        </div>
+        <button type="button" id="modal-close" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Yopish">✕</button>
+      </div>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">Ism va telefon — yetarli. Savdolaringiz hajmi haqida qisqacha yozishingiz mumkin.</p>
+      <form id="lead-form" class="mt-5 space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="f-name">Ismingiz</label>
+          <input id="f-name" name="name" required type="text" autocomplete="name" maxlength="120" placeholder="Masalan, Dilshod"
+                 class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="f-phone">Telefon</label>
+          <input id="f-phone" name="phone" required type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+998 __ ___ __ __"
+                 class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="f-comment">Nima sotasiz? <span class="font-normal text-slate-400">(ixtiyoriy)</span></label>
+          <textarea id="f-comment" name="comment" rows="2" maxlength="500" placeholder="Masalan: ayollar kiyimi, Instagram 5k obunachi"
+                    class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"></textarea>
+        </div>
+        <label class="flex items-start gap-2 text-sm text-slate-600">
+          <input type="checkbox" required class="mt-1 h-4 w-4 rounded border-slate-300 text-brand">
+          <span>Shaxsiy ma’lumotlarni qayta ishlashga roziman.</span>
+        </label>
+        <input type="hidden" name="source" id="f-source" value="landing_modal">
+        <p id="form-err" class="hidden text-sm text-red-600"></p>
+        <p id="form-ok" class="hidden text-sm text-emerald-700"></p>
+        <button type="submit" class="w-full rounded-2xl bg-brand py-4 text-base font-extrabold text-white shadow-lg shadow-brand/25 hover:bg-brand-dark">
+          Ariza yuborish
+        </button>
+        <p class="text-center text-xs text-slate-500">Yuborganingizdan keyin Telegram orqali davom etishingiz mumkin</p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('lead-modal');
+      var form = document.getElementById('lead-form');
+      var errEl = document.getElementById('form-err');
+      var okEl = document.getElementById('form-ok');
+      var sourceInput = document.getElementById('f-source');
+      var csrf = '{{ csrf_token }}';
+      var submitUrl = '{% url "landing_lead_submit" %}';
+      var botUrl = {% if telegram_bot_username %}'https://t.me/{{ telegram_bot_username }}?start=lead'{% else %}''{% endif %};
+
+      function openModal(src) {
+        if (sourceInput && src) sourceInput.value = src;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () {
+          var n = document.getElementById('f-name');
+          if (n) n.focus();
+        }, 100);
+      }
+      function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+
+      document.querySelectorAll('[data-open-modal]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          openModal(el.getAttribute('data-source') || 'landing_modal');
+        });
+      });
+      var heroBtn = document.getElementById('cta-hero');
+      if (heroBtn) heroBtn.addEventListener('click', function () { openModal('landing_hero'); });
+      document.getElementById('modal-close').addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errEl.classList.add('hidden');
+        okEl.classList.add('hidden');
+        var submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Yuborilmoqda…'; }
+        var fd = new FormData(form);
+        var payload = {
+          name: fd.get('name'),
+          phone: fd.get('phone'),
+          comment: fd.get('comment') || '',
+          source: fd.get('source') || 'landing_modal'
+        };
+        fetch(submitUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          return r.json().then(function (data) {
+            return { ok: r.ok, status: r.status, data: data };
+          });
+        }).then(function (res) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Ariza yuborish'; }
+          if (res.ok && res.data.ok) {
+            form.reset();
+            okEl.textContent = 'Qabul qilindi! Telegram ochilyapti…';
+            okEl.classList.remove('hidden');
+            closeModal();
+            if (botUrl) {
+              window.location.href = botUrl;
+            }
+          } else if (res.status === 429) {
+            errEl.textContent = 'Juda ko‘p urinish. 10–15 daqiqadan keyin qayta urinib ko‘ring.';
+            errEl.classList.remove('hidden');
+          } else {
+            errEl.textContent = 'Yuborib bo‘lmadi. Maydonlarni tekshiring.';
+            errEl.classList.remove('hidden');
+          }
+        }).catch(function () {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Ariza yuborish'; }
+          errEl.textContent = 'Internetni tekshiring va qayta urinib ko‘ring.';
+          errEl.classList.remove('hidden');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

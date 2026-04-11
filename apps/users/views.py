@@ -1,4 +1,6 @@
 import hmac
+import threading
+import time
 
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -9,7 +11,7 @@ from rest_framework.response import Response
 
 from apps.core.drf_errors import error_response
 from apps.core.initdata import verify_init_data
-from apps.core.telegram import send_message_with_markup
+from apps.core.telegram import send_message, send_message_with_markup
 from apps.users.authentication import upsert_user_from_telegram_user
 from apps.users.models import User
 from apps.users.serializers import UserSerializer
@@ -102,9 +104,34 @@ def _build_webapp_url(start_param: str) -> str:
 def _start_text() -> str:
     return (
         "Assalomu alaykum!\n\n"
-        "Mini do'kon ilovasiga xush kelibsiz.\n"
-        "Quyidagi tugma orqali WebApp'ni ochib, katalogni ko'ring yoki sotuvchi kabinetiga o'ting."
+        "SavdoLink — Telegramda 1 link bilan savdo boshlang.\n"
+        "Quyidagi tugma orqali Mini App'ni oching: do‘kon yarating, mahsulot qo‘shing, buyurtmalarni tartibda oling."
     )
+
+
+def _spawn_onboarding_nudges(chat_id: int) -> None:
+    """Kechikkan xabarlar — foydalanuvchini do‘kon ochish va sinab ko‘rishga undaydi (daemon thread)."""
+
+    def run() -> None:
+        sequence = [
+            (
+                8,
+                "⏱ SavdoLink: 1 daqiqada do‘kon ochishingiz mumkin.\nPastdagi «Mini Appni ochish» tugmasidan kiring → Sotuvchi kabineti.",
+            ),
+            (
+                32,
+                "📦 Mahsulot qo‘shing va bitta havolani ulashing — buyurtmalar chatda yo‘qolmaydi.",
+            ),
+            (
+                85,
+                "✅ Tayyormisiz? Mini App → Sotuvchi kabineti — hozir sinab ko‘ring.",
+            ),
+        ]
+        for wait_sec, msg in sequence:
+            time.sleep(wait_sec)
+            send_message(chat_id, msg)
+
+    threading.Thread(target=run, daemon=True).start()
 
 
 @api_view(["POST"])
@@ -139,5 +166,6 @@ def telegram_webhook(request, secret: str):
             _start_text() + "\n\nQuyidagi tugmalardan birini bosing.",
             reply_markup=inline_markup,
         )
+        _spawn_onboarding_nudges(int(chat["id"]))
 
     return Response({"ok": True})

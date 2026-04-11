@@ -2,14 +2,7 @@
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
-  --tg-bg: #f8fafc;
-  --tg-text: #0f172a;
   --brand: #0d9488;
-}
-
-html.tg-themed body {
-  background-color: var(--tg-bg) !important;
-  color: var(--tg-text) !important;
 }
 
 /* Keyboard focus — visible ring, matches brand */

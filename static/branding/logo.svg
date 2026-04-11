@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" fill="none" aria-hidden="true">
+  <rect width="32" height="32" rx="8" fill="#0d9488"/>
+  <path d="M10 22V10h3l4.5 7 4.5-7h3v12h-2.6v-8l-4 6.2h-1.8l-4-6.2v8H10z" fill="#fff"/>
+  <text x="38" y="22" fill="#0f172a" font-family="system-ui,sans-serif" font-size="15" font-weight="700">SavdoLink</text>
+</svg>

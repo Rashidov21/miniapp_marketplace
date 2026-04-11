@@ -1,0 +1,49 @@
+{% extends "platform/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Landing arizalar" %}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-900">{% trans "Landing arizalar" %}</h1>
+<p class="mt-1 text-sm text-slate-600">{% trans "SavdoLink bosh sahifasidagi modal/sticky arizalar." %}</p>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="{% trans 'Qidiruv (ism, telefon)' %}"
+         class="min-w-[12rem] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+  <button type="submit" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">{% trans "Qidirish" %}</button>
+</form>
+<div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
+  <table class="w-full min-w-[640px] text-left text-sm">
+    <thead>
+      <tr class="border-b border-slate-200 text-slate-500">
+        <th class="py-3 pl-4">ID</th>
+        <th>{% trans "Ism" %}</th>
+        <th>{% trans "Telefon" %}</th>
+        <th>{% trans "Manba" %}</th>
+        <th>{% trans "Vaqt" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in page %}
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-2 pl-4 font-mono text-xs">{{ row.id }}</td>
+          <td class="font-medium">{{ row.name }}</td>
+          <td class="font-mono">{{ row.phone }}</td>
+          <td class="text-slate-600">{{ row.get_source_display }}</td>
+          <td class="text-slate-500">{{ row.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="py-8 text-center text-slate-500">{% trans "Arizalar yo‘q." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.has_other_pages %}
+  <div class="mt-4 flex justify-center gap-2 text-sm">
+    {% if page.has_previous %}
+      <a class="text-brand hover:underline" href="?page={{ page.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">←</a>
+    {% endif %}
+    <span class="text-slate-600">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}
+      <a class="text-brand hover:underline" href="?page={{ page.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">→</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

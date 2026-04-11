@@ -113,7 +113,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 # Query string for /static/js/app.js etc. when not using ManifestStaticFilesStorage (e.g. misconfigured nginx).
-STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260410")
+STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260411")
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -190,6 +190,9 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
+
+# Landing arizalari — Telegram chat ID lar (vergul bilan), masalan: "123456789" yoki "111,222"
+LANDING_NOTIFY_TELEGRAM_IDS = os.environ.get("LANDING_NOTIFY_TELEGRAM_IDS", "")
 
 # Sotuvchi oferta / foydalanish shartlari versiyasi; yangilanganda foydalanuvchi qayta tasdiqlashi kerak.
 CURRENT_SELLER_TERMS_VERSION = os.environ.get("CURRENT_SELLER_TERMS_VERSION", "1").strip() or "1"

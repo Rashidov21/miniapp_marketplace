@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
+from apps.core import views as core_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -12,8 +12,9 @@ urlpatterns = [
     path("api/", include("apps.shops.urls")),
     path("api/", include("apps.products.urls")),
     path("api/", include("apps.orders.urls")),
+    path("api/landing/lead/", core_views.landing_lead_submit, name="landing_lead_submit"),
     path("webapp/", include("apps.core.urls")),
-    path("", RedirectView.as_view(url="/webapp/", permanent=False)),
+    path("", core_views.landing_page, name="landing"),
 ]
 
 if settings.DEBUG:

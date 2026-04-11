@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.core.models import Lead
 from apps.core.telegram import send_message
 from apps.orders.models import Order
 from apps.platform.forms import BroadcastForm, PlatformLoginForm
@@ -135,8 +136,27 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         ],
         "plans": SubscriptionPlan.objects.filter(is_active=True),
         "action_queue": action_queue[:10],
+        "recent_leads": Lead.objects.order_by("-created_at")[:8],
+        "leads_week": Lead.objects.filter(created_at__gte=week_ago).count(),
     }
     return render(request, "platform/dashboard.html", ctx)
+
+
+@_staff_required
+def leads_list(request: HttpRequest) -> HttpResponse:
+    qs = Lead.objects.all()
+    q = (request.GET.get("q") or "").strip()
+    if q:
+        qs = qs.filter(
+            Q(name__icontains=q) | Q(phone__icontains=q) | Q(comment__icontains=q)
+        )
+    paginator = Paginator(qs.order_by("-created_at"), 40)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "platform/leads.html",
+        {"page": page, "q": q},
+    )
 
 
 @_staff_required

@@ -29,6 +29,29 @@
   </div>
 </div>
 
+<div class="mt-6 rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <h2 class="font-semibold text-slate-900">{% trans "Landing arizalar" %}</h2>
+    <div class="flex items-center gap-3 text-sm">
+      <span class="text-slate-500">{% trans "7 kun" %}: <strong class="text-slate-800">{{ leads_week }}</strong></span>
+      <a href="{% url 'platform_leads' %}" class="font-medium text-brand hover:underline">{% trans "Barchasi" %} →</a>
+    </div>
+  </div>
+  {% if recent_leads %}
+  <ul class="divide-y divide-slate-100 text-sm">
+    {% for lead in recent_leads %}
+      <li class="flex flex-wrap items-baseline justify-between gap-2 py-2">
+        <span class="font-medium text-slate-900">{{ lead.name }}</span>
+        <span class="font-mono text-slate-700">{{ lead.phone }}</span>
+        <span class="text-xs text-slate-500">{{ lead.created_at|date:"d.m H:i" }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-sm text-slate-500">{% trans "Hozircha ariza yo‘q." %}</p>
+  {% endif %}
+</div>
+
 <div class="mt-6 grid gap-4 lg:grid-cols-2">
   <div class="rounded-2xl bg-white p-4 shadow ring-1 ring-slate-200">
     <h2 class="font-semibold text-slate-900">{% trans "Do‘kon sahifasi tashriflari" %}</h2>
