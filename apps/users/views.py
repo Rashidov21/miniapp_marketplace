@@ -66,7 +66,7 @@ def become_seller(request):
         return Response(UserSerializer(user).data)
     if not user_has_current_seller_terms(user):
         return error_response(
-            str(_("Please accept the seller and marketplace terms first.")),
+            str(_("Please accept the seller and platform terms first.")),
             status=status.HTTP_403_FORBIDDEN,
             code="terms_required",
         )
@@ -78,7 +78,7 @@ def become_seller(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def accept_seller_terms(request):
-    """Record acceptance of the current seller/marketplace terms version."""
+    """Record acceptance of the current seller / platform terms version."""
     record_seller_terms_acceptance(request.user)
     return Response(UserSerializer(request.user).data)
 

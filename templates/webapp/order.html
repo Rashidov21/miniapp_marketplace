@@ -2,53 +2,70 @@
 {% load i18n %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Buyurtma" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Buyurtma" %}</p>
 </div>
 {% endblock %}
 {% block content %}
-<div id="form-section" class="flex flex-col gap-4 pb-28">
+<div id="order-boot-skeleton" class="flex flex-col gap-4 pb-28" aria-busy="true">
+  <div class="space-y-3">
+    <div class="skeleton h-8 w-56 max-w-[85%] rounded-lg bg-slate-200/90"></div>
+    <div class="skeleton h-4 w-full rounded bg-slate-200/80"></div>
+    <div class="skeleton h-24 w-full rounded-2xl bg-slate-200/80"></div>
+    <div class="skeleton h-14 w-full rounded-xl bg-slate-200/80"></div>
+    <div class="skeleton h-14 w-full rounded-xl bg-slate-200/80"></div>
+    <div class="skeleton h-24 w-full rounded-xl bg-slate-200/80"></div>
+  </div>
+</div>
+
+<div id="form-section" class="hidden flex flex-col gap-4 pb-28">
   <div>
     <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Tez buyurtma" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Yetkazib berish" %}</h1>
-    <p class="mt-2 text-sm text-slate-600">{% trans "3 ta maydon — boshqasi kerak emas." %}</p>
+    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Buyurtma" %}</h1>
+    <p class="mt-2 text-sm text-slate-600">{% trans "Ism, telefon va manzil — boshqa maydon yo‘q." %}</p>
+    <div class="mt-3 rounded-xl border border-emerald-100/90 bg-gradient-to-r from-emerald-50/95 to-teal-50/80 px-3 py-2.5 text-xs leading-snug text-emerald-950 ring-1 ring-emerald-100/70">
+      <p class="font-semibold">{% trans "Ishonchli sotuvchi" %}</p>
+      <p class="mt-0.5 text-emerald-900/90">{% trans "Telegram orqali xavfsiz buyurtma" %}</p>
+    </div>
     <p class="mt-3 text-xs leading-relaxed text-slate-500">
-      {% trans "Yuborilgan ma’lumotlar sotuvchiga yetkaziladi." %}
+      {% trans "Ma’lumotlar faqat sotuvchiga." %}
       <a href="/webapp/legal/privacy/" class="font-medium text-brand underline">{% trans "Maxfiylik" %}</a>
       ·
       <a href="/webapp/legal/terms/" class="font-medium text-brand underline">{% trans "Shartlar" %}</a>
     </p>
+    {% if shop_payment_note %}
+    <div class="rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 shadow-sm ring-1 ring-amber-100/80">
+      <p class="text-xs font-semibold uppercase tracking-wide text-amber-800/90">{% trans "To‘lov tartibi (do‘kon)" %}</p>
+      <div class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{{ shop_payment_note }}</div>
+    </div>
+    {% endif %}
   </div>
 
-  <form id="order-form" class="space-y-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" novalidate>
+  <form id="order-form" class="ui-card space-y-4" novalidate>
     <input type="hidden" name="product" id="product-id">
 
-    <div>
-      <label for="customer_name" class="block text-sm font-medium text-slate-800">{% trans "Ismingiz" %}</label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Telegramdan avtomatik to‘ldiriladi — o‘zgartirish mumkin" %}</p>
-      <input id="customer_name" name="customer_name" required autocomplete="name" autofocus maxlength="120"
-             class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
-             placeholder="{% trans 'Ism' %}">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-1">
+        <label for="customer_name" class="block text-sm font-medium text-slate-800">{% trans "Ism" %}</label>
+        <input id="customer_name" name="customer_name" required autocomplete="name" autofocus maxlength="120"
+               class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+               placeholder="{% trans 'Ismingiz' %}">
+      </div>
+      <div class="sm:col-span-1">
+        <label for="phone" class="block text-sm font-medium text-slate-800">{% trans "Telefon" %}</label>
+        <input id="phone" name="phone" required inputmode="tel" autocomplete="tel" maxlength="24"
+               class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 font-mono text-base tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+               placeholder="+998 90 123 45 67">
+      </div>
     </div>
 
     <div>
-      <label for="phone" class="block text-sm font-medium text-slate-800">{% trans "Telefon" %}</label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Format: +998 90 123 45 67" %}</p>
-      <input id="phone" name="phone" required inputmode="tel" autocomplete="tel" maxlength="24"
-             class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
-             placeholder="+998 90 123 45 67">
+      <label for="address" class="block text-sm font-medium text-slate-800">{% trans "Yetkazish manzili" %}</label>
+      <textarea id="address" name="address" required rows="2" maxlength="500"
+                class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+                placeholder="{% trans 'Qisqa: mahalla, ko‘cha, uy…' %}"></textarea>
     </div>
-
-    <div>
-      <label for="address" class="block text-sm font-medium text-slate-800">{% trans "Manzil" %}</label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Kuryer topishi uchun aniq yozing" %}</p>
-      <textarea id="address" name="address" required rows="3" maxlength="500"
-                class="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
-                placeholder="{% trans 'Mahalla, ko‘cha, uy, eshik kodi…' %}"></textarea>
-    </div>
-
-    <div id="form-error" class="hidden rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800" role="alert"></div>
   </form>
 </div>
 
@@ -56,7 +73,7 @@
   <div class="mx-auto max-w-lg px-4">
     <div class="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
       <button type="submit" form="order-form" id="submit-btn"
-              class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md shadow-brand/25 disabled:opacity-60 active:scale-[0.99]">
+              class="ui-btn ui-btn--primary flex w-full disabled:opacity-60">
         <span id="submit-label">{% trans "Buyurtmani yuborish" %}</span>
         <svg id="submit-spinner" class="hidden h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -70,13 +87,19 @@
 <div id="success-section" class="hidden flex min-h-[55vh] flex-col items-center justify-center gap-6 px-2 pb-24 text-center">
   <div class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl" aria-hidden="true">✓</div>
   <div>
-    <h2 class="text-2xl font-bold text-slate-900">{% trans "Buyurtma qabul qilindi" %}</h2>
-    <p class="mt-2 text-sm text-slate-600">{% trans "Tez orada aloqaga chiqamiz. Telegramga ham xabar ketdi." %}</p>
+    <h2 class="text-2xl font-bold text-slate-900">{% trans "Buyurtmangiz qabul qilindi" %}</h2>
+    <p class="mt-2 text-sm text-slate-600">{% trans "Sotuvchi siz bilan tez orada bog‘lanadi." %}</p>
+    {% if shop_payment_note %}
+    <div class="mt-4 w-full max-w-sm rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-left text-sm text-amber-950 shadow-sm ring-1 ring-amber-100/80">
+      <p class="text-xs font-semibold uppercase tracking-wide text-amber-800/90">{% trans "To‘lov" %}</p>
+      <div class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{{ shop_payment_note }}</div>
+    </div>
+    {% endif %}
   </div>
-  <a href="/webapp/my-orders/" class="touch-target inline-flex w-full max-w-sm items-center justify-center rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md">
+  <a href="/webapp/my-orders/" class="ui-btn ui-btn--primary w-full max-w-sm no-underline">
     {% trans "Mening buyurtmalarim" %}
   </a>
-  <a href="/webapp/s/{{ shop_slug }}/" class="touch-target inline-flex w-full max-w-sm items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-base font-semibold text-slate-800">
+  <a href="/webapp/s/{{ shop_slug }}/" class="ui-btn ui-btn--secondary w-full max-w-sm no-underline">
     {% trans "Do‘konga qaytish" %}
   </a>
 </div>
@@ -94,35 +117,60 @@
   );
   document.getElementById("product-id").value = String(productId);
 
+  (function revealOrderForm() {
+    var sk = document.getElementById("order-boot-skeleton");
+    var fs = document.getElementById("form-section");
+    function go() {
+      if (sk) sk.classList.add("hidden");
+      if (fs) fs.classList.remove("hidden");
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", go);
+    } else {
+      go();
+    }
+  })();
+
   (function prefill() {
     const name = MiniApp.getSuggestedName();
     if (name) document.getElementById("customer_name").value = name;
   })();
 
-  (function phoneHint() {
-    const el = document.getElementById("phone");
+  (function phoneFormat() {
+    var el = document.getElementById("phone");
+    if (!el || !MiniApp.formatUzPhoneDisplay) return;
+    function apply() {
+      var cur = el.value;
+      var caret = cur.length;
+      el.value = MiniApp.formatUzPhoneDisplay(cur);
+      try {
+        el.setSelectionRange(el.value.length, el.value.length);
+      } catch (e) {}
+    }
+    el.addEventListener("input", function () {
+      apply();
+    });
     el.addEventListener("blur", function () {
       el.value = MiniApp.normalizePhoneUz(el.value);
+      apply();
     });
   })();
 
   document.getElementById("order-form").addEventListener("submit", async function (e) {
     e.preventDefault();
-    const msg = document.getElementById("form-error");
     const btn = document.getElementById("submit-btn");
     const spin = document.getElementById("submit-spinner");
     const label = document.getElementById("submit-label");
     const init = MiniApp.getInitData();
-    msg.classList.add("hidden");
     if (!init) {
-      msg.textContent = "{% trans 'Telegram ichidan oching.' %}";
-      msg.classList.remove("hidden");
       MiniApp.showToast("{% trans 'Telegram ichidan oching.' %}", "warning");
       return;
     }
     const fd = new FormData(e.target);
     let phone = MiniApp.normalizePhoneUz(fd.get("phone"));
-    document.getElementById("phone").value = phone;
+    document.getElementById("phone").value = MiniApp.formatUzPhoneDisplay
+      ? MiniApp.formatUzPhoneDisplay(phone)
+      : phone;
     const body = {
       product: Number(fd.get("product")),
       customer_name: String(fd.get("customer_name") || "").trim(),
@@ -130,16 +178,12 @@
       address: String(fd.get("address") || "").trim(),
     };
     if (body.customer_name.length < 2) {
-      msg.textContent = "{% trans 'Ismni to‘liqroq yozing.' %}";
-      msg.classList.remove("hidden");
       MiniApp.showToast("{% trans 'Ismni to‘liqroq yozing.' %}", "warning");
       return;
     }
     const digits = phone.replace(/\D/g, "");
     if (digits.length < 12) {
-      msg.textContent = "{% trans 'Telefon +998 bilan to‘liq bo‘lsin.' %}";
-      msg.classList.remove("hidden");
-      MiniApp.showToast("{% trans 'Telefon raqamini to‘liq kiriting.' %}", "warning");
+      MiniApp.showToast("{% trans 'Telefon +998 bilan to‘liq bo‘lsin.' %}", "warning");
       return;
     }
     btn.disabled = true;
@@ -160,16 +204,15 @@
       document.getElementById("form-section").classList.add("hidden");
       document.querySelector(".app-sticky-bottom").classList.add("hidden");
       document.getElementById("success-section").classList.remove("hidden");
-      MiniApp.showToast("{% trans 'Rahmat! Buyurtma qabul qilindi.' %}", "success");
+      MiniApp.showToast("{% trans 'Rahmat! Buyurtmangiz qabul qilindi.' %}", "success");
       try {
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.notificationOccurred("success");
         }
       } catch (x) {}
     } catch (err) {
-      msg.textContent = MiniApp.parseApiError(err, "{% trans 'Xato. Qayta urinib ko‘ring.' %}");
-      msg.classList.remove("hidden");
-      MiniApp.showToast(msg.textContent, "error");
+      const msg = MiniApp.parseApiError(err, "{% trans 'Xato. Qayta urinib ko‘ring.' %}");
+      MiniApp.showToast(msg, "error");
     } finally {
       btn.disabled = false;
       spin.classList.add("hidden");

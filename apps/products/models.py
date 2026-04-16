@@ -52,7 +52,10 @@ class Product(models.Model):
             models.UniqueConstraint(fields=["shop", "slug"], name="products_product_shop_slug_uniq"),
         ]
         indexes = [
-            models.Index(fields=["shop", "is_active", "-created_at"]),
+            models.Index(
+                fields=["shop", "is_active", "sort_order", "-created_at"],
+                name="products_pr_shop_act_sort_idx",
+            ),
         ]
 
     def __str__(self) -> str:

@@ -2,9 +2,9 @@
 {% load i18n %}
 {% block title %}{% trans "Do‘kon sozlamalari" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Do‘kon sozlamalari" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Do‘kon sozlamalari" %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -66,6 +66,13 @@
       <label class="block text-sm font-medium text-slate-800">Facebook URL</label>
       <input name="social_facebook" id="social_facebook" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
     </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-800">{% trans "Mijozga: to‘lov tartibi" %}</label>
+      <p class="mt-1 text-xs text-slate-500">
+        {% trans "Mahsulot va buyurtma sahifasida ko‘rinadi. Click havolasi, karta yoki naqd — qisqa yozing. Buyurtmadan platforma ulush olmaydi." %}
+      </p>
+      <textarea name="payment_note" id="payment_note" rows="4" maxlength="800" class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+    </div>
     <p id="err" class="hidden text-sm text-red-700"></p>
     <button type="submit" id="btn" class="touch-target w-full rounded-2xl bg-brand py-4 text-base font-semibold text-white">{% trans "Saqlash" %}</button>
   </form>
@@ -93,6 +100,8 @@
       document.getElementById("social_telegram").value = shop.social_telegram || "";
       document.getElementById("social_instagram").value = shop.social_instagram || "";
       document.getElementById("social_facebook").value = shop.social_facebook || "";
+      const pn = document.getElementById("payment_note");
+      if (pn) pn.value = shop.payment_note || "";
       const mc = document.getElementById("shop-metrics-count");
       const ms = document.getElementById("shop-metrics-sum");
       const box = document.getElementById("shop-metrics");

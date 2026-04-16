@@ -69,6 +69,14 @@ class Shop(models.Model):
     social_telegram = models.URLField(blank=True)
     social_instagram = models.URLField(blank=True)
     social_facebook = models.URLField(blank=True)
+    payment_note = models.TextField(
+        blank=True,
+        max_length=800,
+        help_text=_(
+            "Mijozga: buyurtma va mahsulot sahifasida ko‘rinadi. Click havolasi, karta raqami "
+            "yoki «naqd yetkazganda» kabi qisqa tartib (buyurtmadan platforma ulush olmaydi)."
+        ),
+    )
     logo = models.ImageField(upload_to="shop_logos/", null=True, blank=True)
 
     subscription_status = models.CharField(
@@ -187,6 +195,10 @@ class SubscriptionPayment(models.Model):
                 condition=models.Q(status="pending"),
                 name="uniq_subscriptionpayment_pending_per_shop",
             ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "-created_at"], name="shops_spay_st_crtd_idx"),
+            models.Index(fields=["shop", "status"], name="shops_spay_shop_st_idx"),
         ]
 
     def __str__(self) -> str:

@@ -44,6 +44,10 @@ class ShopAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("owner", "name", "slug", "description", "logo")}),
         (_("Contacts"), {"fields": ("phone", "phone_secondary", "address")}),
+        (
+            _("Buyer checkout"),
+            {"fields": ("payment_note",), "description": _("Shown to buyers on product/order (e.g. Click link). No order commission.")},
+        ),
         (_("Social"), {"fields": ("social_telegram", "social_instagram", "social_facebook")}),
         (_("Subscription"), {"fields": ("subscription_status", "trial_started_at", "trial_ends_at", "current_plan", "subscription_ends_at")}),
         (_("Flags"), {"fields": ("is_active", "is_verified", "created_at")}),

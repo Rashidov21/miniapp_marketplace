@@ -16,9 +16,9 @@
 {% endif %}
 {% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Mahsulot" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Mahsulot" %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -27,6 +27,7 @@
     <div class="skeleton aspect-[4/5] w-full max-h-[min(72vh,520px)] rounded-2xl bg-slate-200/90"></div>
     <div class="skeleton h-6 max-w-[85%] rounded bg-slate-200/90"></div>
     <div class="skeleton h-10 max-w-[45%] rounded bg-slate-200/90"></div>
+    <div class="skeleton h-12 w-full rounded-2xl bg-slate-200/70"></div>
   </div>
 
   <div id="content" class="hidden flex flex-col gap-3">
@@ -35,8 +36,13 @@
         <img id="img" class="max-h-[min(72vh,520px)] w-full object-cover" alt="" width="800" height="1000" loading="eager" decoding="async" fetchpriority="high" sizes="100vw">
       </div>
       <div class="space-y-3 p-4">
+        <div class="rounded-xl border border-emerald-100/90 bg-gradient-to-r from-emerald-50/95 to-teal-50/80 px-3 py-2.5 text-xs leading-snug text-emerald-950 ring-1 ring-emerald-100/70">
+          <p class="font-semibold">{% trans "Ishonchli sotuvchi" %}</p>
+          <p class="mt-0.5 text-emerald-900/90">{% trans "Telegram orqali xavfsiz buyurtma" %}</p>
+        </div>
         <div id="trust-row" class="flex flex-wrap gap-2"></div>
         <div id="scarcity-box" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900"></div>
+        <div id="shop-pay-note" class="hidden rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2.5 text-sm leading-relaxed text-teal-950 ring-1 ring-teal-100/80"></div>
         <div id="social-proof" class="hidden text-sm text-slate-600"></div>
         <h1 id="name" class="text-2xl font-bold leading-tight tracking-tight text-slate-900"></h1>
         <p id="price" class="text-3xl font-extrabold tabular-nums text-brand"></p>
@@ -55,14 +61,15 @@
 <div class="app-sticky-bottom">
   <div class="mx-auto max-w-lg px-4">
     <div class="rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_-4px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
-      <div class="mb-3 flex items-baseline justify-between gap-2 px-0.5">
+      <div class="mb-2 flex items-baseline justify-between gap-2 px-0.5">
         <span class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Narx" %}</span>
         <p id="sticky-price" class="text-xl font-extrabold tabular-nums text-brand"></p>
       </div>
-      <a id="order-btn" href="#"
-         class="touch-target flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-center text-base font-bold text-white shadow-lg shadow-brand/30 active:scale-[0.99]">
-        {% trans "Buyurtma berish" %}
-        <svg class="h-5 w-5 shrink-0 opacity-95" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      <a id="order-btn" href="#" aria-disabled="true"
+         class="ui-btn ui-btn--primary flex min-h-[56px] w-full flex-col gap-0.5 py-3.5 text-center no-underline shadow-lg shadow-brand/30 pointer-events-none opacity-60">
+        <span class="text-base font-bold leading-tight text-white">{% trans "1 klikda buyurtma" %}</span>
+        <span class="text-[11px] font-medium leading-tight text-white/90">{% trans "Bir bosish — formani to‘ldiring" %}</span>
+        <span class="sr-only" id="order-btn-wait">{% trans "Yuklanmoqda…" %}</span>
       </a>
     </div>
   </div>
@@ -122,6 +129,17 @@
         sb.textContent = st;
         sb.classList.remove("hidden");
       }
+      const payNote = (p.shop_payment_note || "").trim();
+      const payEl = document.getElementById("shop-pay-note");
+      if (payEl) {
+        if (payNote) {
+          payEl.textContent = payNote;
+          payEl.classList.remove("hidden");
+        } else {
+          payEl.textContent = "";
+          payEl.classList.add("hidden");
+        }
+      }
       const sp = (p.social_proof_text || "").trim();
       if (sp) {
         const el = document.getElementById("social-proof");
@@ -157,8 +175,13 @@
           });
         }
       } catch (ignoreShare) {}
-      document.getElementById("order-btn").href =
+      const ob = document.getElementById("order-btn");
+      ob.href =
         "/webapp/s/" + encodeURIComponent(shopSlug) + "/p/" + encodeURIComponent(productSlug) + "/order/";
+      ob.classList.remove("pointer-events-none", "opacity-60");
+      ob.removeAttribute("aria-disabled");
+      const w = document.getElementById("order-btn-wait");
+      if (w) w.remove();
     } catch (e) {
       loading.classList.add("hidden");
       const t =

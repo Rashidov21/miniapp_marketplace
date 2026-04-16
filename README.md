@@ -1,6 +1,6 @@
-# Miniapp marketplace (Telegram Mini App)
+# Miniapp — Telegram mini-do‘kon + buyurtma
 
-Telegram ichidagi oddiy mini-do‘kon platformasi: sotuvchi mahsulot qo‘shadi, xaridor 1–2 bosishda buyurtma beradi. MVP: to‘lov integratsiyasi va savat yo‘q.
+Telegram ichidagi **sotuvchi mini-do‘koni va buyurtma tizimi** (marketplace emas): sotuvchi mahsulot qo‘shadi, mijoz 1–2 bosishda buyurtma beradi. Buyurtma summasidan platforma **foiz olmaydi**; obuna tariflari alohida. MVP: savat yo‘q; mijoz to‘lovi (masalan Click) bosqichma-bosqich qo‘shiladi.
 
 ## Texnologiyalar
 
@@ -56,13 +56,18 @@ Ilova: `http://localhost:8000`. Ma’lumotlar bazasi: `postgres:16`, media fayll
 - `POST /api/auth/telegram/` — `{ "init_data": "<Telegram.WebApp.initData>" }`
 - `GET /api/me/` — `X-Telegram-Init-Data` sarlavhasi bilan
 - `POST /api/me/become-seller/` — sotuvchi roliga o‘tish (oldingi `POST /api/me/accept-seller-terms/`)
-- `POST /api/me/accept-seller-terms/` — joriy sotuvchi/marketplace shartlari versiyasini qabul qilish
+- `POST /api/me/accept-seller-terms/` — joriy sotuvchi/platforma shartlari versiyasini qabul qilish
 - `POST /api/shops/` — do‘kon yaratish
 - `GET /api/orders/mine/` — mijozning buyurtmalari (pagination)
 - `GET /api/orders/<id>/` — bitta buyurtma (mijoz yoki admin)
 - `POST /api/orders/<id>/cancel/` — mijoz: faqat **NEW** holatda bekor qilish (`CANCELLED`)
 - Mini App: `/webapp/my-orders/<id>/` — buyurtma detali va bekor qilish
 - `GET /api/seller/stats/` — sotuvchi: 7 kunlik ko‘rishlar, buyurtmalar, mahsulotlar soni
+- `GET /api/seller/orders/` — sotuvchi buyurtmalari (pagination); javobda `stats.orders_today` va `stats.orders_total`
+- `POST /api/seller/orders/<id>/accept/` — **NEW** → ACCEPTED (sotuvchi)
+- `POST /api/seller/orders/<id>/deliver/` — **ACCEPTED** → DELIVERED
+- `POST /api/seller/orders/<id>/cancel/` — **NEW** → CANCELLED (sotuvchi bekor; mijozga xabar)
+- `PATCH /api/seller/orders/<id>/` — avvalgidek `{"status":"..."}` (o‘zgarishsiz)
 - `GET /api/shops/<id>/public/` — ochiq do‘kon
 - `GET /api/shops/<id>/products/` — mahsulotlar ro‘yxati (ixtiyoriy `?q=` qidiruv)
 - `POST /api/orders/` — buyurtma (autentifikatsiya talab qilinadi)

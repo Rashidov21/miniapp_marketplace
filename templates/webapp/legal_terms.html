@@ -2,9 +2,9 @@
 {% load i18n %}
 {% block title %}{% trans "Foydalanish shartlari" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button type="button" class="app-topbar-back" onclick="history.back()" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Huquqiy" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button type="button" id="back-btn" class="ui-topbar__back app-topbar-back" onclick="history.back(); return false;" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Huquqiy" %}</p>
 </div>
 {% endblock %}
 {% block content %}

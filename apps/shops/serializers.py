@@ -47,6 +47,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "social_telegram",
             "social_instagram",
             "social_facebook",
+            "payment_note",
             "logo",
             "subscription_status",
             "trial_started_at",
@@ -97,6 +98,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "social_telegram": {"required": False},
             "social_instagram": {"required": False},
             "social_facebook": {"required": False},
+            "payment_note": {"required": False, "allow_blank": True},
         }
 
     def get_subscription_operational(self, obj: Shop) -> bool:
@@ -176,6 +178,7 @@ class ShopPublicSerializer(serializers.ModelSerializer):
             "social_telegram",
             "social_instagram",
             "social_facebook",
+            "payment_note",
             "logo",
             "is_verified",
             "created_at",

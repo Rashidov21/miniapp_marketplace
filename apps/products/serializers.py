@@ -61,6 +61,7 @@ class ProductPublicSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_verified = serializers.BooleanField(source="shop.is_verified", read_only=True)
+    shop_payment_note = serializers.CharField(source="shop.payment_note", read_only=True)
 
     class Meta:
         model = Product
@@ -74,6 +75,7 @@ class ProductPublicSerializer(serializers.ModelSerializer):
             "created_at",
             "shop_name",
             "shop_verified",
+            "shop_payment_note",
             "scarcity_text",
             "social_proof_text",
         )
@@ -87,6 +89,7 @@ class ProductPublicSerializer(serializers.ModelSerializer):
             "created_at",
             "shop_name",
             "shop_verified",
+            "shop_payment_note",
             "scarcity_text",
             "social_proof_text",
         )

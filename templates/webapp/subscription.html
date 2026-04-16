@@ -2,9 +2,9 @@
 {% load i18n %}
 {% block title %}{% trans "Obuna" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Obuna" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Obuna" %}</p>
 </div>
 {% endblock %}
 {% block content %}

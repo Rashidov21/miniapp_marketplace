@@ -12,17 +12,17 @@ def _divider() -> str:
 
 
 def notify_new_order(order: Order) -> None:
+    """Sotuvchiga Telegram: yangi buyurtma (buyurtma yaratilganda, service layer)."""
     seller = order.shop.owner
-    lines = [
-        "🛒 " + str(_("New order #{id}")).format(id=order.pk),
-        _divider(),
-        _("Shop: {name}").format(name=order.shop.name),
-        _("Product: {name}").format(name=order.product.name),
-        _("Customer: {name}").format(name=order.customer_name),
-        _("Phone: {phone}").format(phone=order.phone),
-        _("Address: {addr}").format(addr=order.address),
-    ]
-    send_message(seller.telegram_id, "\n".join(lines))
+    text = "\n".join(
+        [
+            "🛒 Yangi buyurtma!",
+            f"Ism: {order.customer_name}",
+            f"Telefon: {order.phone}",
+            f"Mahsulot: {order.product.name}",
+        ]
+    )
+    send_message(seller.telegram_id, text)
 
 
 def notify_order_confirmation(order: Order) -> None:

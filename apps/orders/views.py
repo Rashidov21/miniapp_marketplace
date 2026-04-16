@@ -31,6 +31,33 @@ from apps.users.models import User
 logger = logging.getLogger(__name__)
 
 
+def _seller_apply_status_change(request, order_id: int, new_status: str) -> Response:
+    """Sotuvchi do‘koni: buyurtma holatini o‘zgartirish (PATCH va POST actionlar uchun)."""
+    shop = Shop.objects.filter(owner=request.user).first()
+    if not shop:
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+    order = get_object_or_404(
+        Order.objects.select_related("product", "shop", "buyer"),
+        pk=order_id,
+        shop=shop,
+    )
+    if not isinstance(new_status, str) or new_status not in dict(Order.Status.choices):
+        return Response({"status": [_("Invalid status.")]}, status=status.HTTP_400_BAD_REQUEST)
+    old = order.status
+    if new_status == old:
+        return Response(OrderSerializer(order, context={"request": request}).data)
+    if not can_transition(old, new_status):
+        return Response(
+            {"status": [_("Invalid status transition.")]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    order.status = new_status
+    order.save(update_fields=["status"])
+    if old != new_status and new_status != Order.Status.NEW:
+        notify_order_status(order)
+    return Response(OrderSerializer(order, context={"request": request}).data)
+
+
 def _schedule_order_notifications(order_id: int) -> None:
     def run() -> None:
         try:
@@ -59,6 +86,11 @@ def _normalize_idempotency_key(raw: str | None) -> str | None:
 def order_create(request):
     ser = OrderCreateSerializer(data=request.data)
     if not ser.is_valid():
+        logger.warning(
+            "order_create validation_failed user_id=%s errors=%s",
+            getattr(request.user, "pk", None),
+            ser.errors,
+        )
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
     product: Product = ser.validated_data["product"]
 
@@ -77,6 +109,12 @@ def order_create(request):
                 existing_order = existing.order
                 # Never leak another user's order by shared idempotency key.
                 if existing_order.buyer_id != request.user.id:
+                    logger.warning(
+                        "order_create idempotency_conflict key=%s buyer=%s existing_buyer=%s",
+                        idem_key[:32],
+                        request.user.id,
+                        existing_order.buyer_id,
+                    )
                     return Response(
                         {"detail": _("Idempotency key conflict.")},
                         status=status.HTTP_409_CONFLICT,
@@ -88,10 +126,20 @@ def order_create(request):
                     and existing_order.address.strip() == ser.validated_data["address"].strip()
                 )
                 if not same_payload:
+                    logger.warning(
+                        "order_create idempotency_payload_mismatch key=%s order_id=%s",
+                        idem_key[:32],
+                        existing_order.pk,
+                    )
                     return Response(
                         {"detail": _("Idempotency key reused with different payload.")},
                         status=status.HTTP_409_CONFLICT,
                     )
+                logger.info(
+                    "order_create idempotent_replay order_id=%s buyer_id=%s",
+                    existing_order.pk,
+                    request.user.id,
+                )
                 return Response(
                     OrderSerializer(existing_order).data,
                     status=status.HTTP_200_OK,
@@ -114,6 +162,14 @@ def order_create(request):
             OrderIdempotency.objects.create(key=idem_key, order=order)
 
     order = Order.objects.select_related("product", "shop", "buyer").get(pk=order.pk)
+    logger.info(
+        "order_create ok order_id=%s shop_id=%s product_id=%s buyer_id=%s amount=%s",
+        order.pk,
+        order.shop_id,
+        order.product_id,
+        order.buyer_id,
+        order.total_amount,
+    )
     _schedule_order_notifications(order.pk)
     return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
@@ -128,36 +184,38 @@ def seller_orders(request):
     paginator = OrderListPagination()
     page = paginator.paginate_queryset(qs, request)
     ser = OrderSerializer(page, many=True)
-    return paginator.get_paginated_response(ser.data)
+    resp = paginator.get_paginated_response(ser.data)
+    today = timezone.localdate()
+    resp.data["stats"] = {
+        "orders_today": Order.objects.filter(shop=shop, created_at__date=today).count(),
+        "orders_total": Order.objects.filter(shop=shop).count(),
+    }
+    return resp
 
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def seller_order_update(request, order_id):
-    shop = Shop.objects.filter(owner=request.user).first()
-    if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
-    order = get_object_or_404(
-        Order.objects.select_related("product", "shop", "buyer"),
-        pk=order_id,
-        shop=shop,
-    )
     new_status = request.data.get("status")
-    if new_status not in dict(Order.Status.choices):
-        return Response({"status": [_("Invalid status.")]}, status=status.HTTP_400_BAD_REQUEST)
-    old = order.status
-    if new_status == old:
-        return Response(OrderSerializer(order).data)
-    if not can_transition(old, new_status):
-        return Response(
-            {"status": [_("Invalid status transition.")]},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-    order.status = new_status
-    order.save(update_fields=["status"])
-    if old != new_status and new_status != Order.Status.NEW:
-        notify_order_status(order)
-    return Response(OrderSerializer(order).data)
+    return _seller_apply_status_change(request, order_id, new_status)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_order_accept(request, order_id):
+    return _seller_apply_status_change(request, order_id, Order.Status.ACCEPTED)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_order_deliver(request, order_id):
+    return _seller_apply_status_change(request, order_id, Order.Status.DELIVERED)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_order_cancel_by_seller(request, order_id):
+    return _seller_apply_status_change(request, order_id, Order.Status.CANCELLED)
 
 
 @api_view(["POST"])

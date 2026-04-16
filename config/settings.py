@@ -113,7 +113,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 # Query string for /static/js/app.js etc. when not using ManifestStaticFilesStorage (e.g. misconfigured nginx).
-STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260411")
+STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260417")
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -178,11 +178,14 @@ CSRF_TRUSTED_ORIGINS = [
     if o.strip()
 ]
 
-SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() in (
-    "1",
-    "true",
-    "yes",
-)
+_session_cookie_secure_raw = os.environ.get("SESSION_COOKIE_SECURE", "").strip().lower()
+if _session_cookie_secure_raw in ("1", "true", "yes"):
+    SESSION_COOKIE_SECURE = True
+elif _session_cookie_secure_raw in ("0", "false", "no"):
+    SESSION_COOKIE_SECURE = False
+else:
+    # Bo‘sh: prod da HTTPS cookie, dev da oddiy.
+    SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 
@@ -200,6 +203,9 @@ BOT_ONBOARDING_MAX_PER_DAY = int(os.environ.get("BOT_ONBOARDING_MAX_PER_DAY", "6
 # Sotuvchi oferta / foydalanish shartlari versiyasi; yangilanganda foydalanuvchi qayta tasdiqlashi kerak.
 CURRENT_SELLER_TERMS_VERSION = os.environ.get("CURRENT_SELLER_TERMS_VERSION", "1").strip() or "1"
 
+# Mijoz to‘lovi (Click): keyingi integratsiya uchun muhit o‘zgaruvchilari shu yerda ulanadi
+# (masalan CLICK_MERCHANT_ID va h.k.) — hozircha kodda ishlatilmaydi; obuna monetizatsiyasi o‘zgarmaydi.
+
 # Monetizatsiya: FREE tier (trial ham shu limitda), trafik upsell bosqichi
 MONETIZATION_FREE_MAX_PRODUCTS = int(os.environ.get("MONETIZATION_FREE_MAX_PRODUCTS", "5"))
 MONETIZATION_UPSELL_MIN_VIEWS_WEEK = int(os.environ.get("MONETIZATION_UPSELL_MIN_VIEWS_WEEK", "80"))
@@ -209,3 +215,54 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 LOGIN_URL = "/platform/login/"
 LOGIN_REDIRECT_URL = "/platform/"
 LOGOUT_REDIRECT_URL = "/platform/login/"
+
+# --- Logging (prod: DJANGO_LOG_LEVEL=INFO) ---
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG" if DEBUG else "INFO"),
+    },
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "apps.orders": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "apps.shops": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "apps.platform": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "apps.core.telegram": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}
+
+# --- DEBUG=False uchun xavfsizlik (Nginx HTTPS + proxy) ---
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get(
+        "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "true"
+    ).lower() in ("1", "true", "yes")
+    SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_SECURE_HSTS_PRELOAD", "false").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "true").lower() in (
+        "1",
+        "true",
+        "yes",
+    )

@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+_TELEGRAM_MAX_RETRIES = 3
+_TELEGRAM_BACKOFF_SEC = 0.6
 
 
 def _post_bot_api(method: str, payload: dict[str, Any]) -> bool:
@@ -16,15 +20,38 @@ def _post_bot_api(method: str, payload: dict[str, Any]) -> bool:
         logger.warning("TELEGRAM_BOT_TOKEN not set; skip send_message")
         return False
     url = f"https://api.telegram.org/bot{token}/{method}"
-    try:
-        r = requests.post(url, json=payload, timeout=15)
-        if not r.ok:
-            logger.error("Telegram %s failed: %s %s", method, r.status_code, r.text)
+    last_err: BaseException | None = None
+    for attempt in range(_TELEGRAM_MAX_RETRIES):
+        try:
+            r = requests.post(url, json=payload, timeout=15)
+            if r.ok:
+                return True
+            logger.warning(
+                "Telegram %s HTTP %s (attempt %s/%s): %s",
+                method,
+                r.status_code,
+                attempt + 1,
+                _TELEGRAM_MAX_RETRIES,
+                r.text[:500],
+            )
+            if r.status_code in (429, 500, 502, 503, 504) and attempt + 1 < _TELEGRAM_MAX_RETRIES:
+                time.sleep(_TELEGRAM_BACKOFF_SEC * (attempt + 1))
+                continue
             return False
-        return True
-    except requests.RequestException as e:
-        logger.exception("Telegram %s error: %s", method, e)
-        return False
+        except requests.RequestException as e:
+            last_err = e
+            logger.warning(
+                "Telegram %s request error (attempt %s/%s): %s",
+                method,
+                attempt + 1,
+                _TELEGRAM_MAX_RETRIES,
+                e,
+            )
+            if attempt + 1 < _TELEGRAM_MAX_RETRIES:
+                time.sleep(_TELEGRAM_BACKOFF_SEC * (attempt + 1))
+    if last_err:
+        logger.exception("Telegram %s failed after retries", method)
+    return False
 
 
 def send_message(chat_id: int | str, text: str, parse_mode: str | None = None) -> bool:

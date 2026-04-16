@@ -2,14 +2,14 @@
 {% load i18n %}
 {% block title %}{% trans "Sotuvchi bilan shartnoma" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button type="button" class="app-topbar-back" onclick="history.back()" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Huquqiy" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button type="button" id="back-btn" class="ui-topbar__back app-topbar-back" onclick="history.back(); return false;" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Huquqiy" %}</p>
 </div>
 {% endblock %}
 {% block content %}
 <article class="prose prose-sm max-w-none text-slate-800">
-  <h1 class="text-xl font-bold text-slate-900">{% trans "Sotuvchi ofertasi (marketplace)" %}</h1>
+  <h1 class="text-xl font-bold text-slate-900">{% trans "Sotuvchi ofertasi (platforma)" %}</h1>
   <p class="text-xs text-slate-500">{% trans "Versiya" %} {{ terms_version }}</p>
   <p class="mt-4 text-sm leading-relaxed">
     {% blocktrans %}Namunaviy matn. Sotuvchi platformadan foydalanish, obuna/to‘lov, vitrina boshqaruvi, moderatsiya, javobgarlik chegarasi va nizolarni hal qilish tartibi yuridik jihatdan bu yerda batafsil yozilishi kerak.{% endblocktrans %}

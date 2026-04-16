@@ -2,9 +2,9 @@
 {% load i18n %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
 {% block topbar %}
-<div class="app-topbar">
-  <button id="back-btn" type="button" class="app-topbar-back" aria-label="back">‹</button>
-  <p class="text-xs font-medium text-slate-500">{% trans "Buyurtma" %}</p>
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Buyurtma" %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -51,6 +51,11 @@
     <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
       <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{% trans "Do‘kon" %}</p>
       <p id="sname" class="mt-1 font-semibold text-slate-900"></p>
+    </div>
+
+    <div id="pay-note-box" class="hidden rounded-2xl border border-teal-200/80 bg-teal-50/90 p-4 text-sm leading-relaxed text-teal-950 shadow-card ring-1 ring-teal-100/80">
+      <p class="text-xs font-semibold uppercase tracking-wide text-teal-800/90">{% trans "To‘lov tartibi" %}</p>
+      <p id="pay-note-text" class="mt-2 whitespace-pre-wrap"></p>
     </div>
 
     <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
@@ -181,6 +186,18 @@
     document.getElementById("pname").textContent = o.product_name || "";
     document.getElementById("psum").textContent = fmtSum(o.total_amount);
     document.getElementById("sname").textContent = o.shop_name || "";
+    const payBox = document.getElementById("pay-note-box");
+    const payTxt = document.getElementById("pay-note-text");
+    const payRaw = (o.shop_payment_note || "").trim();
+    if (payBox && payTxt) {
+      if (payRaw) {
+        payTxt.textContent = payRaw;
+        payBox.classList.remove("hidden");
+      } else {
+        payTxt.textContent = "";
+        payBox.classList.add("hidden");
+      }
+    }
     document.getElementById("cname").textContent = o.customer_name || "";
     const tel = (o.phone || "").replace(/\s/g, "");
     const telEl = document.getElementById("tel");

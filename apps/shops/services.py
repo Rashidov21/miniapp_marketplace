@@ -1,11 +1,14 @@
 """Shop subscription and visibility helpers."""
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 
 from django.utils import timezone
 
 from apps.shops.models import Shop, SubscriptionPlan
+
+logger = logging.getLogger(__name__)
 
 
 def apply_trial_for_new_shop(shop: Shop) -> None:
@@ -29,6 +32,12 @@ def apply_trial_for_new_shop(shop: Shop) -> None:
 
 def approve_subscription_payment(shop: Shop, plan: SubscriptionPlan) -> None:
     """Admin tasdiqlagach: obuna muddati."""
+    logger.info(
+        "subscription_payment_approved shop_id=%s plan_id=%s plan_name=%s",
+        shop.pk,
+        plan.pk,
+        plan.name,
+    )
     now = timezone.now()
     shop.subscription_status = Shop.SubscriptionStatus.ACTIVE
     shop.current_plan = plan

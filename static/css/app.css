@@ -3,6 +3,11 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
   --brand: #0d9488;
+  /* UI semantic (tailwind theme/ui bilan mos) */
+  --ui-primary: #0d9488;
+  --ui-success: #059669;
+  --ui-error: #dc2626;
+  --ui-warning: #d97706;
 }
 
 /* Keyboard focus — visible ring, matches brand */
@@ -161,33 +166,19 @@ summary:focus-visible,
   .skeleton { animation: none; opacity: 0.85; }
 }
 
-.app-topbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.app-topbar-back {
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
-  border-radius: 999px;
-  min-height: 40px;
-  min-width: 40px;
-  font-size: 1.125rem;
-  line-height: 1;
-  color: rgb(51 65 85);
-}
+/* Topbar: .ui-topbar / .app-topbar — tailwind-input.css @layer components */
 
 .app-toast {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(1rem + var(--safe-bottom));
-  z-index: 60;
+  top: calc(0.65rem + var(--safe-top));
+  bottom: auto;
+  z-index: 9998;
   display: flex;
   justify-content: center;
   padding: 0 0.75rem;
+  pointer-events: none;
 }
 
 .app-toast.hidden {
@@ -197,25 +188,56 @@ summary:focus-visible,
 .app-toast-card {
   width: 100%;
   max-width: 32rem;
-  border-radius: 0.9rem;
-  padding: 0.75rem 0.9rem;
-  box-shadow: 0 10px 30px rgb(2 6 23 / 0.14);
+  border-radius: 0.95rem;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 16px 40px rgb(2 6 23 / 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   color: #fff;
+  pointer-events: auto;
+  animation: app-toast-in 0.24s ease-out;
 }
 
-.app-toast-success .app-toast-card { background: rgb(5 150 105); }
-.app-toast-error .app-toast-card { background: rgb(220 38 38); }
-.app-toast-warning .app-toast-card { background: rgb(217 119 6); }
-.app-toast-info .app-toast-card { background: rgb(15 23 42); }
+@keyframes app-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-toast-card {
+    animation: none;
+  }
+}
+
+.app-toast-success .app-toast-card {
+  background: var(--ui-success);
+}
+.app-toast-error .app-toast-card {
+  background: var(--ui-error);
+}
+.app-toast-warning .app-toast-card {
+  background: var(--ui-warning);
+}
+.app-toast-info .app-toast-card {
+  background: rgb(15 23 42);
+}
 
 .app-toast-text {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.app-toast-error .app-toast-text {
+  font-size: 0.9375rem;
 }
 
 .app-toast-close {

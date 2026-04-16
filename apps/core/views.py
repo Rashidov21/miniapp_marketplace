@@ -205,6 +205,7 @@ def order_page(request, shop_slug, product_slug):
             "product_id": product.id,
             "shop_slug": shop.slug,
             "product_slug": product.slug,
+            "shop_payment_note": (shop.payment_note or "").strip(),
         },
     )
 

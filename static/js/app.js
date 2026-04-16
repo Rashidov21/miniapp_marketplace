@@ -5,6 +5,8 @@
 (function () {
   const API_BASE = "/api";
   const TOAST_LIFETIME_MS = 4200;
+  const TOAST_ERROR_MS = 6800;
+  const TOAST_WARNING_MS = 5600;
   const API_TIMEOUT_MS = 15000;
   let toastTimer = null;
 
@@ -63,6 +65,21 @@
     if (s.startsWith("998") && s.length === 12) return "+" + s;
     const trimmed = String(raw || "").trim();
     return trimmed.startsWith("+") ? trimmed : "+" + s.replace(/^\+/, "");
+  }
+
+  /** Ko‘rinish: +998 XX XXX XX XX (faqat ko‘rsatish; yuborishda normalizePhoneUz). */
+  function formatUzPhoneDisplay(raw) {
+    let d = String(raw || "").replace(/\D/g, "");
+    if (d.startsWith("998")) d = d.slice(3);
+    else if (d.startsWith("0")) d = d.replace(/^0+/, "");
+    if (d.length > 9) d = d.slice(0, 9);
+    if (!d) return "";
+    const parts = ["+998"];
+    if (d.length >= 1) parts.push(d.slice(0, 2));
+    if (d.length > 2) parts.push(d.slice(2, 5));
+    if (d.length > 5) parts.push(d.slice(5, 7));
+    if (d.length > 7) parts.push(d.slice(7, 9));
+    return parts.join(" ").trim();
   }
 
   function apiHeaders() {
@@ -153,16 +170,23 @@
     return c;
   }
 
-  function showToast(message, type) {
+  function showToast(message, type, durationMs) {
     const c = _ensureToastContainer();
     const t = c.querySelector("#app-toast-text");
     c.classList.remove("hidden", "app-toast-success", "app-toast-error", "app-toast-warning", "app-toast-info");
-    c.classList.add("app-toast-" + (type || "info"));
+    const ty = type || "info";
+    c.classList.add("app-toast-" + ty);
     t.textContent = String(message || "");
     if (toastTimer) clearTimeout(toastTimer);
+    let ms = durationMs;
+    if (ms == null) {
+      if (ty === "error") ms = TOAST_ERROR_MS;
+      else if (ty === "warning") ms = TOAST_WARNING_MS;
+      else ms = TOAST_LIFETIME_MS;
+    }
     toastTimer = setTimeout(function () {
       c.classList.add("hidden");
-    }, TOAST_LIFETIME_MS);
+    }, ms);
   }
 
   function parseApiError(err, fallbackText) {
@@ -247,6 +271,7 @@
     getSuggestedName,
     escapeHtml,
     normalizePhoneUz,
+    formatUzPhoneDisplay,
     apiHeaders,
     apiFetch,
     showAlert,

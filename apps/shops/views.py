@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 from decimal import Decimal
 
@@ -27,6 +28,8 @@ from apps.shops.services import apply_trial_for_new_shop
 from apps.users.models import User
 from apps.users.terms import user_has_current_seller_terms
 
+logger = logging.getLogger(__name__)
+
 
 def _require_auth_user(request):
     if not request.user or not request.user.is_authenticated:
@@ -44,7 +47,7 @@ def shop_create(request):
     elevated = user.is_superuser or user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
     if not elevated and not user_has_current_seller_terms(user):
         return error_response(
-            str(_("Please accept the seller and marketplace terms before creating a shop.")),
+            str(_("Please accept the seller and platform terms before creating a shop.")),
             status=status.HTTP_403_FORBIDDEN,
             code="terms_required",
         )
@@ -225,6 +228,13 @@ def subscription_payment_create(request):
             status=status.HTTP_409_CONFLICT,
             code="payment_pending_exists",
         )
+    logger.info(
+        "subscription_payment_created payment_id=%s shop_id=%s plan_id=%s amount=%s",
+        payment.id,
+        shop.id,
+        plan.id,
+        payment.amount,
+    )
     return Response(
         {"id": payment.id, "status": payment.status, "amount": str(payment.amount)},
         status=status.HTTP_201_CREATED,

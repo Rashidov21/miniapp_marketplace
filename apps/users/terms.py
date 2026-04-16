@@ -1,4 +1,4 @@
-"""Seller / marketplace terms acceptance (versioned)."""
+"""Seller / platform terms acceptance (versioned)."""
 from __future__ import annotations
 
 from django.conf import settings

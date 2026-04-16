@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import logging
 from datetime import timedelta
 
 from django.contrib import messages
@@ -25,6 +26,8 @@ from apps.platform.utils import is_platform_staff, is_platform_superuser
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.services import approve_subscription_payment
 from apps.users.models import User
+
+logger = logging.getLogger(__name__)
 
 UserModel = get_user_model()
 
@@ -214,6 +217,12 @@ def payment_approve(request: HttpRequest, payment_id: int) -> HttpResponse:
         target_id=str(payment.pk),
         payload={"shop_id": payment.shop_id},
     )
+    logger.info(
+        "platform_payment_approved payment_id=%s shop_id=%s reviewer_id=%s",
+        payment.pk,
+        payment.shop_id,
+        request.user.pk,
+    )
     messages.success(request, _("Payment approved."))
     return redirect("platform_payments")
 
@@ -244,6 +253,12 @@ def payment_reject(request: HttpRequest, payment_id: int) -> HttpResponse:
         target_type="SubscriptionPayment",
         target_id=str(payment.pk),
         payload={"reason": admin_note},
+    )
+    logger.info(
+        "platform_payment_rejected payment_id=%s shop_id=%s reviewer_id=%s",
+        payment.pk,
+        payment.shop_id,
+        request.user.pk,
     )
     messages.success(request, _("Payment rejected."))
     return redirect("platform_payments")

@@ -8,7 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.pagination import ProductListPagination
-from apps.products.cache_utils import product_public_cache_key
+from apps.products.cache_utils import (
+    get_product_list_cache_version,
+    product_list_public_cache_key,
+    product_public_cache_key,
+)
 from apps.core.drf_errors import error_response
 from apps.products.models import Product
 from apps.products.serializers import ProductPublicSerializer, ProductSerializer
@@ -34,8 +38,16 @@ def product_list_public(request, shop_id):
         qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
     paginator = ProductListPagination()
     page = paginator.paginate_queryset(qs, request)
+    page_num = paginator.page.number
+    ver = get_product_list_cache_version(shop_id)
+    list_ck = product_list_public_cache_key(shop_id, q, page_num, ver)
+    cached_list = cache.get(list_ck)
+    if cached_list is not None:
+        return Response(cached_list)
     ser = ProductPublicSerializer(page, many=True, context={"request": request})
-    return paginator.get_paginated_response(ser.data)
+    resp = paginator.get_paginated_response(ser.data)
+    cache.set(list_ck, resp.data, 90)
+    return resp
 
 
 @api_view(["GET"])

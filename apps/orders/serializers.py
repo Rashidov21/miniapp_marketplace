@@ -10,6 +10,7 @@ class OrderSerializer(serializers.ModelSerializer):
     shop_name = serializers.CharField(source="shop.name", read_only=True)
     shop_slug = serializers.CharField(source="shop.slug", read_only=True)
     product_slug = serializers.CharField(source="product.slug", read_only=True)
+    shop_payment_note = serializers.CharField(source="shop.payment_note", read_only=True)
 
     class Meta:
         model = Order
@@ -21,6 +22,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "shop_name",
             "shop_slug",
             "product_slug",
+            "shop_payment_note",
             "buyer",
             "customer_name",
             "phone",
@@ -35,6 +37,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "shop_name",
             "shop_slug",
             "product_slug",
+            "shop_payment_note",
             "buyer",
             "total_amount",
             "created_at",
