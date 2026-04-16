@@ -15,6 +15,11 @@ urlpatterns = [
         name="api_product_public_link",
     ),
     path("seller/products/", views.product_list_manage, name="api_seller_products"),
+    path(
+        "seller/products/<int:product_id>/duplicate/",
+        views.product_duplicate,
+        name="api_seller_product_duplicate",
+    ),
     path("seller/products/<int:product_id>/", views.product_detail_manage, name="api_seller_product_detail"),
     path("admin/products/<int:product_id>/", views.product_admin_block, name="api_admin_product"),
 ]

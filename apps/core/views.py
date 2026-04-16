@@ -110,11 +110,34 @@ def shop_legacy_redirect(request, shop_id):
     return redirect("webapp_shop_slug", shop_slug=shop.slug, permanent=True)
 
 
+def _render_catalog_unavailable(
+    request,
+    *,
+    reason: str,
+    shop_name: str = "",
+    shop_slug: str = "",
+):
+    return render(
+        request,
+        "webapp/shop_unavailable.html",
+        {
+            "reason": reason,
+            "shop_name": shop_name,
+            "shop_slug": shop_slug,
+        },
+        status=200,
+    )
+
+
 @require_GET
 def shop_page(request, shop_slug):
-    shop = get_object_or_404(Shop, slug=shop_slug)
-    if not shop.is_active or not shop.is_subscription_operational():
+    shop = Shop.objects.filter(slug=shop_slug).first()
+    if not shop:
         raise Http404()
+    if not shop.is_active:
+        return _render_catalog_unavailable(request, reason="inactive", shop_name=shop.name)
+    if not shop.is_subscription_operational():
+        return _render_catalog_unavailable(request, reason="subscription", shop_name=shop.name)
     return render(request, "webapp/shop.html", _shop_page_ctx(shop))
 
 
@@ -135,18 +158,23 @@ def product_legacy_redirect(request, shop_id, product_id):
 
 @require_GET
 def product_page(request, shop_slug, product_slug):
-    shop = get_object_or_404(Shop, slug=shop_slug)
-    product = get_object_or_404(
-        Product.objects.select_related("shop"),
-        slug=product_slug,
-        shop=shop,
-    )
-    if (
-        not shop.is_active
-        or not product.is_active
-        or not shop.is_subscription_operational()
-    ):
+    shop = Shop.objects.filter(slug=shop_slug).first()
+    if not shop:
         raise Http404()
+    if not shop.is_active:
+        return _render_catalog_unavailable(request, reason="inactive", shop_name=shop.name)
+    if not shop.is_subscription_operational():
+        return _render_catalog_unavailable(request, reason="subscription", shop_name=shop.name)
+    product = Product.objects.select_related("shop").filter(slug=product_slug, shop=shop).first()
+    if not product:
+        raise Http404()
+    if not product.is_active:
+        return _render_catalog_unavailable(
+            request,
+            reason="product_inactive",
+            shop_name=shop.name,
+            shop_slug=shop.slug,
+        )
     desc = (product.description or "").strip()
     og_desc = (desc[:200] if desc else "") or product.name
     og_image = ""
@@ -185,18 +213,23 @@ def order_legacy_redirect(request, shop_id, product_id):
 
 @require_GET
 def order_page(request, shop_slug, product_slug):
-    shop = get_object_or_404(Shop, slug=shop_slug)
-    product = get_object_or_404(
-        Product.objects.select_related("shop"),
-        slug=product_slug,
-        shop=shop,
-    )
-    if (
-        not shop.is_active
-        or not product.is_active
-        or not shop.is_subscription_operational()
-    ):
+    shop = Shop.objects.filter(slug=shop_slug).first()
+    if not shop:
         raise Http404()
+    if not shop.is_active:
+        return _render_catalog_unavailable(request, reason="inactive", shop_name=shop.name)
+    if not shop.is_subscription_operational():
+        return _render_catalog_unavailable(request, reason="subscription", shop_name=shop.name)
+    product = Product.objects.select_related("shop").filter(slug=product_slug, shop=shop).first()
+    if not product:
+        raise Http404()
+    if not product.is_active:
+        return _render_catalog_unavailable(
+            request,
+            reason="product_inactive",
+            shop_name=shop.name,
+            shop_slug=shop.slug,
+        )
     return render(
         request,
         "webapp/order.html",

@@ -1,6 +1,8 @@
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -14,11 +16,13 @@ from apps.products.cache_utils import (
     product_public_cache_key,
 )
 from apps.core.drf_errors import error_response
+from apps.core.slug_utils import unique_product_slug
 from apps.products.models import Product
 from apps.products.serializers import ProductPublicSerializer, ProductSerializer
 from apps.shops import monetization
 from apps.shops.models import Shop
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
+from apps.shops.selectors import get_owner_shop
 from apps.users.models import User
 
 
@@ -74,7 +78,7 @@ def product_detail_public(request, shop_id, product_id):
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def product_list_manage(request):
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     if request.method == "GET":
@@ -109,7 +113,7 @@ def product_list_manage(request):
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def product_detail_manage(request, product_id):
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     product = (
@@ -150,6 +154,49 @@ def product_detail_manage(request, product_id):
     ser.save()
     product.refresh_from_db()
     return Response(ProductSerializer(product, context={"request": request}).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def product_duplicate(request, product_id):
+    """Mahsulot nusxasi — qoralama (is_active=false), yangi slug."""
+    shop = get_owner_shop(request.user)
+    if not shop:
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+    src = Product.objects.filter(pk=product_id, shop=shop).first()
+    if not src:
+        return Response({"detail": _("Product not found.")}, status=status.HTTP_404_NOT_FOUND)
+    if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
+        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+    if not src.image:
+        return Response(
+            {"detail": _("This product has no image — upload an image before duplicating.")},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    base_name = f"{src.name} ({gettext('Copy')})"
+    slug = unique_product_slug(shop.pk, base_name)
+    new_p = Product(
+        shop=shop,
+        name=base_name,
+        slug=slug,
+        price=src.price,
+        description=src.description,
+        scarcity_text=src.scarcity_text,
+        social_proof_text=src.social_proof_text,
+        is_active=False,
+        sort_order=src.sort_order,
+    )
+    try:
+        with src.image.open("rb") as fh:
+            data = fh.read()
+        ext = (src.image.name.rsplit(".", 1)[-1] or "jpg").lower()[:8]
+        if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
+            ext = "jpg"
+        new_p.image.save(f"dup_{product_id}.{ext}", ContentFile(data), save=False)
+    except OSError:
+        return Response({"detail": _("Could not read product image.")}, status=status.HTTP_400_BAD_REQUEST)
+    new_p.save()
+    return Response(ProductSerializer(new_p, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["PATCH"])

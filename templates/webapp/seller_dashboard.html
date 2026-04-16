@@ -151,6 +151,20 @@
       </div>
     </div>
 
+    <div id="orders-toolbar" class="mb-3 hidden flex flex-wrap items-center gap-2">
+      <label class="sr-only" for="orders-status-filter">{% trans "Holat" %}</label>
+      <select id="orders-status-filter" class="min-w-[10rem] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 shadow-sm">
+        <option value="">{% trans "Barcha holatlar" %}</option>
+        <option value="NEW">{% trans "Yangi" %}</option>
+        <option value="ACCEPTED">{% trans "Qabul qilindi" %}</option>
+        <option value="DELIVERED">{% trans "Yetkazildi" %}</option>
+        <option value="CANCELLED">{% trans "Bekor" %}</option>
+      </select>
+      <button type="button" id="orders-export-csv" class="touch-target rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-100">
+        {% trans "CSV eksport" %}
+      </button>
+    </div>
+
     <div id="orders-loading" class="space-y-3">
       <div class="skeleton h-36 rounded-2xl bg-slate-200/80"></div>
       <div class="skeleton h-36 rounded-2xl bg-slate-200/80"></div>
@@ -188,6 +202,12 @@
     limitReached: "{% trans 'Mahsulot limiti to‘ldi.' %}",
     upgradePlan: "{% trans 'Obunani kengaytirish' %}",
     addProduct: "{% trans 'Mahsulot qo‘shish' %}",
+    orderNotes: "{% trans 'Izohlar (mijoz bilan)' %}",
+    sendNote: "{% trans 'Izohni yuborish' %}",
+    overdue24: "{% trans '24+ soat — yangi' %}",
+    badgeNew: "{% trans 'Yangi' %}",
+    seller: "{% trans 'Sotuvchi' %}",
+    buyer: "{% trans 'Mijoz' %}",
   };
 
   async function ensureAuth() {
@@ -216,6 +236,32 @@
     if (st === "DELIVERED") return L.delivered;
     if (st === "CANCELLED") return L.cancelled;
     return st;
+  }
+
+  function orderTimeBadges(o) {
+    if (!o.created_at) return "";
+    var d = new Date(o.created_at);
+    if (isNaN(d.getTime())) return "";
+    var timeStr = new Intl.DateTimeFormat("uz-UZ", { dateStyle: "short", timeStyle: "short" }).format(d);
+    var hours = (Date.now() - d.getTime()) / 3600000;
+    var parts = [];
+    parts.push('<p class="text-xs text-slate-500">' + MiniApp.escapeHtml(timeStr) + "</p>");
+    if (o.status === "NEW") {
+      if (hours >= 24) {
+        parts.push(
+          '<span class="mt-1 inline-block rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-900 ring-1 ring-rose-200">' +
+            MiniApp.escapeHtml(L.overdue24) +
+            "</span>"
+        );
+      } else {
+        parts.push(
+          '<span class="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200">' +
+            MiniApp.escapeHtml(L.badgeNew) +
+            "</span>"
+        );
+      }
+    }
+    return '<div class="mt-1">' + parts.join("") + "</div>";
   }
 
   function renderOrderCard(o) {
@@ -251,18 +297,37 @@
         L.markDelivered +
         "</button>";
     }
-    const tel = (o.phone || "").replace(/\s/g, "");
-    const phoneRow =
-      '<div class="mt-1 flex flex-wrap items-center gap-2">' +
-      '<a href="tel:' +
-      MiniApp.escapeHtml(tel) +
-      '" class="inline-flex items-center gap-1 text-lg font-bold text-brand underline decoration-brand/30 underline-offset-2">' +
-      MiniApp.escapeHtml(o.phone || "") +
-      "</a>" +
-      '<a href="tel:' +
-      MiniApp.escapeHtml(tel) +
-      '" class="inline-flex rounded-lg bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">{% trans "Qo‘ng‘iroq" %}</a>' +
-      "</div>";
+    var telHref = (o.phone_tel || "").trim();
+    var phoneRow;
+    if (telHref) {
+      phoneRow =
+        '<div class="mt-1 flex flex-wrap items-center gap-2">' +
+        '<a href="' +
+        MiniApp.escapeHtml(telHref) +
+        '" class="inline-flex items-center gap-1 text-lg font-bold text-brand underline decoration-brand/30 underline-offset-2">' +
+        MiniApp.escapeHtml(o.phone || "") +
+        "</a>" +
+        '<a href="' +
+        MiniApp.escapeHtml(telHref) +
+        '" class="inline-flex rounded-lg bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">{% trans "Qo‘ng‘iroq" %}</a>' +
+        "</div>";
+    } else {
+      phoneRow =
+        '<p class="mt-1 text-sm text-slate-700">' + MiniApp.escapeHtml(o.phone || "—") + "</p>";
+    }
+    var notesBlock =
+      '<details class="order-notes mt-3 rounded-xl bg-slate-50/90 px-2 py-2 text-left ring-1 ring-slate-100" data-oid="' +
+      o.id +
+      '">' +
+      '<summary class="cursor-pointer select-none text-xs font-semibold text-brand">' +
+      MiniApp.escapeHtml(L.orderNotes) +
+      "</summary>" +
+      '<div class="order-note-list mt-2 max-h-36 space-y-2 overflow-y-auto text-xs"></div>' +
+      '<textarea rows="2" class="order-note-input mt-2 w-full rounded-lg border border-slate-200 bg-white p-2 text-xs"></textarea>' +
+      '<button type="button" class="order-note-send mt-1 w-full rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white">' +
+      MiniApp.escapeHtml(L.sendNote) +
+      "</button>" +
+      "</details>";
     return (
       '<article class="ui-card">' +
       '<div class="flex items-start justify-between gap-2">' +
@@ -275,6 +340,7 @@
       '<p class="mt-1 truncate text-base font-semibold text-slate-900">' +
       MiniApp.escapeHtml(o.customer_name || "") +
       "</p>" +
+      orderTimeBadges(o) +
       "</div>" +
       '<span class="shrink-0 ' +
       badge +
@@ -300,6 +366,7 @@
       MiniApp.escapeHtml(o.address || "") +
       "</p>" +
       "</div>" +
+      notesBlock +
       (actions ? '<div class="mt-3">' + actions + "</div>" : "") +
       "</article>"
     );
@@ -719,11 +786,16 @@
       empty.classList.add("hidden");
       try {
         await ensureAuth();
-        const res = await MiniApp.apiFetch("/seller/orders/", { method: "GET" });
+        var stF = document.getElementById("orders-status-filter");
+        var stVal = stF && stF.value ? stF.value : "";
+        var qs = stVal ? "?status=" + encodeURIComponent(stVal) : "";
+        const res = await MiniApp.apiFetch("/seller/orders/" + qs, { method: "GET" });
         applyOrderStats(res);
         const list = res.results || [];
         load.classList.add("hidden");
         const total = typeof res.count === "number" ? res.count : list.length;
+        var tb = document.getElementById("orders-toolbar");
+        if (tb) tb.classList.remove("hidden");
         if (!list.length) {
           empty.classList.remove("hidden");
           countEl.classList.add("hidden");
@@ -738,6 +810,8 @@
         box.classList.remove("hidden");
       } catch (e) {
         load.classList.add("hidden");
+        var tb2 = document.getElementById("orders-toolbar");
+        if (tb2 && (e.status === 403 || e.status === 404)) tb2.classList.add("hidden");
         if (e.status === 403 || e.status === 404) {
           empty.classList.remove("hidden");
           return;
@@ -748,7 +822,81 @@
       }
     }
 
+    document.getElementById("orders").addEventListener("toggle", async function (ev) {
+      var det = ev.target;
+      if (!det || !det.classList || !det.classList.contains("order-notes")) return;
+      if (!det.open || det.dataset.loaded) return;
+      var oid = det.getAttribute("data-oid");
+      var box = det.querySelector(".order-note-list");
+      try {
+        await ensureAuth();
+        var data = await MiniApp.apiFetch("/orders/" + oid + "/notes/", { method: "GET" });
+        det.dataset.loaded = "1";
+        box.innerHTML = (data.results || [])
+          .map(function (n) {
+            var who = n.is_seller ? L.seller : L.buyer;
+            return (
+              '<div class="rounded-lg bg-white px-2 py-1.5 ring-1 ring-slate-100"><span class="font-semibold text-slate-700">' +
+              MiniApp.escapeHtml(who) +
+              "</span> <span class=\"text-slate-400\">" +
+              MiniApp.escapeHtml(String(n.created_at || "")) +
+              '</span><p class="mt-1 whitespace-pre-wrap text-slate-800">' +
+              MiniApp.escapeHtml(n.body || "") +
+              "</p></div>"
+            );
+          })
+          .join("");
+      } catch (err) {
+        MiniApp.showToast(MiniApp.parseApiError(err, "{% trans 'Izohlarni yuklab bo‘lmadi.' %}"), "error");
+      }
+    });
+
     document.getElementById("orders").addEventListener("click", async function (ev) {
+      var nb = ev.target.closest(".order-note-send");
+      if (nb) {
+        var det = nb.closest(".order-notes");
+        if (!det) return;
+        var oid = det.getAttribute("data-oid");
+        var ta = det.querySelector(".order-note-input");
+        var txt = (ta && ta.value) ? ta.value.trim() : "";
+        if (!txt) {
+          MiniApp.showToast("{% trans 'Izohni yozing.' %}", "warning");
+          return;
+        }
+        nb.disabled = true;
+        try {
+          await ensureAuth();
+          await MiniApp.apiFetch("/orders/" + oid + "/notes/", {
+            method: "POST",
+            body: JSON.stringify({ body: txt }),
+          });
+          if (ta) ta.value = "";
+          var data = await MiniApp.apiFetch("/orders/" + oid + "/notes/", { method: "GET" });
+          det.dataset.loaded = "1";
+          var box2 = det.querySelector(".order-note-list");
+          box2.innerHTML = (data.results || [])
+            .map(function (n) {
+              var who = n.is_seller ? L.seller : L.buyer;
+              return (
+                '<div class="rounded-lg bg-white px-2 py-1.5 ring-1 ring-slate-100"><span class="font-semibold text-slate-700">' +
+                MiniApp.escapeHtml(who) +
+                "</span> <span class=\"text-slate-400\">" +
+                MiniApp.escapeHtml(String(n.created_at || "")) +
+                '</span><p class="mt-1 whitespace-pre-wrap text-slate-800">' +
+                MiniApp.escapeHtml(n.body || "") +
+                "</p></div>"
+              );
+            })
+            .join("");
+          det.open = true;
+          MiniApp.showToast("{% trans 'Yuborildi' %}", "success");
+        } catch (err) {
+          MiniApp.showToast(MiniApp.parseApiError(err, "{% trans 'Yuborib bo‘lmadi' %}"), "error");
+        } finally {
+          nb.disabled = false;
+        }
+        return;
+      }
       const t = ev.target.closest("button[data-oid][data-action]");
       if (!t) return;
       if (t.disabled) return;
@@ -776,6 +924,37 @@
         t.classList.remove("opacity-50");
       }
     });
+
+    var csvBtn = document.getElementById("orders-export-csv");
+    if (csvBtn) {
+      csvBtn.addEventListener("click", async function () {
+        try {
+          await ensureAuth();
+          var st = (document.getElementById("orders-status-filter") || {}).value || "";
+          var q = st ? "?status=" + encodeURIComponent(st) : "";
+          var headers = Object.assign({ Accept: "text/csv;charset=utf-8" }, MiniApp.apiHeaders());
+          var res = await fetch("/api/seller/orders/export/" + q, { headers: headers });
+          if (!res.ok) throw new Error("csv");
+          var blob = await res.blob();
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "orders_export.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(a.href);
+          MiniApp.showToast("{% trans 'CSV tayyor' %}", "success");
+        } catch (err) {
+          MiniApp.showToast("{% trans 'CSV yuklab bo‘lmadi.' %}", "error");
+        }
+      });
+    }
+    var stSel = document.getElementById("orders-status-filter");
+    if (stSel) {
+      stSel.addEventListener("change", function () {
+        loadOrders();
+      });
+    }
 
     loadOrders();
   })();

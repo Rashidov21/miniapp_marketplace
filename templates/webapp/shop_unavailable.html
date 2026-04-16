@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Do‘kon" %}{% endblock %}
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+{% block topbar %}
+<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
+  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
+  <p class="ui-topbar__title">{% trans "Do‘kon" %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="mx-auto flex max-w-lg flex-col gap-4 px-1 py-6">
+  <div class="rounded-2xl border border-amber-200/90 bg-amber-50/95 p-5 text-center shadow-card ring-1 ring-amber-100/80">
+    <p class="text-3xl" aria-hidden="true">⏸</p>
+    {% if reason == "inactive" %}
+      <h1 class="mt-3 text-lg font-bold text-amber-950">{% trans "Bu do‘kon hozircha yopiq" %}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-amber-900/90">
+        {% trans "Sotuvchi vitrinani vaqtincha o‘chirib qo‘ygan. Keyinroq qayta urinib ko‘ring yoki sotuvchi bilan bog‘laning." %}
+      </p>
+    {% elif reason == "subscription" %}
+      <h1 class="mt-3 text-lg font-bold text-amber-950">{% trans "Do‘kon vaqtincha mavjud emas" %}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-amber-900/90">
+        {% trans "Obuna yoki sinov muddati tugagan, yoki to‘lov tasdiqlanishi kutilmoqda. Tez orada yana ochilishi mumkin." %}
+      </p>
+    {% elif reason == "product_inactive" %}
+      <h1 class="mt-3 text-lg font-bold text-amber-950">{% trans "Mahsulot hozir sotilmayapti" %}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-amber-900/90">
+        {% trans "Bu mahsulot vitrinadan olib tashlangan. Do‘kondagi boshqa mahsulotlarni ko‘rishingiz mumkin." %}
+      </p>
+      {% if shop_slug %}
+      <a href="/webapp/s/{{ shop_slug }}/" class="ui-btn ui-btn--secondary mt-4 inline-flex w-full justify-center no-underline">
+        {% trans "Do‘konga o‘tish" %}
+      </a>
+      {% endif %}
+    {% else %}
+      <h1 class="mt-3 text-lg font-bold text-amber-950">{% trans "Sahifa mavjud emas" %}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-amber-900/90">{% trans "Manzil noto‘g‘ri yoki kontent olib tashlangan." %}</p>
+    {% endif %}
+    {% if shop_name %}
+      <p class="mt-4 rounded-xl bg-white/80 px-3 py-2 text-sm font-medium text-slate-800 ring-1 ring-amber-100/80">{{ shop_name }}</p>
+    {% endif %}
+  </div>
+  <a href="/webapp/" class="ui-btn ui-btn--primary w-full text-center no-underline">{% trans "Bosh sahifaga" %}</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  MiniApp.bindBackButton("back-btn", "/webapp/");
+</script>
+{% endblock %}

@@ -82,6 +82,17 @@
              placeholder="{% trans 'Masalan: Bugun 10+ buyurtma' %}">
     </div>
 
+    <div class="rounded-2xl border border-slate-200 bg-slate-50/90 p-4 ring-1 ring-slate-100/80">
+      <label class="flex cursor-pointer items-start gap-3">
+        <input type="checkbox" id="field-active" checked
+               class="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/30">
+        <span>
+          <span class="block text-sm font-medium text-slate-800">{% trans "Vitrinada ko‘rsatish" %}</span>
+          <span class="mt-1 block text-xs leading-relaxed text-slate-600">{% trans "O‘chirilsa mahsulot mijozga ko‘rinmaydi — qoralama sifatida saqlanadi." %}</span>
+        </span>
+      </label>
+    </div>
+
     <div id="msg" class="hidden rounded-xl px-3 py-2 text-sm" role="alert"></div>
   </form>
 </div>
@@ -130,6 +141,8 @@
       document.getElementById("field-desc").value = p.description || "";
       document.getElementById("field-scarcity").value = p.scarcity_text || "";
       document.getElementById("field-social").value = p.social_proof_text || "";
+      const act = document.getElementById("field-active");
+      if (act) act.checked = p.is_active !== false;
     } catch (e) {
       MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Mahsulotni yuklab bo‘lmadi.' %}"), "error");
     }
@@ -144,6 +157,10 @@
     try {
       await ensureAuth();
       const fd = new FormData(e.target);
+      const actEl = document.getElementById("field-active");
+      if (actEl) {
+        fd.set("is_active", actEl.checked ? "true" : "false");
+      }
       btn.disabled = true;
       spin.classList.remove("hidden");
       label.textContent = "{% trans 'Saqlanmoqda…' %}";

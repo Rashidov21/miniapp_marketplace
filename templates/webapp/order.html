@@ -94,6 +94,10 @@
       <p class="text-xs font-semibold uppercase tracking-wide text-amber-800/90">{% trans "To‘lov" %}</p>
       <div class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{{ shop_payment_note }}</div>
     </div>
+    {% else %}
+    <p class="mt-4 max-w-sm text-left text-xs leading-relaxed text-slate-500">
+      {% trans "To‘lov tartibi do‘kon sozlamalarida ko‘rsatilmagan bo‘lsa, sotuvchi siz bilan bog‘lanadi. Buyurtmangizni keyin buyurtmalar ro‘yxatidan kuzatishingiz mumkin." %}
+    </p>
     {% endif %}
   </div>
   <a href="/webapp/my-orders/" class="ui-btn ui-btn--primary w-full max-w-sm no-underline">

@@ -5,8 +5,10 @@ from apps.orders import views
 urlpatterns = [
     path("orders/mine/", views.buyer_orders_mine, name="api_buyer_orders_mine"),
     path("orders/", views.order_create, name="api_order_create"),
+    path("orders/<int:order_id>/notes/", views.order_notes, name="api_order_notes"),
     path("orders/<int:order_id>/cancel/", views.buyer_order_cancel, name="api_buyer_order_cancel"),
     path("orders/<int:order_id>/", views.buyer_order_detail, name="api_order_detail"),
+    path("seller/orders/export/", views.seller_orders_export_csv, name="api_seller_orders_export"),
     path("seller/orders/", views.seller_orders, name="api_seller_orders"),
     path(
         "seller/orders/<int:order_id>/accept/",

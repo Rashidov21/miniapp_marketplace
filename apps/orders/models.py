@@ -70,3 +70,31 @@ class OrderIdempotency(models.Model):
     class Meta:
         verbose_name = _("order idempotency record")
         verbose_name_plural = _("order idempotency records")
+
+
+class OrderNote(models.Model):
+    """Buyurtma bo‘yicha sotuvchi–mijoz ichki izohlari (chat emas, qisqa xabarlar)."""
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="order_notes",
+    )
+    body = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = _("order note")
+        verbose_name_plural = _("order notes")
+        indexes = [
+            models.Index(fields=["order", "created_at"], name="orders_nt_ord_crt_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"Note {self.pk} on order {self.order_id}"

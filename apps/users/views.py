@@ -66,9 +66,15 @@ def become_seller(request):
         return Response(UserSerializer(user).data)
     if not user_has_current_seller_terms(user):
         return error_response(
-            str(_("Please accept the seller and platform terms first.")),
+            str(
+                _(
+                    "Please accept the seller and platform terms first. "
+                    "Open Seller agreement in the mini app: /webapp/legal/seller/"
+                )
+            ),
             status=status.HTTP_403_FORBIDDEN,
             code="terms_required",
+            extra={"terms_url": "/webapp/legal/seller/"},
         )
     user.role = User.Role.SELLER
     user.save(update_fields=["role"])

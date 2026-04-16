@@ -16,6 +16,7 @@ from apps.platform.models import AnalyticsEvent
 from apps.products.models import Product
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
+from apps.shops.selectors import get_owner_shop
 from apps.shops.serializers import (
     ShopPublicSerializer,
     ShopSerializer,
@@ -47,9 +48,15 @@ def shop_create(request):
     elevated = user.is_superuser or user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
     if not elevated and not user_has_current_seller_terms(user):
         return error_response(
-            str(_("Please accept the seller and platform terms before creating a shop.")),
+            str(
+                _(
+                    "Please accept the seller and platform terms first. "
+                    "Open Seller agreement in the mini app: /webapp/legal/seller/"
+                )
+            ),
             status=status.HTTP_403_FORBIDDEN,
             code="terms_required",
+            extra={"terms_url": "/webapp/legal/seller/"},
         )
     if Shop.objects.filter(owner=user).exists():
         return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
@@ -68,7 +75,7 @@ def shop_create(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def seller_stats(request):
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     week_ago = timezone.now() - timedelta(days=7)
@@ -104,7 +111,7 @@ def seller_stats(request):
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def shop_mine(request):
     user = _require_auth_user(request)
-    shop = Shop.objects.filter(owner=user).first()
+    shop = get_owner_shop(user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(ShopSerializer(shop, context={"request": request}).data)
@@ -195,7 +202,7 @@ def subscription_plans_list(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def subscription_payment_create(request):
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     ser = SubscriptionPaymentCreateSerializer(data=request.data)

@@ -1,7 +1,9 @@
+import csv
 import logging
 import threading
 
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -12,8 +14,13 @@ from rest_framework.response import Response
 
 from apps.core.pagination import OrderListPagination
 from apps.orders.locks import advisory_xact_lock_for_string
-from apps.orders.models import Order, OrderIdempotency
-from apps.orders.serializers import OrderCreateSerializer, OrderSerializer
+from apps.orders.models import Order, OrderIdempotency, OrderNote
+from apps.orders.serializers import (
+    OrderCreateSerializer,
+    OrderNoteCreateSerializer,
+    OrderNoteSerializer,
+    OrderSerializer,
+)
 from apps.orders.services import (
     notify_buyer_cancel_confirmed,
     notify_new_order,
@@ -26,6 +33,7 @@ from apps.orders.throttles import OrderCreateThrottle
 from apps.products.models import Product
 from apps.shops.models import Shop
 from apps.shops.permissions import IsSellerOrAdmin
+from apps.shops.selectors import get_owner_shop
 from apps.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -33,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 def _seller_apply_status_change(request, order_id: int, new_status: str) -> Response:
     """Sotuvchi do‘koni: buyurtma holatini o‘zgartirish (PATCH va POST actionlar uchun)."""
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     order = get_object_or_404(
@@ -177,10 +185,13 @@ def order_create(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def seller_orders(request):
-    shop = Shop.objects.filter(owner=request.user).first()
+    shop = get_owner_shop(request.user)
     if not shop:
         return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
     qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer").order_by("-created_at")
+    st = (request.GET.get("status") or "").strip().upper()
+    if st in dict(Order.Status.choices):
+        qs = qs.filter(status=st)
     paginator = OrderListPagination()
     page = paginator.paginate_queryset(qs, request)
     ser = OrderSerializer(page, many=True)
@@ -228,7 +239,13 @@ def buyer_order_cancel(request, order_id):
     )
     if order.status != Order.Status.NEW:
         return Response(
-            {"detail": _("Only pending orders can be cancelled.")},
+            {
+                "detail": _(
+                    "This order can no longer be cancelled in the app. "
+                    "Please contact the seller using the phone number on the order."
+                ),
+                "code": "cancel_not_allowed",
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
     order.status = Order.Status.CANCELLED
@@ -270,3 +287,83 @@ def buyer_order_detail(request, order_id):
     ):
         return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
     return Response(OrderSerializer(order, context={"request": request}).data)
+
+
+def _can_access_order_notes(user: User, order: Order) -> bool:
+    if user.is_superuser or user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER):
+        return True
+    if order.buyer_id and order.buyer_id == user.id:
+        return True
+    if order.shop.owner_id == user.id:
+        return True
+    return False
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def order_notes(request, order_id: int):
+    order = (
+        Order.objects.filter(pk=order_id)
+        .select_related("shop", "shop__owner", "buyer")
+        .first()
+    )
+    if not order:
+        return Response({"detail": _("Order not found.")}, status=status.HTTP_404_NOT_FOUND)
+    if not _can_access_order_notes(request.user, order):
+        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+    if request.method == "GET":
+        notes = order.notes.select_related("author").order_by("created_at")
+        return Response({"results": OrderNoteSerializer(notes, many=True).data})
+    ser = OrderNoteCreateSerializer(data=request.data)
+    if not ser.is_valid():
+        return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+    note = OrderNote.objects.create(
+        order=order,
+        author=request.user,
+        body=ser.validated_data["body"],
+    )
+    return Response(OrderNoteSerializer(note).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def seller_orders_export_csv(request):
+    shop = get_owner_shop(request.user)
+    if not shop:
+        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+    qs = Order.objects.filter(shop=shop).select_related("product", "buyer").order_by("-created_at")
+    st = (request.GET.get("status") or "").strip().upper()
+    if st in dict(Order.Status.choices):
+        qs = qs.filter(status=st)
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="orders_export.csv"'
+    response.write("\ufeff")
+    w = csv.writer(response)
+    w.writerow(
+        [
+            "id",
+            "status",
+            "created_at",
+            "product_name",
+            "customer_name",
+            "phone",
+            "address",
+            "total_amount",
+            "buyer_telegram_id",
+        ]
+    )
+    for o in qs.iterator(chunk_size=500):
+        w.writerow(
+            [
+                o.id,
+                o.status,
+                o.created_at.isoformat() if o.created_at else "",
+                o.product.name if o.product_id else "",
+                o.customer_name,
+                o.phone,
+                (o.address or "").replace("\r\n", " ").replace("\n", " ")[:500],
+                str(o.total_amount),
+                o.buyer.telegram_id if o.buyer_id and o.buyer else "",
+            ]
+        )
+    return response
