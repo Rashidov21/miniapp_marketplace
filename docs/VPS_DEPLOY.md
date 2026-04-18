@@ -1,5 +1,7 @@
 # VPS: to‘liq qayta ishga tushirish (Mini App — yangi UI + backend)
 
+**To‘liq “safe hard redeploy” (backup, pre-check, checklist):** [PRODUCTION_HARD_REDEPLOY.md](./PRODUCTION_HARD_REDEPLOY.md)
+
 Kodda `MiniApp.apiFetch` barcha so‘rovlarni `/api/...` orqali yuboradi; `templates/webapp` havolalari `/webapp/...` bilan mos. Agar serverda **eski UI** yoki **tugmalar ishlamayapti** ko‘rinsa, odatda sabab: **eskicha static fayllar**, **kesh**, **yangilanmagan kod** yoki **502 / API ulanmay qolish**.
 
 ## 1. Kodni yangilash
