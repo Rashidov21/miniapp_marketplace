@@ -29,8 +29,8 @@ def get_onboarding_delays() -> Tuple[int, int, int]:
 
 
 def build_start_keyboard_markup(webapp_url: str, seller_url: str) -> dict:
-    """inline (default) yoki reply — env: BOT_START_KEYBOARD_STYLE=inline|reply"""
-    t1 = getattr(settings, "BOT_START_BUTTON_MINI_TEXT", None) or "Mini Appni ochish"
+    """inline yoki reply — env: BOT_START_KEYBOARD_STYLE=inline|reply (standart: reply)"""
+    t1 = getattr(settings, "BOT_START_BUTTON_MINI_TEXT", None) or "Mini ilovani ochish"
     t2 = getattr(settings, "BOT_START_BUTTON_SELLER_TEXT", None) or "Sotuvchi kabineti"
     style = (getattr(settings, "BOT_START_KEYBOARD_STYLE", "inline") or "inline").strip().lower()
     if style == "reply":
@@ -41,6 +41,7 @@ def build_start_keyboard_markup(webapp_url: str, seller_url: str) -> dict:
             ],
             "resize_keyboard": True,
             "is_persistent": True,
+            "input_field_placeholder": "Xabar yozishingiz mumkin",
         }
     return {
         "inline_keyboard": [
@@ -54,8 +55,8 @@ def start_welcome_text(start_param: str) -> str:
     """`/start` parametri bo‘yicha birinchi xabar."""
     p = (start_param or "").strip().lower()
     base = (
-        "SavdoLink — Telegramda 1 link bilan savdo boshlang.\n"
-        "Quyidagi tugma orqali Mini App'ni oching: do‘kon yarating, mahsulot qo‘shing, buyurtmalarni tartibda oling."
+        "SavdoLink — Telegramda bitta havola bilan savdo boshlang.\n"
+        "Quyidagi tugma orqali mini ilovani oching: do‘kon yarating, mahsulot qo‘shing, buyurtmalarni tartibda oling."
     )
     if p == "landing":
         return (
@@ -65,7 +66,7 @@ def start_welcome_text(start_param: str) -> str:
     if p == "lead":
         return (
             "Assalomu alaykum!\n\n"
-            "Arizangiz uchun rahmat! Endi bot orqali Mini App'ni ochib, bir necha daqiqada do‘konni boshlashingiz mumkin.\n\n"
+            "Arizangiz uchun rahmat! Endi bot orqali mini ilovani ochib, bir necha daqiqada do‘konni boshlashingiz mumkin.\n\n"
             + base
         )
     if p.startswith("shop_") or p.startswith("product_"):
@@ -84,23 +85,23 @@ def _seq(delays: Tuple[int, int, int], a: str, b: str, c: str) -> List[DelayMsg]
 def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -> List[DelayMsg]:
     """
     Kechikkan xabarlar ketma-ketligi.
-    DB da foydalanuvchi yo‘q (Mini App hech ochilmagan) — umumiy yo‘l-yo‘riq.
+    DB da foydalanuvchi yo‘q (mini ilova hech ochilmagan) — umumiy yo‘l-yo‘riq.
     """
     _ = start_param  # kelajakda segment bo‘yicha matn farqlash uchun
     delays = get_onboarding_delays()
     if not telegram_user_id:
         return _seq(
             delays,
-            "⏱ SavdoLink: 1 daqiqada do‘kon ochishingiz mumkin.\n«Mini Appni ochish» → Sotuvchi kabineti.",
+            "⏱ SavdoLink: 1 daqiqada do‘kon ochishingiz mumkin.\n«Mini ilovani ochish» → Sotuvchi kabineti.",
             "📦 Mahsulot qo‘shing va bitta havolani ulashing — buyurtmalar chatda yo‘qolmaydi.",
-            "✅ Tayyormisiz? Mini App → Sotuvchi kabineti — hozir sinab ko‘ring.",
+            "✅ Tayyormisiz? Mini ilova → Sotuvchi kabineti — hozir sinab ko‘ring.",
         )
 
     user = User.objects.filter(telegram_id=telegram_user_id).first()
     if not user:
         return _seq(
             delays,
-            "⏱ Birinchi marta: Mini App'ni oching — sotuvchi bo‘ling va do‘kon nomini yozing.",
+            "⏱ Birinchi marta: mini ilovani oching — sotuvchi bo‘ling va do‘kon nomini yozing.",
             "📦 Keyin mahsulot qo‘shing — mijozlar katalogdan buyurtma beradi.",
             "🔗 Do‘kon havolasini Instagram yoki guruhga qo‘ying.",
         )
@@ -109,7 +110,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
     if not shop:
         return _seq(
             delays,
-            f"👋 {user.first_name or 'Siz'} — hali do‘kon yo‘q. Mini App → Sotuvchi kabineti → do‘kon yarating.",
+            f"👋 {user.first_name or 'Siz'} — hali do‘kon yo‘q. Mini ilova → Sotuvchi kabineti → do‘kon yarating.",
             "✏️ Do‘kon nomi va tavsif — keyin mahsulot qo‘shish oson.",
             "⚡ 5 daqiqada vitrinangiz tayyor bo‘lishi mumkin.",
         )
@@ -129,7 +130,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
         return _seq(
             delays,
             "⚠️ Do‘koningiz hozir mijozlarga yopiq yoki obuna muddati tugagan bo‘lishi mumkin.",
-            "💳 Mini App → Obuna — tarifni yangilang yoki to‘lovni tekshiring.",
+            "💳 Mini ilova → Obuna — tarifni yangilang yoki to‘lovni tekshiring.",
             "📩 Savol bo‘lsa, platforma orqali yozishingiz mumkin.",
         )
 
@@ -145,7 +146,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
     return _seq(
         delays,
         f"🙌 {shop_name}: savdo davom etsin — yangi mahsulot yoki aksiya qo‘shing.",
-        "📊 Ko‘proq tahlil va limit uchun Pro tarifni ko‘ring (Mini App → Obuna).",
+        "📊 Ko‘proq tahlil va limit uchun Pro tarifni ko‘ring (mini ilova → Obuna).",
         "⭐ Mijozlarga tez javob — qayta buyurtma ehtimoli oshadi.",
     )
 

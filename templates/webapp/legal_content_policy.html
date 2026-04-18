@@ -1,21 +1,133 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block body_extra_class %}has-app-dock{% endblock %}
-{% block title %}{% trans "Kontent qoidalari" %}{% endblock %}
+{% block title %}Kontent qoidalari{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
 {% endblock %}
 {% block content %}
 <article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
-  <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Kontent qoidalari" %}</h1>
-  <p>
-    {% blocktrans %}Namunaviy ro‘yxat. Haqiqiy loyiha uchun to‘liq va aniq qoidalarni qo‘shing.{% endblocktrans %}
+  <h1 class="font-headline text-xl font-extrabold text-on-surface">Kontent qoidalari</h1>
+  <p class="text-xs text-on-surface-variant">
+    Oxirgi yangilanish:
+    <time datetime="{{ legal_updated|date:'Y-m-d' }}">{{ legal_updated|date:"d.m.Y" }}</time>
   </p>
-  <ul class="list-disc space-y-2 pl-5">
-    <li>{% trans "Firibgarlik, soxta mahsulot, noqonuniy tovarlar taqiqlanadi." %}</li>
-    <li>{% trans "Boshqalarning surat yoki brendidan ruxsatsiz foydalanish mumkin emas." %}</li>
-    <li>{% trans "Haqorat, zo‘ravonlik va noxush kontent taqiqlanadi." %}</li>
+
+  <p>Ushbu hujjat SavdoLink platformasida qanday kontent joylash mumkin va mumkin emasligini belgilaydi.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="mt-2 text-base font-bold text-on-surface">1. Umumiy qoidalar</h2>
+  <p>Platformada joylanadigan barcha kontent qonunchilikka va ushbu qoidalarga mos bo‘lishi kerak.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">2. Ruxsat etilgan kontent</h2>
+  <p>Quyidagilar ruxsat etiladi:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>qonuniy mahsulotlar savdosi</li>
+    <li>xizmatlar (freelance, servis va boshqalar)</li>
+    <li>aniq tavsiflangan mahsulotlar</li>
   </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">3. Taqiqlangan kontent</h2>
+  <p>Quyidagilar qat’iyan taqiqlanadi:</p>
+
+  <h3 class="mt-3 text-sm font-bold text-on-surface">Noqonuniy mahsulotlar</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>giyohvand moddalar</li>
+    <li>qurol va xavfli vositalar</li>
+    <li>qalbaki hujjatlar</li>
+  </ul>
+
+  <h3 class="mt-3 text-sm font-bold text-on-surface">Firibgarlik</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>yolg‘on mahsulotlar</li>
+    <li>mavjud bo‘lmagan tovarlar</li>
+    <li>noto‘g‘ri narxlar</li>
+  </ul>
+
+  <h3 class="mt-3 text-sm font-bold text-on-surface">Axloqiy qoidabuzarlik</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>haqoratli kontent</li>
+    <li>zo‘ravonlikni targ‘ib qilish</li>
+    <li>pornografik materiallar</li>
+  </ul>
+
+  <h3 class="mt-3 text-sm font-bold text-on-surface">Spam</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>takroriy postlar</li>
+    <li>aldamchi reklama</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">4. Kontent talablari</h2>
+  <p>Har bir mahsulot:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>aniq nomga ega bo‘lishi kerak</li>
+    <li>haqiqiy rasm bo‘lishi kerak</li>
+    <li>narxi ko‘rsatilgan bo‘lishi kerak</li>
+    <li>tavsifi tushunarli bo‘lishi kerak</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">5. Moderatsiya</h2>
+  <p>Platforma:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>kontentni tekshirish huquqiga ega</li>
+    <li>qoidabuzar kontentni o‘chiradi</li>
+    <li>foydalanuvchini bloklashi mumkin</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">6. Shikoyatlar</h2>
+  <p>Foydalanuvchilar:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>noqonuniy yoki noto‘g‘ri kontent haqida shikoyat qilishi mumkin</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">7. Javobgarlik</h2>
+  <p>Kontent uchun to‘liq javobgarlik uni joylagan foydalanuvchiga tegishli.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">8. O‘zgarishlar</h2>
+  <p>Qoidalar istalgan vaqtda yangilanishi mumkin.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">9. Bog‘lanish</h2>
+  <p>
+    Email:
+    {% if support_email %}
+      <a class="font-medium text-primary underline" href="mailto:{{ support_email }}">{{ support_email }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+  <p>
+    Telegram:
+    {% if telegram_bot_username %}
+      <a class="font-medium text-primary underline" href="https://t.me/{{ telegram_bot_username }}" rel="noopener noreferrer">@{{ telegram_bot_username }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <p>Platformadan foydalanish orqali siz ushbu qoidalarga rozilik bildirasiz.</p>
+
+  <p class="text-xs text-on-surface-variant">
+    <a class="font-medium text-primary underline" href="/webapp/legal/seller/">{% trans "Sotuvchi ofertasi" %}</a>
+  </p>
 </article>
 {% endblock %}
 {% block app_bottom_nav %}

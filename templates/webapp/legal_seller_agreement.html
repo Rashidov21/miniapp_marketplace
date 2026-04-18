@@ -1,22 +1,147 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block body_extra_class %}has-app-dock{% endblock %}
-{% block title %}{% trans "Sotuvchi bilan shartnoma" %}{% endblock %}
+{% block title %}Sotuvchi ofertasi (ommaviy shartnoma){% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
 {% endblock %}
 {% block content %}
 <article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
-  <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Sotuvchi ofertasi (platforma)" %}</h1>
-  <p class="text-xs text-on-surface-variant">{% trans "Versiya" %} {{ terms_version }}</p>
-  <p>
-    {% blocktrans %}Namunaviy matn. Sotuvchi platformadan foydalanish, obuna/to‘lov, vitrina boshqaruvi, moderatsiya, javobgarlik chegarasi va nizolarni hal qilish tartibi yuridik jihatdan bu yerda batafsil yozilishi kerak.{% endblocktrans %}
+  <h1 class="font-headline text-xl font-extrabold text-on-surface">Sotuvchi ofertasi (ommaviy shartnoma)</h1>
+  <p class="text-xs text-on-surface-variant">
+    Oxirgi yangilanish:
+    <time datetime="{{ legal_updated|date:'Y-m-d' }}">{{ legal_updated|date:"d.m.Y" }}</time>
+    · Versiya {{ terms_version }}
   </p>
-  <ul class="list-disc space-y-2 pl-5">
-    <li>{% trans "Sotuvchi mahsulot va narx uchun javobgar." %}</li>
-    <li>{% trans "Platforma texnik vositachi bo‘lib, sotuvchi-mijoz bitimiga to‘g‘ridan-to‘g‘ri tomon emas." %}</li>
-    <li>{% trans "Obuna shartlari alohida ko‘rsatiladi." %}</li>
+
+  <p>Ushbu hujjat SavdoLink platformasidan foydalanuvchi sotuvchilar uchun ommaviy oferta hisoblanadi.</p>
+  <p>Platformadan foydalanishni boshlash orqali siz ushbu shartlarga to‘liq rozilik bildirasiz.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="mt-2 text-base font-bold text-on-surface">1. Umumiy qoidalar</h2>
+  <p>SavdoLink — Telegram ichida ishlaydigan mini-do‘kon platformasi bo‘lib, sotuvchilarga mahsulot joylash va buyurtmalarni qabul qilish imkonini beradi.</p>
+  <p>Platforma sotuvchi va mijoz o‘rtasida vositachi sifatida ishlaydi.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">2. Sotuvchi majburiyatlari</h2>
+  <p>Sotuvchi quyidagilarga majbur:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>faqat haqiqiy va to‘g‘ri ma’lumotlarni joylash</li>
+    <li>mahsulot tavsifini aniq yozish</li>
+    <li>narxlarni oshkora ko‘rsatish</li>
+    <li>mijozlarga o‘z vaqtida javob berish</li>
+    <li>buyurtmalarni o‘z vaqtida bajarish</li>
   </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">3. Taqiqlangan faoliyat</h2>
+  <p>Sotuvchiga quyidagilar qat’iyan taqiqlanadi:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>noqonuniy mahsulotlar savdosi</li>
+    <li>qalbaki yoki firibgarlik faoliyati</li>
+    <li>spam va noto‘g‘ri reklama</li>
+    <li>boshqa sotuvchilarning kontentini o‘g‘irlash</li>
+    <li>platformani aldashga urinish</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">4. Mahsulot va xizmatlar uchun javobgarlik</h2>
+  <p>Sotuvchi:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>mahsulot sifati uchun to‘liq javobgar</li>
+    <li>yetkazib berish uchun javobgar</li>
+    <li>mijoz bilan kelishuvlar uchun javobgar</li>
+  </ul>
+  <p>SavdoLink bu jarayonlar uchun javobgar emas.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">5. Buyurtmalar</h2>
+  <p>Platforma faqat buyurtmalarni qabul qilishni osonlashtiradi.</p>
+  <p>Sotuvchi:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>buyurtmani tasdiqlashi yoki rad etishi kerak</li>
+    <li>mijoz bilan mustaqil aloqaga chiqadi</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">6. To‘lovlar va obuna</h2>
+  <p>Platformadan foydalanish pullik bo‘lishi mumkin:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>oylik yoki yillik obuna asosida</li>
+    <li>to‘lov amalga oshirilgandan keyin xizmat ochiladi</li>
+    <li>to‘lovlar qaytarilmaydi (agar alohida ko‘rsatilmagan bo‘lsa)</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">7. Hisobni bloklash</h2>
+  <p>Platforma quyidagi hollarda sotuvchini bloklashi mumkin:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>qoidalar buzilganda</li>
+    <li>firibgarlik aniqlanganda</li>
+    <li>mijozlardan ko‘p shikoyat tushganda</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">8. Komissiya va platforma haqi</h2>
+  <p>Platforma:</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>obuna asosida ishlaydi</li>
+    <li>kelajakda qo‘shimcha xizmatlar uchun alohida to‘lov joriy qilinishi mumkin</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">9. Ma’lumotlardan foydalanish</h2>
+  <p>Sotuvchi platformada joylagan kontent platformada ko‘rsatilishi mumkin.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">10. Xizmatni to‘xtatish</h2>
+  <p>Platforma xizmatni istalgan vaqtda o‘zgartirish yoki to‘xtatish huquqiga ega.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">11. Nizolarni hal qilish</h2>
+  <p>Sotuvchi va mijoz o‘rtasidagi nizolar ular o‘rtasida hal qilinadi.</p>
+  <p>Platforma vositachi sifatida javobgar emas.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">12. Qonunchilik</h2>
+  <p>Ushbu oferta O‘zbekiston Respublikasi qonunchiligiga muvofiq tartibga solinadi.</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">13. Bog‘lanish</h2>
+  <p>
+    Email:
+    {% if support_email %}
+      <a class="font-medium text-primary underline" href="mailto:{{ support_email }}">{{ support_email }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+  <p>
+    Telegram:
+    {% if telegram_bot_username %}
+      <a class="font-medium text-primary underline" href="https://t.me/{{ telegram_bot_username }}" rel="noopener noreferrer">@{{ telegram_bot_username }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <p>Platformadan foydalanish orqali siz ushbu ofertaga rozilik bildirasiz.</p>
+
   <p class="text-xs text-on-surface-variant">
     <a class="font-medium text-primary underline" href="/webapp/legal/content/">{% trans "Kontent qoidalari" %}</a>
   </p>

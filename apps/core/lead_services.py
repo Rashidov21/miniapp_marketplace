@@ -8,6 +8,16 @@ from apps.core.models import Lead
 from apps.core.telegram import send_message
 
 
+def _lead_source_uz(lead: Lead) -> str:
+    m = {
+        Lead.Source.LANDING_MODAL: "Landing (modal oyna)",
+        Lead.Source.LANDING_STICKY: "Landing (pastki tugma)",
+        Lead.Source.LANDING_HERO: "Landing (hero blok)",
+        Lead.Source.LANDING_FINAL: "Landing (oxirgi CTA)",
+    }
+    return m.get(lead.source, lead.get_source_display())
+
+
 def notify_lead_admins(lead: Lead) -> None:
     raw = (getattr(settings, "LANDING_NOTIFY_TELEGRAM_IDS", "") or "").strip()
     ids: list[int] = []
@@ -22,7 +32,7 @@ def notify_lead_admins(lead: Lead) -> None:
         "📝 Yangi SavdoLink arizasi",
         f"Ism: {lead.name}",
         f"Telefon: {lead.phone}",
-        f"Manba: {lead.get_source_display()}",
+        f"Manba: {_lead_source_uz(lead)}",
     ]
     if lead.comment:
         lines.append(f"Izoh: {lead.comment}")

@@ -6,10 +6,24 @@
 {% include "includes/ds_app_header.html" with title=_("Kabinet") %}
 {% endblock %}
 {% block content %}
-<div class="flex flex-col gap-5">
+<div
+  id="seller-dashboard-root"
+  class="flex flex-col gap-5"
+  {% if dashboard_has_shop is not None %}data-server-has-shop="{% if dashboard_has_shop %}1{% else %}0{% endif %}"{% endif %}
+  {% if dashboard_role %}data-server-role="{{ dashboard_role|escape }}"{% endif %}
+>
   {# Sarlavha: includes/ds_app_header.html (Kabinet) — bu yerda faqat subtitr #}
   <div>
     <p id="dash-subtitle" class="text-sm text-on-surface-variant">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
+  </div>
+
+  <div id="buyer-kabinet-hint" class="hidden rounded-3xl border border-sky-200 bg-sky-50/90 px-4 py-3 text-sm text-sky-950 shadow-editorial ring-1 ring-sky-200/80">
+    <p class="font-medium text-sky-950">{% trans "Siz hali sotuvchi sifatida ro‘yxatdan o‘tmagansiz." %}</p>
+    <p class="mt-1 text-xs leading-relaxed text-sky-900/90">{% trans "Xaridor bo‘lsangiz — katalog va buyurtmalaringizni oching. Sotuvchi bo‘lish uchun pastdagi qadamni bajaring." %}</p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <a href="/webapp/discover/" class="touch-target inline-flex rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm">{% trans "Katalog" %}</a>
+      <a href="/webapp/my-orders/" class="touch-target inline-flex rounded-2xl border border-sky-300 bg-white px-4 py-2.5 text-sm font-semibold text-sky-900">{% trans "Mening buyurtmalarim" %}</a>
+    </div>
   </div>
 
   <div id="dash-quick-links" class="flex flex-wrap gap-2 hidden">
@@ -122,7 +136,7 @@
     </div>
   </section>
 
-  <div class="flex flex-col gap-2">
+  <div id="seller-ops-actions" class="hidden flex flex-col gap-2">
     <a id="seller-products-link" href="/webapp/seller/products/"
        class="touch-target hidden text-center text-sm font-semibold text-primary underline decoration-primary/30">{% trans "Barcha mahsulotlar" %}</a>
     <a id="add-product-cta" href="/webapp/seller/products/new/"
@@ -132,9 +146,9 @@
     </a>
   </div>
 
-  <section id="seller-orders">
+  <section id="seller-orders" class="hidden" aria-labelledby="seller-orders-heading">
     <div class="mb-3 flex items-end justify-between gap-2">
-      <h2 class="font-headline text-lg font-extrabold text-on-surface">{% trans "Buyurtmalar" %}</h2>
+      <h2 id="seller-orders-heading" class="font-headline text-lg font-extrabold text-on-surface">{% trans "Buyurtmalar" %}</h2>
       <span id="orders-count" class="hidden text-xs font-medium text-on-surface-variant"></span>
     </div>
 
@@ -377,6 +391,20 @@
     return role === "seller" || role === "admin" || role === "platform_owner";
   }
 
+  function setOrdersSectionVisible(show) {
+    var sec = document.getElementById("seller-orders");
+    if (!sec) return;
+    if (show) sec.classList.remove("hidden");
+    else sec.classList.add("hidden");
+  }
+
+  function setSellerOpsActionsVisible(show) {
+    var el = document.getElementById("seller-ops-actions");
+    if (!el) return;
+    if (show) el.classList.remove("hidden");
+    else el.classList.add("hidden");
+  }
+
   function applySubscriptionBanner(shop, banner) {
     if (shop.subscription_status === "trial" && shop.trial_days_left != null) {
       banner.innerHTML =
@@ -479,6 +507,10 @@
   }
 
   function showShopDashboardUi(shop) {
+    var buyerHint = document.getElementById("buyer-kabinet-hint");
+    if (buyerHint) buyerHint.classList.add("hidden");
+    setSellerOpsActionsVisible(true);
+    setOrdersSectionVisible(true);
     const onboarding = document.getElementById("onboarding");
     const shopPanel = document.getElementById("shop-panel");
     const subtitle = document.getElementById("dash-subtitle");
@@ -575,6 +607,12 @@
   async function refreshChecklist(me, shop) {
     const checklist = document.getElementById("checklist");
     if (!checklist || !me) return;
+    if (!shop && !isPanelRole(me.role)) {
+      checklist.classList.add("hidden");
+      const hintSkip = document.getElementById("checklist-stats");
+      if (hintSkip) hintSkip.classList.add("hidden");
+      return;
+    }
     checklist.classList.remove("hidden");
     setCk(document.getElementById("ck-step-seller"), isPanelRole(me.role));
     setCk(document.getElementById("ck-step-shop"), !!shop);
@@ -677,6 +715,12 @@
         }
         addProductCta.classList.add("hidden");
         if (productsLink) productsLink.classList.add("hidden");
+        setOrdersSectionVisible(false);
+        setSellerOpsActionsVisible(false);
+        var bh1 = document.getElementById("buyer-kabinet-hint");
+        if (bh1) bh1.classList.add("hidden");
+        var ol1 = document.getElementById("orders-loading");
+        if (ol1) ol1.classList.add("hidden");
       } else {
         if (quickLinks) quickLinks.classList.add("hidden");
         shopPanel.classList.add("hidden");
@@ -687,17 +731,29 @@
         btnSeller.classList.remove("hidden");
         addProductCta.classList.add("hidden");
         if (productsLink) productsLink.classList.add("hidden");
+        setOrdersSectionVisible(false);
+        setSellerOpsActionsVisible(false);
+        var bh2 = document.getElementById("buyer-kabinet-hint");
+        if (bh2) bh2.classList.remove("hidden");
+        var clBuy = document.getElementById("checklist");
+        if (clBuy) clBuy.classList.add("hidden");
+        var ol2 = document.getElementById("orders-loading");
+        if (ol2) ol2.classList.add("hidden");
       }
     } catch (e) {
       const txt = MiniApp.parseApiError(e, "{% trans 'Kirish xatosi' %}");
       banner.textContent = txt;
       MiniApp.showToast(txt, "error");
-      document.getElementById("orders-loading").classList.add("hidden");
-      document.getElementById("orders-empty").classList.remove("hidden");
+      var olErr = document.getElementById("orders-loading");
+      if (olErr) olErr.classList.add("hidden");
+      setOrdersSectionVisible(false);
       return;
     }
 
     await refreshChecklist(lastMe, lastShop);
+    if (lastShop) {
+      loadOrders();
+    }
 
     btnSeller.onclick = async function () {
       setBtnLoading(btnSeller, "{% trans 'Kutilmoqda…' %}", true);
@@ -706,13 +762,20 @@
         if (!(await ensureTermsAcceptedOrSubmit())) return;
         await MiniApp.apiFetch("/me/become-seller/", { method: "POST", body: JSON.stringify({}) });
         MiniApp.showToast("{% trans 'Endi do‘kon yarating.' %}", "success");
-        await MiniApp.apiFetch("/me/", { method: "GET" });
+        lastMe = await MiniApp.apiFetch("/me/", { method: "GET" });
         banner.textContent = "{% trans 'Endi do‘kon nomini yozing.' %}";
         btnSeller.classList.add("hidden");
         if (quickLinks) quickLinks.classList.add("hidden");
         subtitle.textContent = "{% trans 'Avval do‘kon yarating — keyin mahsulot va havola.' %}";
         const intro = onboarding.querySelector("p");
         if (intro) intro.textContent = "{% trans 'Pastga do‘kon nomini yozing va «Do‘konni yaratish» ni bosing.' %}";
+        var bhAfter = document.getElementById("buyer-kabinet-hint");
+        if (bhAfter) bhAfter.classList.add("hidden");
+        var clAfter = document.getElementById("checklist");
+        if (clAfter) clAfter.classList.remove("hidden");
+        setOrdersSectionVisible(false);
+        setSellerOpsActionsVisible(false);
+        await refreshChecklist(lastMe, lastShop);
         MiniApp.hapticLight();
       } catch (e) {
         MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Xatolik yuz berdi.' %}"), "error");
@@ -796,7 +859,14 @@
         load.classList.add("hidden");
         const total = typeof res.count === "number" ? res.count : list.length;
         var tb = document.getElementById("orders-toolbar");
-        if (tb) tb.classList.remove("hidden");
+        var statTotal =
+          res.stats && res.stats.orders_total != null ? Number(res.stats.orders_total) : null;
+        var showToolbar =
+          list.length > 0 || (statTotal !== null && !isNaN(statTotal) && statTotal > 0);
+        if (tb) {
+          if (showToolbar) tb.classList.remove("hidden");
+          else tb.classList.add("hidden");
+        }
         if (!list.length) {
           empty.classList.remove("hidden");
           countEl.classList.add("hidden");
@@ -956,8 +1026,6 @@
         loadOrders();
       });
     }
-
-    loadOrders();
   })();
 </script>
 {% endblock %}

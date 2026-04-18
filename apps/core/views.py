@@ -112,7 +112,11 @@ def help_page(request):
 
 @require_GET
 def seller_dashboard(request):
-    return render(request, "webapp/seller_dashboard.html")
+    ctx = {"dashboard_role": "", "dashboard_has_shop": None}
+    if request.user.is_authenticated:
+        ctx["dashboard_role"] = request.user.role
+        ctx["dashboard_has_shop"] = get_owner_shop(request.user) is not None
+    return render(request, "webapp/seller_dashboard.html", ctx)
 
 
 @require_GET
@@ -293,16 +297,14 @@ def legal_privacy(request):
 
 @require_GET
 def legal_seller_agreement(request):
-    return render(
-        request,
-        "webapp/legal_seller_agreement.html",
-        {"terms_version": current_terms_version()},
-    )
+    ctx = _legal_page_context()
+    ctx["terms_version"] = current_terms_version()
+    return render(request, "webapp/legal_seller_agreement.html", ctx)
 
 
 @require_GET
 def legal_content_policy(request):
-    return render(request, "webapp/legal_content_policy.html", {})
+    return render(request, "webapp/legal_content_policy.html", _legal_page_context())
 
 
 @require_GET

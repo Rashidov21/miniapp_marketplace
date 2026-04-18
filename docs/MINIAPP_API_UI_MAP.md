@@ -36,6 +36,8 @@ Barcha `MiniApp.apiFetch` chaqiriqlari `/api` prefiksi bilan `static/js/app.js` 
 
 ## Sotuvchi kabineti
 
+Kabinet UI segmentlari (rol + do‘kon): `docs/KABINET_SEGMENT_PLAN.md`.
+
 | Sahifa | Endpoint |
 |--------|----------|
 | Auth, profil, do‘kon | `POST /auth/telegram/`, `GET /me/`, `GET /shops/mine/`, `POST /shops/`, `POST /me/become-seller/`, `POST /me/accept-seller-terms/` |
