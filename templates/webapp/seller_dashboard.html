@@ -27,6 +27,8 @@
   </div>
 
   <div id="dash-quick-links" class="flex flex-wrap gap-2 hidden">
+    <a id="dash-vitrina-link" href="#"
+       class="touch-target rounded-2xl border border-primary/25 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/20">{% trans "Ochiq vitrina" %}</a>
     <a href="/webapp/seller/shop/"
        class="touch-target rounded-2xl bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-primary shadow-editorial ring-1 ring-primary/25">{% trans "Do‘kon profili" %}</a>
     <a href="/webapp/seller/subscription/"
@@ -518,6 +520,13 @@
     const productsLink = document.getElementById("seller-products-link");
     const quickLinks = document.getElementById("dash-quick-links");
     if (quickLinks) quickLinks.classList.remove("hidden");
+    var vitLink = document.getElementById("dash-vitrina-link");
+    if (vitLink) {
+      var slug = (shop.slug || "").trim();
+      vitLink.href = slug
+        ? "/webapp/s/" + encodeURIComponent(slug) + "/"
+        : "/webapp/shop/" + shop.id + "/";
+    }
     onboarding.classList.add("hidden");
     shopPanel.classList.remove("hidden");
     subtitle.textContent = "{% trans 'Buyurtmalar va vitrina — barchasi shu yerda.' %}";

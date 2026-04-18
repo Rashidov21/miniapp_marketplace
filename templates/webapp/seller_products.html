@@ -9,7 +9,10 @@
 <div class="flex flex-col gap-4 pb-8">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Vitrina" %}</h1>
-    <a href="/webapp/seller/products/new/" class="touch-target rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-md shadow-primary/25">＋ {% trans "Yangi" %}</a>
+    <div class="flex flex-wrap items-center gap-2">
+      <a id="shop-public-link" href="#" class="hidden touch-target rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-sm ring-1 ring-outline-variant/15">{% trans "Do‘kon sahifasi" %}</a>
+      <a href="/webapp/seller/products/new/" class="touch-target rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary shadow-md shadow-primary/25">＋ {% trans "Yangi" %}</a>
+    </div>
   </div>
   <div id="loading" class="space-y-3">
     <div class="skeleton h-20 rounded-3xl"></div>
@@ -32,16 +35,35 @@
     if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
     await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
   }
+  var shopSlug = "";
+  var shopId = 0;
+
+  function productViewHref(p) {
+    if (!shopId) return "#";
+    if (p.is_active === false) {
+      return "/webapp/seller/products/" + p.id + "/edit/";
+    }
+    var sl = (p.slug && String(p.slug).trim()) || "";
+    if (sl) {
+      return "/webapp/s/" + encodeURIComponent(shopSlug) + "/p/" + encodeURIComponent(sl) + "/";
+    }
+    return "/webapp/shop/" + shopId + "/product/" + p.id + "/";
+  }
+
   function row(p) {
     const uz = "{% trans 'so‘m' %}";
     const active = p.is_active !== false;
-    return (
-      '<div class="flex items-center gap-3 rounded-3xl bg-surface-container-lowest p-3 shadow-editorial ring-1 ring-outline-variant/20">' +
+    const viewHref = productViewHref(p);
+    const canShare = active && shopId;
+    const mainBlock =
+      '<a href="' +
+      viewHref +
+      '" class="flex min-w-0 flex-1 items-center gap-3 rounded-2xl ring-1 ring-transparent transition active:bg-surface-container-high/80">' +
       (p.image_url
         ? '<img src="' + MiniApp.escapeHtml(p.image_url) + '" alt="" class="h-16 w-16 shrink-0 rounded-2xl object-cover bg-surface-container-high" />'
         : '<div class="h-16 w-16 shrink-0 rounded-2xl bg-surface-container-high"></div>') +
-      '<div class="min-w-0 flex-1">' +
-      '<p class="truncate font-headline font-semibold text-on-surface">' +
+      '<div class="min-w-0 flex-1 text-left">' +
+      '<p class="truncate font-headline font-semibold text-on-surface underline decoration-primary/25 underline-offset-2">' +
       MiniApp.escapeHtml(p.name || "") +
       "</p>" +
       '<p class="text-sm font-bold text-primary">' +
@@ -50,10 +72,18 @@
       uz +
       "</p>" +
       '<p class="text-xs text-on-surface-variant">' +
-      (active ? "{% trans 'Faol' %}" : "{% trans 'Qoralama (vitrinada yo‘q)' %}") +
+      (active ? "{% trans 'Faol' %}" : "{% trans 'Qoralama — tahrirlash uchun bosing' %}") +
       "</p>" +
-      "</div>" +
-      '<div class="flex shrink-0 flex-col gap-1">' +
+      "</div></a>";
+    return (
+      '<div class="flex flex-col gap-2 rounded-3xl bg-surface-container-lowest p-3 shadow-editorial ring-1 ring-outline-variant/20 sm:flex-row sm:items-stretch">' +
+      mainBlock +
+      '<div class="flex shrink-0 flex-wrap items-stretch justify-end gap-1 sm:flex-col">' +
+      (canShare
+        ? '<button type="button" data-pid="' +
+          p.id +
+          '" class="share-prod touch-target rounded-xl bg-primary/10 px-3 py-2 text-center text-xs font-semibold text-primary ring-1 ring-primary/25">{% trans "Havola" %}</button>'
+        : "") +
       '<a href="/webapp/seller/products/' +
       p.id +
       '/edit/" class="rounded-xl bg-surface-container-high px-3 py-2 text-center text-xs font-semibold text-on-surface ring-1 ring-outline-variant/20">{% trans "Tahrirlash" %}</a>' +
@@ -76,9 +106,35 @@
     const list = document.getElementById("list");
     const empty = document.getElementById("empty");
     const err = document.getElementById("err");
+    const shopNav = document.getElementById("shop-public-link");
     err.classList.add("hidden");
+    shopSlug = "";
+    shopId = 0;
     try {
       await auth();
+      let shop = null;
+      try {
+        shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      } catch (noShop) {
+        shop = null;
+      }
+      if (!shop) {
+        loading.classList.add("hidden");
+        err.textContent = "{% trans 'Avval kabinetda do‘kon yarating.' %}";
+        err.classList.remove("hidden");
+        return;
+      }
+      shopSlug = shop.slug || "";
+      shopId = shop.id || 0;
+      if (shopSlug) {
+        shopNav.href = "/webapp/s/" + encodeURIComponent(shopSlug) + "/";
+        shopNav.classList.remove("hidden");
+      } else if (shopId) {
+        shopNav.href = "/webapp/shop/" + shopId + "/";
+        shopNav.classList.remove("hidden");
+      } else {
+        shopNav.classList.add("hidden");
+      }
       const res = await MiniApp.apiFetch("/seller/products/?page_size=100", { method: "GET" });
       const items = res.results || [];
       loading.classList.add("hidden");
@@ -96,6 +152,31 @@
     }
   }
   document.getElementById("list").addEventListener("click", async function (ev) {
+    const shareBtn = ev.target.closest(".share-prod");
+    if (shareBtn && !shareBtn.disabled) {
+      const id = shareBtn.getAttribute("data-pid");
+      shareBtn.disabled = true;
+      try {
+        await auth();
+        const data = await MiniApp.apiFetch("/shops/" + shopId + "/products/" + id + "/public/link/", {
+          method: "GET",
+        });
+        const txt = (data.telegram_deep_link || data.url || "").trim();
+        if (txt && navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(txt);
+          MiniApp.showToast("{% trans 'Havola nusxalandi' %}", "success");
+        } else if (txt) {
+          MiniApp.showToast(txt, "info");
+        } else {
+          MiniApp.showToast("{% trans 'Havola bo‘sh' %}", "warning");
+        }
+      } catch (e) {
+        MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Havola olinmadi' %}"), "error");
+      } finally {
+        shareBtn.disabled = false;
+      }
+      return;
+    }
     const dup = ev.target.closest(".dup-prod");
     if (dup && !dup.disabled) {
       const id = dup.getAttribute("data-pid");
