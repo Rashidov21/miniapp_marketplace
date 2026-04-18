@@ -2,25 +2,25 @@
 {% load i18n %}
 {% block title %}{% trans "Foydalanish shartlari" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button type="button" id="back-btn" class="ui-topbar__back app-topbar-back" onclick="history.back(); return false;" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Huquqiy" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
 {% endblock %}
 {% block content %}
-<article class="prose prose-sm max-w-none text-slate-800">
-  <h1 class="text-xl font-bold text-slate-900">{% trans "Foydalanish shartlari" %}</h1>
-  <p class="text-xs text-slate-500">{% trans "Versiya" %} {{ terms_version }}</p>
-  <p class="mt-4 text-sm leading-relaxed">
+<article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
+  <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Foydalanish shartlari" %}</h1>
+  <p class="text-xs text-on-surface-variant">{% trans "Versiya" %} {{ terms_version }}</p>
+  <p>
     {% blocktrans %}Bu matn namunaviy hisoblanadi. Real loyiha uchun yuridik maslahat bilan tasdiqlangan to‘liq shartlar joylashtiring. Platforma foydalanuvchilarga mini-do‘kon xizmatini taqdim etadi; sotuvchi va mijoz o‘rtasidagi munosabatlar qonun va ofertaga muvofiq hal qilinadi.{% endblocktrans %}
   </p>
-  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+  <ul class="list-disc space-y-2 pl-5">
     <li>{% trans "Akkaunt va Telegram ma’lumotlari xavfsiz saqlanishi uchun texnik choralarni qo‘llaymiz." %}</li>
     <li>{% trans "Taqiqlangan mahsulot va kontent joylashtirish mumkin emas." %}</li>
     <li>{% trans "Platforma moderatsiya va bloklash huquqini o‘zida saqlaydi." %}</li>
   </ul>
-  <p class="mt-6 text-xs text-slate-500">
-    {% trans "Batafsil maxfiylik:" %} <a class="font-medium text-brand underline" href="/webapp/legal/privacy/">{% trans "Maxfiylik siyosati" %}</a>
+  <p class="text-xs text-on-surface-variant">
+    {% trans "Batafsil maxfiylik:" %} <a class="font-medium text-primary underline" href="/webapp/legal/privacy/">{% trans "Maxfiylik siyosati" %}</a>
   </p>
 </article>
+{% endblock %}
+{% block scripts %}
+{% include "includes/webapp_legal_back_script.html" %}
 {% endblock %}

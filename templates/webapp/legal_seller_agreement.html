@@ -2,25 +2,25 @@
 {% load i18n %}
 {% block title %}{% trans "Sotuvchi bilan shartnoma" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button type="button" id="back-btn" class="ui-topbar__back app-topbar-back" onclick="history.back(); return false;" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Huquqiy" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
 {% endblock %}
 {% block content %}
-<article class="prose prose-sm max-w-none text-slate-800">
-  <h1 class="text-xl font-bold text-slate-900">{% trans "Sotuvchi ofertasi (platforma)" %}</h1>
-  <p class="text-xs text-slate-500">{% trans "Versiya" %} {{ terms_version }}</p>
-  <p class="mt-4 text-sm leading-relaxed">
+<article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
+  <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Sotuvchi ofertasi (platforma)" %}</h1>
+  <p class="text-xs text-on-surface-variant">{% trans "Versiya" %} {{ terms_version }}</p>
+  <p>
     {% blocktrans %}Namunaviy matn. Sotuvchi platformadan foydalanish, obuna/to‘lov, vitrina boshqaruvi, moderatsiya, javobgarlik chegarasi va nizolarni hal qilish tartibi yuridik jihatdan bu yerda batafsil yozilishi kerak.{% endblocktrans %}
   </p>
-  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+  <ul class="list-disc space-y-2 pl-5">
     <li>{% trans "Sotuvchi mahsulot va narx uchun javobgar." %}</li>
     <li>{% trans "Platforma texnik vositachi bo‘lib, sotuvchi-mijoz bitimiga to‘g‘ridan-to‘g‘ri tomon emas." %}</li>
     <li>{% trans "Obuna shartlari alohida ko‘rsatiladi." %}</li>
   </ul>
-  <p class="mt-6 text-xs text-slate-500">
-    <a class="font-medium text-brand underline" href="/webapp/legal/content/">{% trans "Kontent qoidalari" %}</a>
+  <p class="text-xs text-on-surface-variant">
+    <a class="font-medium text-primary underline" href="/webapp/legal/content/">{% trans "Kontent qoidalari" %}</a>
   </p>
 </article>
+{% endblock %}
+{% block scripts %}
+{% include "includes/webapp_legal_back_script.html" %}
 {% endblock %}

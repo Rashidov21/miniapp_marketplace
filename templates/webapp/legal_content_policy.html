@@ -2,21 +2,21 @@
 {% load i18n %}
 {% block title %}{% trans "Kontent qoidalari" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button type="button" id="back-btn" class="ui-topbar__back app-topbar-back" onclick="history.back(); return false;" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Huquqiy" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
 {% endblock %}
 {% block content %}
-<article class="prose prose-sm max-w-none text-slate-800">
-  <h1 class="text-xl font-bold text-slate-900">{% trans "Kontent qoidalari" %}</h1>
-  <p class="mt-4 text-sm leading-relaxed">
+<article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
+  <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Kontent qoidalari" %}</h1>
+  <p>
     {% blocktrans %}Namunaviy ro‘yxat. Haqiqiy loyiha uchun to‘liq va aniq qoidalarni qo‘shing.{% endblocktrans %}
   </p>
-  <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+  <ul class="list-disc space-y-2 pl-5">
     <li>{% trans "Firibgarlik, soxta mahsulot, noqonuniy tovarlar taqiqlanadi." %}</li>
     <li>{% trans "Boshqalarning surat yoki brendidan ruxsatsiz foydalanish mumkin emas." %}</li>
     <li>{% trans "Haqorat, zo‘ravonlik va noxush kontent taqiqlanadi." %}</li>
   </ul>
 </article>
+{% endblock %}
+{% block scripts %}
+{% include "includes/webapp_legal_back_script.html" %}
 {% endblock %}
