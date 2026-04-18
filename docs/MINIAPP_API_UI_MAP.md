@@ -9,7 +9,11 @@ Barcha `MiniApp.apiFetch` chaqiriqlari `/api` prefiksi bilan `static/js/app.js` 
 | Auth | `POST /auth/telegram/` |
 | Profil | `GET /me/` |
 | Do‘kon bormi | `GET /shops/mine/` (200 → do‘kon bor; 404/403 → yo‘q) |
-| Sotuvchi + do‘kon | redirect `GET /webapp/seller/shop/` |
+| Do‘kon bor | redirect `GET /webapp/seller/shop/` (egasi — do‘kon profili) |
+| Sotuvchi/admin, do‘kon yo‘q | redirect `GET /webapp/seller/` (kabinet) |
+| Mijoz, buyurtma bor | redirect `GET /webapp/my-orders/` (`GET /orders/mine/?page_size=1`) |
+| Mijoz, buyurtma yo‘q | redirect `GET /webapp/discover/` |
+| Katalog (ochiq do‘konlar) | `GET /shops/discover/` (sahifa: `/webapp/discover/`) |
 
 ## Do‘kon / mahsulot (ochiq)
 

@@ -38,6 +38,18 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 ```
 
+## 4.1 Bot: `/start` tugmalari va eslatmalar (`.env`)
+
+| O‘zgaruvchi | Tavsif |
+|-------------|--------|
+| `BOT_ONBOARDING_DELAYS` | Uchta eslatma orasidagi soniyalar, vergul bilan. Default: `300,1800,14400` (~5 min, 30 min, 4 soat). |
+| `BOT_ONBOARDING_MAX_PER_DAY` | Bir chat uchun kuniga necha marta ketma-ketlik (default `6`). |
+| `BOT_START_BUTTON_MINI_TEXT` | Birinchi tugma matni (bo‘sh bo‘lsa — «Mini Appni ochish»). |
+| `BOT_START_BUTTON_SELLER_TEXT` | Ikkinchi tugma matni (bo‘sh bo‘lsa — «Sotuvchi kabineti»). |
+| `BOT_START_KEYBOARD_STYLE` | `inline` (default) yoki `reply` — pastki klaviatura bilan doimiy tugmalar. |
+
+Deploydan keyin migratsiya: `users` ilovasidagi `TelegramWebhookDedup` / `BotOnboardingQuota` jadvallari.
+
 ## 5. Keshni yangilash (brauzer `app.js` / CSS ni eski versiyadan olmasin)
 
 `.env` da (yoki tizim o‘zgaruvchisi):

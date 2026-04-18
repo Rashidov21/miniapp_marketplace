@@ -85,6 +85,12 @@ def webapp_home(request):
 
 
 @require_GET
+def discover_page(request):
+    """Mijozlar: platformadagi ochiq do‘konlar ro‘yxati (API orqali to‘ldiriladi)."""
+    return render(request, "webapp/discover.html")
+
+
+@require_GET
 def seller_dashboard(request):
     return render(request, "webapp/seller_dashboard.html")
 

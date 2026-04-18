@@ -6,15 +6,48 @@ from __future__ import annotations
 from typing import List, Optional, Tuple
 
 from django.conf import settings
+from django.db import IntegrityError, transaction
+from django.db.models import F
+from django.utils import timezone
 
 from apps.products.models import Product
 from apps.shops.models import Shop
-from apps.users.models import User
+from apps.users.models import BotOnboardingQuota, User
 
 DelayMsg = Tuple[int, str]
 
-# (soniya kutish, matn) — maks. 3 ta, umumiy vaqt ~2 daqiqadan oshmasin
-DEFAULT_DELAYS = (8, 28, 72)
+# Standart: birinchi eslatma ~5 daqiqadan keyin, keyingilari sozlamada (spam hissi bermaslik uchun).
+_DEFAULT_DELAY_STR = "300,1800,14400"
+
+
+def get_onboarding_delays() -> Tuple[int, int, int]:
+    raw = (getattr(settings, "BOT_ONBOARDING_DELAYS", None) or _DEFAULT_DELAY_STR).strip()
+    parts = [int(x.strip()) for x in raw.split(",") if x.strip()]
+    if len(parts) != 3 or any(p < 0 for p in parts):
+        return (300, 1800, 14400)
+    return (parts[0], parts[1], parts[2])
+
+
+def build_start_keyboard_markup(webapp_url: str, seller_url: str) -> dict:
+    """inline (default) yoki reply — env: BOT_START_KEYBOARD_STYLE=inline|reply"""
+    t1 = getattr(settings, "BOT_START_BUTTON_MINI_TEXT", None) or "Mini Appni ochish"
+    t2 = getattr(settings, "BOT_START_BUTTON_SELLER_TEXT", None) or "Sotuvchi kabineti"
+    style = (getattr(settings, "BOT_START_KEYBOARD_STYLE", "inline") or "inline").strip().lower()
+    if style == "reply":
+        return {
+            "keyboard": [
+                [{"text": t1, "web_app": {"url": webapp_url}}],
+                [{"text": t2, "web_app": {"url": seller_url}}],
+            ],
+            "resize_keyboard": True,
+            "is_persistent": True,
+        }
+    return {
+        "inline_keyboard": [
+            [{"text": t1, "web_app": {"url": webapp_url}}],
+            [{"text": t2, "web_app": {"url": seller_url}}],
+        ]
+    }
 
 
 def start_welcome_text(start_param: str) -> str:
@@ -54,9 +87,10 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
     DB da foydalanuvchi yo‘q (Mini App hech ochilmagan) — umumiy yo‘l-yo‘riq.
     """
     _ = start_param  # kelajakda segment bo‘yicha matn farqlash uchun
+    delays = get_onboarding_delays()
     if not telegram_user_id:
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             "⏱ SavdoLink: 1 daqiqada do‘kon ochishingiz mumkin.\n«Mini Appni ochish» → Sotuvchi kabineti.",
             "📦 Mahsulot qo‘shing va bitta havolani ulashing — buyurtmalar chatda yo‘qolmaydi.",
             "✅ Tayyormisiz? Mini App → Sotuvchi kabineti — hozir sinab ko‘ring.",
@@ -65,7 +99,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
     user = User.objects.filter(telegram_id=telegram_user_id).first()
     if not user:
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             "⏱ Birinchi marta: Mini App'ni oching — sotuvchi bo‘ling va do‘kon nomini yozing.",
             "📦 Keyin mahsulot qo‘shing — mijozlar katalogdan buyurtma beradi.",
             "🔗 Do‘kon havolasini Instagram yoki guruhga qo‘ying.",
@@ -74,7 +108,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
     shop = Shop.objects.filter(owner=user).first()
     if not shop:
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             f"👋 {user.first_name or 'Siz'} — hali do‘kon yo‘q. Mini App → Sotuvchi kabineti → do‘kon yarating.",
             "✏️ Do‘kon nomi va tavsif — keyin mahsulot qo‘shish oson.",
             "⚡ 5 daqiqada vitrinangiz tayyor bo‘lishi mumkin.",
@@ -85,7 +119,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
 
     if product_count == 0:
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             f"📦 {shop_name}: do‘kon bor — endi kamida bitta mahsulot qo‘shing (narx + rasm).",
             "🖼️ Mahsulot rasmi va aniq narx — ko‘proq buyurtma.",
             "📎 Keyin «Mijoz havolasi»ni nusxalab ulashing.",
@@ -93,7 +127,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
 
     if not shop.is_active or not shop.is_subscription_operational():
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             "⚠️ Do‘koningiz hozir mijozlarga yopiq yoki obuna muddati tugagan bo‘lishi mumkin.",
             "💳 Mini App → Obuna — tarifni yangilang yoki to‘lovni tekshiring.",
             "📩 Savol bo‘lsa, platforma orqali yozishingiz mumkin.",
@@ -101,7 +135,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
 
     if not shop.first_order_completed_at:
         return _seq(
-            DEFAULT_DELAYS,
+            delays,
             f"✅ {shop_name}: mahsulotlar joyida. Endi havolani ulashing — birinchi buyurtmani kutamiz.",
             "📣 Instagram bio, story, Telegram guruh — bitta link.",
             "🔔 Yangi buyurtma kelganda shu yerga xabar boradi.",
@@ -109,7 +143,7 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
 
     # Barqaror sotuvchi
     return _seq(
-        DEFAULT_DELAYS,
+        delays,
         f"🙌 {shop_name}: savdo davom etsin — yangi mahsulot yoki aksiya qo‘shing.",
         "📊 Ko‘proq tahlil va limit uchun Pro tarifni ko‘ring (Mini App → Obuna).",
         "⭐ Mijozlarga tez javob — qayta buyurtma ehtimoli oshadi.",
@@ -117,13 +151,21 @@ def build_onboarding_nudges(telegram_user_id: Optional[int], start_param: str) -
 
 
 def should_send_onboarding_nudges(chat_id: int) -> bool:
-    """Kuniga cheklangan son marta nudge ketma-ketligi (spam oldini olish)."""
-    from django.core.cache import cache
-
+    """Kuniga cheklangan son marta nudge ketma-ketligi (barcha Gunicorn workerlar uchun DB orqali)."""
     max_per_day = int(getattr(settings, "BOT_ONBOARDING_MAX_PER_DAY", 6))
-    key = f"bot_onboarding_day:{chat_id}"
-    n = cache.get(key, 0)
-    if n >= max_per_day:
-        return False
-    cache.set(key, n + 1, 86400)
-    return True
+    today = timezone.now().date()
+    for _ in range(5):
+        try:
+            with transaction.atomic():
+                obj, _ = BotOnboardingQuota.objects.select_for_update().get_or_create(
+                    chat_id=chat_id,
+                    day=today,
+                    defaults={"count": 0},
+                )
+                if obj.count >= max_per_day:
+                    return False
+                BotOnboardingQuota.objects.filter(pk=obj.pk).update(count=F("count") + 1)
+            return True
+        except IntegrityError:
+            continue
+    return False

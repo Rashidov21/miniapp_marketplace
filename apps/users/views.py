@@ -3,6 +3,7 @@ import threading
 import time
 
 from django.conf import settings
+from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -13,10 +14,11 @@ from apps.core.drf_errors import error_response
 from apps.core.initdata import verify_init_data
 from apps.core.telegram import send_message, send_message_with_markup
 from apps.users.authentication import upsert_user_from_telegram_user
-from apps.users.models import User
+from apps.users.models import TelegramWebhookDedup, User
 from apps.users.serializers import UserSerializer
 from apps.users.bot_onboarding import (
     build_onboarding_nudges,
+    build_start_keyboard_markup,
     should_send_onboarding_nudges,
     start_welcome_text,
 )
@@ -142,23 +144,32 @@ def telegram_webhook(request, secret: str):
 
     # Handle /start and /start <param>
     if text.startswith("/start"):
+        update_id = update.get("update_id")
+        if update_id is not None:
+            try:
+                TelegramWebhookDedup.objects.create(update_id=int(update_id))
+            except IntegrityError:
+                return Response({"ok": True})
+
         parts = text.split(maxsplit=1)
         start_param = parts[1].strip() if len(parts) > 1 else ""
         webapp_url = _build_webapp_url(start_param)
-        inline_markup = {
-            "inline_keyboard": [
-                [{"text": "Mini Appni ochish", "web_app": {"url": webapp_url}}],
-                [{"text": "Sotuvchi kabineti", "web_app": {"url": f"{(getattr(settings, 'PUBLIC_BASE_URL', '') or '').rstrip('/')}/webapp/seller/"}}],
-            ]
-        }
+        seller_url = f"{(getattr(settings, 'PUBLIC_BASE_URL', '') or '').rstrip('/')}/webapp/seller/"
+        reply_markup = build_start_keyboard_markup(webapp_url, seller_url)
         from_user = message.get("from") or {}
         tg_uid = from_user.get("id")
         telegram_user_id = int(tg_uid) if tg_uid is not None else None
 
+        kb_style = (getattr(settings, "BOT_START_KEYBOARD_STYLE", "inline") or "inline").strip().lower()
+        hint = (
+            "Pastdagi tugmalardan foydalaning."
+            if kb_style == "reply"
+            else "Quyidagi tugmalardan birini bosing."
+        )
         send_message_with_markup(
             chat["id"],
-            start_welcome_text(start_param) + "\n\nQuyidagi tugmalardan birini bosing.",
-            reply_markup=inline_markup,
+            start_welcome_text(start_param) + "\n\n" + hint,
+            reply_markup=reply_markup,
         )
         if should_send_onboarding_nudges(int(chat["id"])):
             _spawn_onboarding_nudges(int(chat["id"]), telegram_user_id, start_param)

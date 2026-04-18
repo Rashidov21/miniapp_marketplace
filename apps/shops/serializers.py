@@ -162,6 +162,37 @@ class ShopSerializer(serializers.ModelSerializer):
         return max(0, int(delta.total_seconds() // 86400))
 
 
+class ShopDiscoverSerializer(serializers.ModelSerializer):
+    """Katalog / top do‘konlar ro‘yxati (mijozlar uchun)."""
+
+    logo = serializers.SerializerMethodField()
+    order_count = serializers.IntegerField(read_only=True)
+    active_product_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Shop
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logo",
+            "is_verified",
+            "order_count",
+            "active_product_count",
+        )
+        read_only_fields = fields
+
+    def get_logo(self, obj: Shop) -> str | None:
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        url = obj.logo.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+
+
 class ShopPublicSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
 

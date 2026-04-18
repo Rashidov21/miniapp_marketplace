@@ -3,7 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.db import IntegrityError, transaction
-from django.db.models import Sum
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
@@ -17,7 +17,9 @@ from apps.products.models import Product
 from apps.shops.models import Shop, SubscriptionPayment, SubscriptionPlan
 from apps.shops.permissions import IsSellerOrAdmin, IsShopOwnerOrAdmin
 from apps.shops.selectors import get_owner_shop
+from apps.core.pagination import ShopDiscoverPagination
 from apps.shops.serializers import (
+    ShopDiscoverSerializer,
     ShopPublicSerializer,
     ShopSerializer,
     SubscriptionPaymentCreateSerializer,
@@ -246,3 +248,32 @@ def subscription_payment_create(request):
         {"id": payment.id, "status": payment.status, "amount": str(payment.amount)},
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def shop_discover_list(request):
+    """
+    Mijozlar uchun ochiq do‘konlar ro‘yxati (kamida bitta faol mahsulot, obuna muddati ichida).
+    Tartib: tasdiqlangan, keyin buyurtmalar soni, keyin yangi.
+    """
+    now = timezone.now()
+    operational = (
+        Q(subscription_status=Shop.SubscriptionStatus.TRIAL, trial_ends_at__gt=now)
+        | Q(subscription_status=Shop.SubscriptionStatus.ACTIVE, subscription_ends_at__isnull=True)
+        | Q(subscription_status=Shop.SubscriptionStatus.ACTIVE, subscription_ends_at__gt=now)
+    )
+    qs = (
+        Shop.objects.filter(is_active=True)
+        .filter(operational)
+        .annotate(
+            active_product_count=Count("products", filter=Q(products__is_active=True)),
+            order_count=Count("orders"),
+        )
+        .filter(active_product_count__gt=0)
+        .order_by("-is_verified", "-order_count", "-created_at")
+    )
+    paginator = ShopDiscoverPagination()
+    page = paginator.paginate_queryset(qs, request)
+    ser = ShopDiscoverSerializer(page, many=True, context={"request": request})
+    return paginator.get_paginated_response(ser.data)

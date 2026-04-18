@@ -98,18 +98,41 @@
       } catch (ignore) {
         hasShop = false;
       }
+      // Do‘koni bor foydalanuvchi — har doim do‘kon profili (boshqaruv).
       if (hasShop) {
-        const panelRole =
-          me.role === "seller" || me.role === "admin" || me.role === "platform_owner";
-        if (panelRole) {
-          window.location.replace("/webapp/seller/shop/");
+        window.location.replace("/webapp/seller/shop/");
+        return;
+      }
+      const panelRole =
+        me.role === "seller" || me.role === "admin" || me.role === "platform_owner";
+      // Sotuvchi / operator, lekin hali do‘kon yo‘q — kabinetga (onboarding).
+      if (panelRole) {
+        window.location.replace("/webapp/seller/");
+        return;
+      }
+      // Mijoz: oldin buyurtma bo‘lsa — ro‘yxat; aks holda katalog (top do‘konlar).
+      try {
+        const ord = await MiniApp.apiFetch("/orders/mine/?page_size=1", { method: "GET" });
+        const total =
+          typeof ord.count === "number"
+            ? ord.count
+            : ord.results && ord.results.length
+              ? ord.results.length
+              : 0;
+        if (total > 0) {
+          window.location.replace("/webapp/my-orders/");
           return;
         }
+      } catch (orderErr) {
+        loading.classList.add("hidden");
+        ready.classList.remove("hidden");
+        const name = me.first_name || me.username || me.telegram_id;
+        document.getElementById("status").textContent = "{% trans 'Salom' %}, " + name + "!";
+        MiniApp.showToast("{% trans 'Buyurtmalarni yuklashda muammo — yo‘nalishni tanlang.' %}", "warning");
+        return;
       }
-      loading.classList.add("hidden");
-      ready.classList.remove("hidden");
-      const name = me.first_name || me.username || me.telegram_id;
-      document.getElementById("status").textContent = "{% trans 'Salom' %}, " + name + "!";
+      window.location.replace("/webapp/discover/");
+      return;
     } catch (e) {
       loading.classList.add("hidden");
       errEl.classList.remove("hidden");

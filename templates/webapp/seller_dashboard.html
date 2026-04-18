@@ -6,10 +6,10 @@
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-5">
-  <header>
-    <h1 class="font-headline text-2xl font-extrabold text-on-surface">{% trans "Kabinet" %}</h1>
-    <p id="dash-subtitle" class="mt-1 text-sm text-on-surface-variant">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
-  </header>
+  {# Sarlavha: includes/ds_app_header.html (Kabinet) — bu yerda faqat subtitr #}
+  <div>
+    <p id="dash-subtitle" class="text-sm text-on-surface-variant">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
+  </div>
 
   <div id="dash-quick-links" class="flex flex-wrap gap-2 hidden">
     <a href="/webapp/seller/shop/"

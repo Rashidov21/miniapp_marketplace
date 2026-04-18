@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Do‘konlar" %}{% endblock %}
+{% block topbar %}
+{% include "includes/ds_app_header.html" with title=_("Do‘konlar") %}
+{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-4 pb-10">
+  <p class="text-sm leading-relaxed text-on-surface-variant">
+    {% trans "Ochiq do‘konlar — bitta bosishda katalogga o‘ting." %}
+  </p>
+  <a href="/webapp/my-orders/"
+     class="touch-target flex w-full items-center justify-between gap-3 rounded-2xl border border-outline-variant/25 bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface shadow-sm ring-1 ring-outline-variant/15">
+    <span>{% trans "Mening buyurtmalarim" %}</span>
+    <span class="material-symbols-outlined text-primary text-[20px]" aria-hidden="true">receipt_long</span>
+  </a>
+  <div id="loading" class="space-y-3" aria-busy="true">
+    <div class="skeleton h-24 rounded-3xl bg-surface-container-high/80"></div>
+    <div class="skeleton h-24 rounded-3xl bg-surface-container-high/80"></div>
+  </div>
+  <div id="list" class="hidden flex flex-col gap-3"></div>
+  <div id="empty" class="app-empty-state hidden">
+    <p class="app-empty-state-icon" aria-hidden="true">🏪</p>
+    <p class="app-empty-state-title">{% trans "Hozircha ochiq do‘kon yo‘q." %}</p>
+    <p class="app-empty-state-desc">{% trans "Keyinroq qayta urinib ko‘ring." %}</p>
+  </div>
+  <p id="err" class="hidden text-center text-sm text-error"></p>
+  <button id="more" type="button" class="hidden w-full rounded-2xl border border-outline-variant/30 bg-surface-container-lowest py-3 text-sm font-semibold text-on-surface shadow-sm ring-1 ring-outline-variant/15">
+    {% trans "Yana ko‘rsatish" %}
+  </button>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  MiniApp.ready();
+  (function () {
+    const backBtn = document.getElementById("back-btn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        try {
+          if (window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+        } catch (e) {}
+        try {
+          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.close) {
+            window.Telegram.WebApp.close();
+            return;
+          }
+        } catch (e) {}
+        window.location.href = "/webapp/";
+      });
+    }
+  })();
+  function truncate(s, n) {
+    if (!s) return "";
+    s = String(s).trim();
+    return s.length <= n ? s : s.slice(0, n - 1) + "…";
+  }
+  function esc(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+  async function auth() {
+    const init = MiniApp.getInitData();
+    if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
+    await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
+  }
+  function normalizeApiPath(fullOrPath) {
+    if (!fullOrPath) return null;
+    if (String(fullOrPath).startsWith("http")) {
+      try {
+        const u = new URL(fullOrPath);
+        return u.pathname + u.search;
+      } catch (e) {
+        return null;
+      }
+    }
+    return fullOrPath;
+  }
+  (async function () {
+    const loading = document.getElementById("loading");
+    const list = document.getElementById("list");
+    const empty = document.getElementById("empty");
+    const errEl = document.getElementById("err");
+    const more = document.getElementById("more");
+    let nextUrl = "/shops/discover/";
+    try {
+      await auth();
+      async function loadPage(url) {
+        const data = await MiniApp.apiFetch(url, { method: "GET" });
+        const results = data.results || [];
+        nextUrl = normalizeApiPath(data.next);
+        if (!results.length && !list.children.length) {
+          loading.classList.add("hidden");
+          empty.classList.remove("hidden");
+          more.classList.add("hidden");
+          return;
+        }
+        empty.classList.add("hidden");
+        for (let i = 0; i < results.length; i++) {
+          const sh = results[i];
+          const href = "/webapp/s/" + encodeURIComponent(sh.slug) + "/";
+          const title = esc(sh.name || "");
+          const desc = esc(truncate(sh.description || "", 140));
+          const badge = sh.is_verified
+            ? '<span class="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">✓</span>'
+            : "";
+          const oc = typeof sh.order_count === "number" ? sh.order_count : 0;
+          const meta =
+            oc > 0
+              ? '<p class="mt-1 text-[11px] text-on-surface-variant">' +
+                esc("{% trans 'Buyurtmalar' %}") +
+                ": " +
+                oc +
+                "</p>"
+              : "";
+          const logo = sh.logo
+            ? '<div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high ring-1 ring-outline-variant/20"><img src="' +
+              esc(sh.logo) +
+              '" alt="" class="h-full w-full object-cover" loading="lazy" /></div>'
+            : '<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl ring-1 ring-primary/20" aria-hidden="true">🏪</div>';
+          const a = document.createElement("a");
+          a.href = href;
+          a.className =
+            "touch-target flex gap-3 rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-4 text-left shadow-editorial ring-1 ring-outline-variant/15 transition active:scale-[0.99]";
+          a.innerHTML =
+            logo +
+            '<div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-2"><h2 class="font-headline text-base font-bold leading-snug text-on-surface">' +
+            title +
+            "</h2>" +
+            badge +
+            '</div><p class="mt-1 line-clamp-2 text-sm text-on-surface-variant">' +
+            (desc || "—") +
+            "</p>" +
+            meta +
+            "</div>" +
+            '<span class="material-symbols-outlined shrink-0 text-on-surface-variant" aria-hidden="true">chevron_right</span>';
+          list.appendChild(a);
+        }
+        loading.classList.add("hidden");
+        list.classList.remove("hidden");
+        if (nextUrl) more.classList.remove("hidden");
+        else more.classList.add("hidden");
+      }
+      await loadPage(nextUrl);
+      more.onclick = async function () {
+        if (!nextUrl) return;
+        more.disabled = true;
+        try {
+          await loadPage(nextUrl);
+        } catch (e) {
+          MiniApp.showToast(MiniApp.parseApiError(e, "{% trans 'Yuklashda xato.' %}"), "error");
+        } finally {
+          more.disabled = false;
+        }
+      };
+    } catch (e) {
+      loading.classList.add("hidden");
+      errEl.classList.remove("hidden");
+      errEl.textContent = MiniApp.parseApiError(e, "{% trans 'Yuklashda muammo.' %}");
+      MiniApp.showToast(errEl.textContent, "error");
+    }
+  })();
+</script>
+{% endblock %}

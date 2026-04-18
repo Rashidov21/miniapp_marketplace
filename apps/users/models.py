@@ -57,3 +57,29 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return f"{self.telegram_id} ({self.get_role_display()})"
+
+
+class TelegramWebhookDedup(models.Model):
+    """Telegram webhook bir xil update ni ikki marta qayta ishlamaslik (takror yetkazish)."""
+
+    update_id = models.BigIntegerField(unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Telegram webhook update")
+        verbose_name_plural = _("Telegram webhook updates")
+
+
+class BotOnboardingQuota(models.Model):
+    """Kuniga chat uchun onboarding nudge ketma-ketligi soni (LocMem o‘rniga, barcha workerlar uchun)."""
+
+    chat_id = models.BigIntegerField(db_index=True)
+    day = models.DateField(db_index=True)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["chat_id", "day"], name="uniq_bot_onboarding_quota_chat_day"),
+        ]
+        verbose_name = _("Bot onboarding quota")
+        verbose_name_plural = _("Bot onboarding quotas")
