@@ -3,11 +3,28 @@
 @tailwind utilities;
 
 /**
- * UI dizayn tizimi — loyiha bo‘ylab bir xil komponentlar (Tailwind @layer).
- * Mavjud `app-topbar` / `app-topbar-back` klasslari bilan birga ishlaydi.
+ * Stitch “Digital Curator” + UI komponentlar.
+ * Dizayn manbai: staticfiles/stitch_uz_store_express/
  */
+@layer base {
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    font-family: "Material Symbols Outlined", sans-serif;
+    line-height: 1;
+  }
+}
+
 @layer components {
-  /* —— Topbar (barcha ichki sahifalar) —— */
+  .font-headline {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  /* Glass header (Stitch) */
+  .ds-app-header {
+    @apply sticky top-0 z-[60] -mx-4 mb-4 flex w-[calc(100%+2rem)] max-w-none items-center justify-between border-b border-outline-variant/15 bg-white/85 px-3 py-3 backdrop-blur-xl;
+  }
+
+  /* —— Topbar (legacy + Stitch) —— */
   .ui-topbar,
   .app-topbar {
     @apply mb-4 flex items-center gap-2;
@@ -15,29 +32,30 @@
 
   .ui-topbar__back,
   .app-topbar-back {
-    @apply inline-flex h-12 min-h-[48px] w-12 min-w-[48px] flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-lg font-semibold leading-none text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.98];
+    @apply inline-flex h-12 min-h-[48px] w-12 min-w-[48px] flex-shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-sm ring-1 ring-outline-variant/25 transition hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98];
   }
 
   .ui-topbar__title {
-    @apply min-w-0 flex-1 truncate text-xs font-medium text-slate-500;
+    @apply min-w-0 flex-1 truncate font-headline text-sm font-bold tracking-tight text-on-surface;
   }
 
-  /* —— Tugmalar (min 48px — touch / WCAG) —— */
+  /* —— Tugmalar —— */
   .ui-btn {
     @apply inline-flex min-h-[48px] min-w-[48px] items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-base font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.99];
   }
 
   .ui-btn--primary {
-    @apply bg-brand text-white shadow-md shadow-brand/25 focus-visible:ring-brand;
+    background: linear-gradient(135deg, #00685f 0%, #008378 100%);
+    @apply text-on-primary shadow-editorial focus-visible:ring-primary;
   }
 
   .ui-btn--secondary {
-    @apply border-2 border-slate-200 bg-white text-slate-800 shadow-sm ring-1 ring-slate-100 focus-visible:ring-slate-400;
+    @apply border-2 border-outline-variant/30 bg-surface-container-lowest text-on-surface shadow-sm ring-1 ring-outline-variant/20 focus-visible:ring-secondary;
   }
 
   /* —— Kartochka —— */
   .ui-card {
-    @apply rounded-2xl border border-slate-100 bg-white p-4 shadow-ui-card ring-1 ring-slate-200/80;
+    @apply rounded-2xl bg-surface-container-lowest p-4 shadow-card ring-1 ring-outline-variant/20;
   }
 
   .ui-card--compact {
@@ -50,22 +68,28 @@
   }
 
   .ui-badge--pending {
-    @apply bg-amber-100 text-amber-900 ring-amber-200;
+    @apply bg-amber-50 text-amber-950 ring-amber-200/80;
   }
 
   .ui-badge--progress {
-    @apply bg-sky-100 text-sky-900 ring-sky-200;
+    @apply bg-sky-50 text-sky-950 ring-sky-200/80;
   }
 
   .ui-badge--success {
-    @apply bg-emerald-100 text-emerald-900 ring-emerald-200;
+    @apply bg-emerald-50 text-emerald-950 ring-emerald-200/80;
   }
 
   .ui-badge--error {
-    @apply bg-rose-100 text-rose-900 ring-rose-200;
+    @apply bg-rose-50 text-rose-950 ring-rose-200/80;
   }
 
   .ui-badge--neutral {
-    @apply bg-slate-100 text-slate-800 ring-slate-200;
+    @apply bg-surface-container-high text-on-surface ring-outline-variant/25;
+  }
+
+  /* Skeleton — rang app.css bilan mos */
+  .skeleton {
+    @apply animate-pulse rounded-xl bg-surface-container-high/90;
   }
 }
+

@@ -2,12 +2,12 @@
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
-  --brand: #0d9488;
-  /* UI semantic (tailwind theme/ui bilan mos) */
-  --ui-primary: #0d9488;
-  --ui-success: #059669;
-  --ui-error: #dc2626;
-  --ui-warning: #d97706;
+  --brand: #00685f;
+  /* Stitch + UI semantic */
+  --ui-primary: #00685f;
+  --ui-success: #00685f;
+  --ui-error: #ba1a1a;
+  --ui-warning: #924628;
 }
 
 /* Keyboard focus — visible ring, matches brand */
@@ -26,11 +26,11 @@ summary:focus-visible,
   outline-offset: 3px;
 }
 
-/* Shared empty states (my_orders, shop, …) */
+/* Shared empty states (my_orders, shop, …) — Stitch */
 .app-empty-state {
   border-radius: 1rem;
-  border: 1px dashed rgb(226 232 240);
-  background: #fff;
+  border: 1px solid rgba(188, 201, 198, 0.35);
+  background: #eff4ff;
   padding: 2.5rem 1rem;
   text-align: center;
 }
@@ -43,16 +43,17 @@ summary:focus-visible,
 
 .app-empty-state-title {
   margin-top: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgb(30 41 59);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0b1c30;
 }
 
 .app-empty-state-desc {
   margin-top: 0.25rem;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: rgb(100 116 139);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #3d4947;
 }
 
 /* Buyer order detail — status timeline (nodes + connectors) */
@@ -141,10 +142,14 @@ summary:focus-visible,
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 40;
+  z-index: 50;
   padding-bottom: calc(0.75rem + var(--safe-bottom));
-  padding-top: 0.5rem;
-  background: linear-gradient(to top, rgba(248, 250, 252, 0.98) 70%, transparent);
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(188, 201, 198, 0.25);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 -8px 32px rgba(11, 28, 48, 0.08);
   pointer-events: none;
 }
 

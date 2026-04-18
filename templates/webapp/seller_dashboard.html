@@ -2,123 +2,120 @@
 {% load i18n %}
 {% block title %}{% trans "Kabinet" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Kabinet" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Kabinet") %}
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-5">
   <header>
-    <h1 class="text-2xl font-bold text-slate-900">{% trans "Kabinet" %}</h1>
-    <p id="dash-subtitle" class="mt-1 text-sm text-slate-600">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
+    <h1 class="font-headline text-2xl font-extrabold text-on-surface">{% trans "Kabinet" %}</h1>
+    <p id="dash-subtitle" class="mt-1 text-sm text-on-surface-variant">{% trans "2 qadam: do‘kon yarating, mahsulot qo‘shing, link ulashing." %}</p>
   </header>
 
   <div id="dash-quick-links" class="flex flex-wrap gap-2 hidden">
     <a href="/webapp/seller/shop/"
-       class="touch-target rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-brand shadow-sm ring-1 ring-brand/25">{% trans "Do‘kon profili" %}</a>
+       class="touch-target rounded-2xl bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-primary shadow-editorial ring-1 ring-primary/25">{% trans "Do‘kon profili" %}</a>
     <a href="/webapp/seller/subscription/"
-       class="touch-target rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200">{% trans "Obuna" %}</a>
+       class="touch-target rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-on-surface shadow-sm ring-1 ring-outline-variant/15">{% trans "Obuna" %}</a>
   </div>
 
-  <div id="banner" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80"></div>
+  <div id="banner" class="rounded-3xl bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/80"></div>
 
-  <div id="paywall-limit-banner" class="hidden rounded-2xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/90"></div>
-  <div id="first-order-upsell" class="hidden rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-slate-800 ring-1 ring-brand/20">
-    <p class="font-semibold text-brand">{% trans "Birinchi buyurtma qabul qilindi!" %}</p>
+  <div id="paywall-limit-banner" class="hidden rounded-3xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/90"></div>
+  <div id="first-order-upsell" class="hidden rounded-3xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-on-surface shadow-editorial ring-1 ring-primary/20">
+    <p class="font-semibold text-primary">{% trans "Birinchi buyurtma qabul qilindi!" %}</p>
     <p class="mt-1">{% trans "Kengaytirilgan analytics va cheksiz mahsulot uchun Pro tarifni ko‘ring." %}</p>
-    <a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white">{% trans "Tariflar" %}</a>
+    <a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary">{% trans "Tariflar" %}</a>
   </div>
-  <div id="traffic-upsell" class="hidden rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 ring-1 ring-sky-200/80">
+  <div id="traffic-upsell" class="hidden rounded-3xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 shadow-editorial ring-1 ring-sky-200/80">
     <p class="font-medium">{% trans "Trafik oshmoqda" %}</p>
     <p class="mt-1 text-sky-900/90">{% trans "Haftalik ko‘rishlar yuqori — analytics va cheksiz mahsulot uchun Pro." %}</p>
     <a href="/webapp/seller/subscription/" class="mt-2 inline-flex touch-target rounded-xl bg-sky-800 px-4 py-2.5 text-sm font-semibold text-white">{% trans "Pro tarif" %}</a>
   </div>
 
-  <section id="checklist" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-    <p class="text-sm font-semibold text-slate-900">{% trans "Yo‘l xaritasi" %}</p>
-    <p id="checklist-stats" class="mt-1 hidden text-xs text-slate-500"></p>
-    <ul class="mt-3 space-y-2 text-sm text-slate-700">
+  <section id="checklist" class="hidden rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">
+    <p class="text-sm font-semibold text-on-surface">{% trans "Yo‘l xaritasi" %}</p>
+    <p id="checklist-stats" class="mt-1 hidden text-xs text-on-surface-variant"></p>
+    <ul class="mt-3 space-y-2 text-sm text-on-surface-variant">
       <li id="ck-step-seller" class="flex items-center gap-2">
-        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Sotuvchi roli" %}</span>
+        <span class="ck-icon font-mono text-primary">○</span><span>{% trans "Sotuvchi roli" %}</span>
       </li>
       <li id="ck-step-shop" class="flex items-center gap-2">
-        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Do‘kon yaratish" %}</span>
+        <span class="ck-icon font-mono text-primary">○</span><span>{% trans "Do‘kon yaratish" %}</span>
       </li>
       <li id="ck-step-product" class="flex items-center gap-2">
-        <span class="ck-icon font-mono text-brand">○</span><span>{% trans "Birinchi mahsulot" %}</span>
+        <span class="ck-icon font-mono text-primary">○</span><span>{% trans "Birinchi mahsulot" %}</span>
       </li>
     </ul>
   </section>
 
-  <section id="shop-panel" class="hidden rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-    <h2 class="text-sm font-semibold text-slate-900">{% trans "Do‘koningiz" %}</h2>
-    <p id="shop-panel-name" class="mt-1 text-lg font-bold text-brand"></p>
+  <section id="shop-panel" class="hidden rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">
+    <h2 class="text-sm font-semibold text-on-surface">{% trans "Do‘koningiz" %}</h2>
+    <p id="shop-panel-name" class="mt-1 text-lg font-bold text-primary"></p>
     <div id="shop-panel-metrics" class="mt-3 grid grid-cols-2 gap-2">
-      <div class="rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200/80">
-        <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Buyurtmalar" %}</p>
-        <p id="shop-panel-orders-count" class="mt-0.5 text-lg font-bold tabular-nums text-slate-900">—</p>
+      <div class="rounded-xl bg-surface-container-low px-3 py-2.5 ring-1 ring-outline-variant/20">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{% trans "Buyurtmalar" %}</p>
+        <p id="shop-panel-orders-count" class="mt-0.5 text-lg font-bold tabular-nums text-on-surface">—</p>
       </div>
-      <div class="rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200/80">
-        <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Jami summa" %}</p>
-        <p id="shop-panel-orders-sum" class="mt-0.5 text-sm font-bold tabular-nums leading-snug text-slate-900">—</p>
+      <div class="rounded-xl bg-surface-container-low px-3 py-2.5 ring-1 ring-outline-variant/20">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{% trans "Jami summa" %}</p>
+        <p id="shop-panel-orders-sum" class="mt-0.5 text-sm font-bold tabular-nums leading-snug text-on-surface">—</p>
       </div>
     </div>
-    <div id="shop-panel-meta" class="mt-3 hidden space-y-2 rounded-xl bg-slate-50/90 px-3 py-3 text-sm leading-relaxed text-slate-700 ring-1 ring-slate-200/70"></div>
-    <p class="mt-2 text-xs text-slate-500">{% trans "Yuqoridagi «Do‘kon profili» va «Obuna» orqali sozlang. Pastda — mijoz havolasi." %}</p>
-    <div id="shop-panel-link-box" class="mt-4 hidden rounded-xl bg-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-700 ring-1 ring-slate-200/80">
-      <p class="font-medium text-slate-800">{% trans "Mijozlar uchun havola" %}</p>
+    <div id="shop-panel-meta" class="mt-3 hidden space-y-2 rounded-xl bg-surface-container-low/90 px-3 py-3 text-sm leading-relaxed text-on-surface-variant ring-1 ring-outline-variant/15"></div>
+    <p class="mt-2 text-xs text-on-surface-variant">{% trans "Yuqoridagi «Do‘kon profili» va «Obuna» orqali sozlang. Pastda — mijoz havolasi." %}</p>
+    <div id="shop-panel-link-box" class="mt-4 hidden rounded-xl bg-surface-container-low px-3 py-3 text-xs leading-relaxed text-on-surface-variant ring-1 ring-outline-variant/20">
+      <p class="font-medium text-on-surface">{% trans "Mijozlar uchun havola" %}</p>
       <p id="shop-panel-link-text" class="mt-1 break-all font-mono text-[13px]"></p>
-      <button type="button" id="shop-panel-btn-copy" class="mt-2 w-full rounded-lg bg-white py-2 text-sm font-semibold text-brand ring-1 ring-slate-200">
+      <button type="button" id="shop-panel-btn-copy" class="mt-2 w-full rounded-lg bg-surface-container-lowest py-2 text-sm font-semibold text-primary ring-1 ring-outline-variant/25">
         {% trans "Nusxalash" %}
       </button>
     </div>
-    <details class="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700 ring-1 ring-slate-200/80">
-      <summary class="cursor-pointer font-medium text-slate-800">{% trans "Havolani qanday ulashaman?" %}</summary>
+    <details class="mt-4 rounded-xl bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant ring-1 ring-outline-variant/20">
+      <summary class="cursor-pointer font-medium text-on-surface">{% trans "Havolani qanday ulashaman?" %}</summary>
       <p class="mt-2 leading-relaxed">{% trans "Havolani nusxalang va Telegramda guruh yoki shaxsiy chatga yuboring. Mijozlar havola orqali to‘g‘ridan-to‘g‘ri katalogga kiradi." %}</p>
     </details>
   </section>
 
-  <section id="onboarding" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-    <div id="terms-block" class="mb-4 hidden rounded-xl border border-slate-200 bg-slate-50/90 p-3 text-xs text-slate-700">
-      <p class="font-medium text-slate-900">{% trans "Huquqiy rozilik" %}</p>
+  <section id="onboarding" class="rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">
+    <div id="terms-block" class="mb-4 hidden rounded-xl border border-outline-variant/25 bg-surface-container-low/90 p-3 text-xs text-on-surface-variant">
+      <p class="font-medium text-on-surface">{% trans "Huquqiy rozilik" %}</p>
       <p class="mt-1">{% trans "Davom etishdan oldin quyidagi hujjatlarni o‘qing." %}</p>
       <p class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-        <a href="/webapp/legal/terms/" class="font-semibold text-brand underline">{% trans "Shartlar" %}</a>
-        <a href="/webapp/legal/privacy/" class="font-semibold text-brand underline">{% trans "Maxfiylik" %}</a>
-        <a href="/webapp/legal/seller/" class="font-semibold text-brand underline">{% trans "Sotuvchi ofertasi" %}</a>
+        <a href="/webapp/legal/terms/" class="font-semibold text-primary underline">{% trans "Shartlar" %}</a>
+        <a href="/webapp/legal/privacy/" class="font-semibold text-primary underline">{% trans "Maxfiylik" %}</a>
+        <a href="/webapp/legal/seller/" class="font-semibold text-primary underline">{% trans "Sotuvchi ofertasi" %}</a>
       </p>
       <label class="mt-3 flex cursor-pointer items-start gap-2">
-        <input type="checkbox" id="terms-checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand">
+        <input type="checkbox" id="terms-checkbox" class="mt-0.5 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/30">
         <span>{% trans "Men shartlar va sotuvchi ofertasi bilan tanishdim va roziman." %}</span>
       </label>
     </div>
     <div class="mb-3 flex flex-wrap gap-2 text-xs">
-      <span class="rounded-full bg-brand/10 px-2.5 py-1 font-semibold text-brand">1. {% trans "Sotuvchi bo‘ling" %}</span>
-      <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">2. {% trans "Do‘kon yarating" %}</span>
-      <span class="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">3. {% trans "Mahsulot qo‘shing" %}</span>
+      <span class="rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">1. {% trans "Sotuvchi bo‘ling" %}</span>
+      <span class="rounded-full bg-surface-container-high px-2.5 py-1 font-semibold text-on-surface-variant">2. {% trans "Do‘kon yarating" %}</span>
+      <span class="rounded-full bg-surface-container-high px-2.5 py-1 font-semibold text-on-surface-variant">3. {% trans "Mahsulot qo‘shing" %}</span>
     </div>
-    <h2 class="text-sm font-semibold text-slate-900">{% trans "Boshlash" %}</h2>
-    <p class="mt-1 text-xs text-slate-500">{% trans "Avval sotuvchi bo‘ling, keyin do‘kon nomini yozing." %}</p>
+    <h2 class="text-sm font-semibold text-on-surface">{% trans "Boshlash" %}</h2>
+    <p class="mt-1 text-xs text-on-surface-variant">{% trans "Avval sotuvchi bo‘ling, keyin do‘kon nomini yozing." %}</p>
     <button type="button" id="btn-seller"
-            class="touch-target mt-4 w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-3.5 text-base font-semibold text-slate-800 active:bg-slate-50">
+            class="touch-target mt-4 w-full rounded-2xl border-2 border-outline-variant/30 bg-surface-container-lowest px-4 py-3.5 text-base font-semibold text-on-surface ring-1 ring-outline-variant/15 active:bg-surface-container-low">
       {% trans "Men sotuvchiman — davom etish" %}
     </button>
     <div class="mt-5 space-y-2">
-      <label for="shop-name" class="block text-sm font-medium text-slate-800">{% trans "Do‘kon nomi" %}</label>
+      <label for="shop-name" class="block text-sm font-medium text-on-surface">{% trans "Do‘kon nomi" %}</label>
       <input id="shop-name" type="text" autocomplete="organization"
-             class="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+             class="w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
              placeholder="{% trans 'Masalan: Usta gilam' %}">
     </div>
     <button type="button" id="btn-create-shop"
-            class="touch-target mt-3 w-full rounded-2xl bg-brand px-4 py-4 text-base font-semibold text-white shadow-md shadow-brand/20">
+            class="touch-target mt-3 w-full rounded-2xl bg-primary px-4 py-4 text-base font-semibold text-on-primary shadow-md shadow-primary/25">
       {% trans "Do‘konni yaratish" %}
     </button>
-    <div id="shop-info" class="mt-3 hidden rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900"></div>
-    <div id="link-box" class="mt-3 hidden rounded-xl bg-slate-100 px-3 py-3 text-xs leading-relaxed text-slate-700 ring-1 ring-slate-200/80">
-      <p class="font-medium text-slate-800">{% trans "Ulashish uchun havola" %}</p>
+    <div id="shop-info" class="mt-3 hidden rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary ring-1 ring-primary/20"></div>
+    <div id="link-box" class="mt-3 hidden rounded-xl bg-surface-container-low px-3 py-3 text-xs leading-relaxed text-on-surface-variant ring-1 ring-outline-variant/20">
+      <p class="font-medium text-on-surface">{% trans "Ulashish uchun havola" %}</p>
       <p id="link-text" class="mt-1 break-all font-mono text-[13px]"></p>
-      <button type="button" id="btn-copy" class="mt-2 w-full rounded-lg bg-white py-2 text-sm font-semibold text-brand ring-1 ring-slate-200">
+      <button type="button" id="btn-copy" class="mt-2 w-full rounded-lg bg-surface-container-lowest py-2 text-sm font-semibold text-primary ring-1 ring-outline-variant/25">
         {% trans "Nusxalash" %}
       </button>
     </div>
@@ -126,9 +123,9 @@
 
   <div class="flex flex-col gap-2">
     <a id="seller-products-link" href="/webapp/seller/products/"
-       class="touch-target hidden text-center text-sm font-semibold text-brand underline">{% trans "Barcha mahsulotlar" %}</a>
+       class="touch-target hidden text-center text-sm font-semibold text-primary underline decoration-primary/30">{% trans "Barcha mahsulotlar" %}</a>
     <a id="add-product-cta" href="/webapp/seller/products/new/"
-       class="touch-target flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-base font-semibold text-white shadow-md active:scale-[0.99]">
+       class="touch-target flex items-center justify-center gap-2 rounded-2xl bg-on-surface px-5 py-4 text-base font-semibold text-white shadow-editorial active:scale-[0.99]">
       <span class="text-xl leading-none">＋</span>
       {% trans "Mahsulot qo‘shish" %}
     </a>
@@ -136,49 +133,49 @@
 
   <section>
     <div class="mb-3 flex items-end justify-between gap-2">
-      <h2 class="text-lg font-bold text-slate-900">{% trans "Buyurtmalar" %}</h2>
-      <span id="orders-count" class="hidden text-xs font-medium text-slate-500"></span>
+      <h2 class="font-headline text-lg font-extrabold text-on-surface">{% trans "Buyurtmalar" %}</h2>
+      <span id="orders-count" class="hidden text-xs font-medium text-on-surface-variant"></span>
     </div>
 
     <div id="orders-stats" class="mb-3 hidden grid grid-cols-2 gap-2">
-      <div class="rounded-2xl bg-gradient-to-br from-teal-50 to-white px-4 py-3 shadow-card ring-1 ring-teal-100/80">
-        <p class="text-[11px] font-medium uppercase tracking-wide text-teal-800/80">{% trans "Bugungi buyurtmalar" %}</p>
-        <p id="orders-stat-today" class="mt-1 text-2xl font-bold tabular-nums text-brand">—</p>
+      <div class="rounded-3xl bg-gradient-to-br from-primary/10 to-surface-container-lowest px-4 py-3 shadow-editorial ring-1 ring-primary/20">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-primary">{% trans "Bugungi buyurtmalar" %}</p>
+        <p id="orders-stat-today" class="mt-1 text-2xl font-bold tabular-nums text-primary">—</p>
       </div>
-      <div class="rounded-2xl bg-white px-4 py-3 shadow-card ring-1 ring-slate-200/80">
-        <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Jami buyurtmalar" %}</p>
-        <p id="orders-stat-total" class="mt-1 text-2xl font-bold tabular-nums text-slate-900">—</p>
+      <div class="rounded-3xl bg-surface-container-lowest px-4 py-3 shadow-editorial ring-1 ring-outline-variant/20">
+        <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{% trans "Jami buyurtmalar" %}</p>
+        <p id="orders-stat-total" class="mt-1 text-2xl font-bold tabular-nums text-on-surface">—</p>
       </div>
     </div>
 
     <div id="orders-toolbar" class="mb-3 hidden flex flex-wrap items-center gap-2">
       <label class="sr-only" for="orders-status-filter">{% trans "Holat" %}</label>
-      <select id="orders-status-filter" class="min-w-[10rem] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 shadow-sm">
+      <select id="orders-status-filter" class="min-w-[10rem] flex-1 rounded-2xl border-0 bg-surface-container-lowest px-3 py-2.5 text-sm font-medium text-on-surface shadow-sm ring-1 ring-outline-variant/25">
         <option value="">{% trans "Barcha holatlar" %}</option>
         <option value="NEW">{% trans "Yangi" %}</option>
         <option value="ACCEPTED">{% trans "Qabul qilindi" %}</option>
         <option value="DELIVERED">{% trans "Yetkazildi" %}</option>
         <option value="CANCELLED">{% trans "Bekor" %}</option>
       </select>
-      <button type="button" id="orders-export-csv" class="touch-target rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-100">
+      <button type="button" id="orders-export-csv" class="touch-target rounded-2xl border border-outline-variant/30 bg-surface-container-lowest px-3 py-2.5 text-sm font-semibold text-on-surface shadow-sm ring-1 ring-outline-variant/15">
         {% trans "CSV eksport" %}
       </button>
     </div>
 
     <div id="orders-loading" class="space-y-3">
-      <div class="skeleton h-36 rounded-2xl bg-slate-200/80"></div>
-      <div class="skeleton h-36 rounded-2xl bg-slate-200/80"></div>
+      <div class="skeleton h-36 rounded-3xl"></div>
+      <div class="skeleton h-36 rounded-3xl"></div>
     </div>
 
     <div id="orders" class="hidden space-y-3"></div>
 
-    <div id="orders-empty" class="hidden rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-10 text-center">
+    <div id="orders-empty" class="hidden rounded-3xl border border-dashed border-outline-variant/40 bg-surface-container-lowest px-4 py-10 text-center shadow-editorial ring-1 ring-outline-variant/15">
       <p class="text-3xl" aria-hidden="true">📋</p>
-      <p class="mt-3 text-sm font-medium text-slate-800">{% trans "Hali buyurtmalar yo‘q" %}</p>
-      <p class="mt-1 text-xs text-slate-500">{% trans "Havolangizni ulashing" %}</p>
+      <p class="mt-3 text-sm font-medium text-on-surface">{% trans "Hali buyurtmalar yo‘q" %}</p>
+      <p class="mt-1 text-xs text-on-surface-variant">{% trans "Havolangizni ulashing" %}</p>
     </div>
 
-    <p id="orders-err" class="hidden text-center text-sm text-red-600"></p>
+    <p id="orders-err" class="hidden text-center text-sm text-error"></p>
   </section>
 </div>
 {% endblock %}
@@ -245,7 +242,7 @@
     var timeStr = new Intl.DateTimeFormat("uz-UZ", { dateStyle: "short", timeStyle: "short" }).format(d);
     var hours = (Date.now() - d.getTime()) / 3600000;
     var parts = [];
-    parts.push('<p class="text-xs text-slate-500">' + MiniApp.escapeHtml(timeStr) + "</p>");
+    parts.push('<p class="text-xs text-on-surface-variant">' + MiniApp.escapeHtml(timeStr) + "</p>");
     if (o.status === "NEW") {
       if (hours >= 24) {
         parts.push(
@@ -281,19 +278,19 @@
         '<div class="flex w-full flex-col gap-2 sm:flex-row">' +
         '<button type="button" data-oid="' +
         o.id +
-        '" data-action="accept" class="touch-target flex-1 rounded-xl bg-brand px-3 py-3.5 text-sm font-semibold text-white shadow-md shadow-brand/20 active:scale-[0.99]">' +
+        '" data-action="accept" class="touch-target flex-1 rounded-2xl bg-primary px-3 py-3.5 text-sm font-semibold text-on-primary shadow-md shadow-primary/25 active:scale-[0.99]">' +
         L.accept +
         "</button>" +
         '<button type="button" data-oid="' +
         o.id +
-        '" data-action="cancel" class="touch-target flex-1 rounded-xl border-2 border-rose-200 bg-white px-3 py-3.5 text-sm font-semibold text-rose-800 ring-1 ring-rose-100 active:scale-[0.99]">' +
+        '" data-action="cancel" class="touch-target flex-1 rounded-2xl border-2 border-rose-200 bg-surface-container-lowest px-3 py-3.5 text-sm font-semibold text-rose-800 ring-1 ring-rose-100 active:scale-[0.99]">' +
         L.cancelSeller +
         "</button></div>";
     } else if (o.status === "ACCEPTED") {
       actions =
         '<button type="button" data-oid="' +
         o.id +
-        '" data-action="deliver" class="touch-target w-full rounded-xl bg-slate-900 px-3 py-3.5 text-sm font-semibold text-white shadow-md active:scale-[0.99]">' +
+        '" data-action="deliver" class="touch-target w-full rounded-2xl bg-on-surface px-3 py-3.5 text-sm font-semibold text-white shadow-editorial active:scale-[0.99]">' +
         L.markDelivered +
         "</button>";
     }
@@ -304,40 +301,40 @@
         '<div class="mt-1 flex flex-wrap items-center gap-2">' +
         '<a href="' +
         MiniApp.escapeHtml(telHref) +
-        '" class="inline-flex items-center gap-1 text-lg font-bold text-brand underline decoration-brand/30 underline-offset-2">' +
+        '" class="inline-flex items-center gap-1 text-lg font-bold text-primary underline decoration-primary/30 underline-offset-2">' +
         MiniApp.escapeHtml(o.phone || "") +
         "</a>" +
         '<a href="' +
         MiniApp.escapeHtml(telHref) +
-        '" class="inline-flex rounded-lg bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">{% trans "Qo‘ng‘iroq" %}</a>' +
+        '" class="inline-flex rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary ring-1 ring-primary/25">{% trans "Qo‘ng‘iroq" %}</a>' +
         "</div>";
     } else {
       phoneRow =
-        '<p class="mt-1 text-sm text-slate-700">' + MiniApp.escapeHtml(o.phone || "—") + "</p>";
+        '<p class="mt-1 text-sm text-on-surface-variant">' + MiniApp.escapeHtml(o.phone || "—") + "</p>";
     }
     var notesBlock =
-      '<details class="order-notes mt-3 rounded-xl bg-slate-50/90 px-2 py-2 text-left ring-1 ring-slate-100" data-oid="' +
+      '<details class="order-notes mt-3 rounded-xl bg-surface-container-low/90 px-2 py-2 text-left ring-1 ring-outline-variant/20" data-oid="' +
       o.id +
       '">' +
-      '<summary class="cursor-pointer select-none text-xs font-semibold text-brand">' +
+      '<summary class="cursor-pointer select-none text-xs font-semibold text-primary">' +
       MiniApp.escapeHtml(L.orderNotes) +
       "</summary>" +
       '<div class="order-note-list mt-2 max-h-36 space-y-2 overflow-y-auto text-xs"></div>' +
-      '<textarea rows="2" class="order-note-input mt-2 w-full rounded-lg border border-slate-200 bg-white p-2 text-xs"></textarea>' +
-      '<button type="button" class="order-note-send mt-1 w-full rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white">' +
+      '<textarea rows="2" class="order-note-input mt-2 w-full rounded-lg border-0 bg-surface-container-lowest p-2 text-xs ring-1 ring-outline-variant/25"></textarea>' +
+      '<button type="button" class="order-note-send mt-1 w-full rounded-lg bg-on-surface py-2 text-xs font-semibold text-white">' +
       MiniApp.escapeHtml(L.sendNote) +
       "</button>" +
       "</details>";
     return (
-      '<article class="ui-card">' +
+      '<article class="rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">' +
       '<div class="flex items-start justify-between gap-2">' +
       '<div class="min-w-0 flex-1">' +
-      '<p class="text-xs font-medium text-slate-500">#' +
+      '<p class="text-xs font-medium text-on-surface-variant">#' +
       o.id +
       " · " +
       MiniApp.escapeHtml(o.product_name || "") +
       "</p>" +
-      '<p class="mt-1 truncate text-base font-semibold text-slate-900">' +
+      '<p class="mt-1 truncate font-headline text-base font-semibold text-on-surface">' +
       MiniApp.escapeHtml(o.customer_name || "") +
       "</p>" +
       orderTimeBadges(o) +
@@ -349,20 +346,20 @@
       "</span>" +
       "</div>" +
       (o.total_amount != null && o.total_amount !== ""
-        ? '<p class="mt-2 text-sm font-semibold text-slate-800">' +
+        ? '<p class="mt-2 text-sm font-semibold text-on-surface">' +
           "{% trans 'Summa:' %} " +
           fmtMoneyAmount(String(o.total_amount)) +
           "</p>"
         : "") +
-      '<div class="mt-3 rounded-xl bg-slate-50 px-3 py-2.5 text-sm ring-1 ring-slate-100">' +
-      '<p class="text-xs font-medium text-slate-500">' +
+      '<div class="mt-3 rounded-xl bg-surface-container-low px-3 py-2.5 text-sm ring-1 ring-outline-variant/15">' +
+      '<p class="text-xs font-medium text-on-surface-variant">' +
       L.phone +
       "</p>" +
       phoneRow +
-      '<p class="mt-3 text-xs font-medium text-slate-500">' +
+      '<p class="mt-3 text-xs font-medium text-on-surface-variant">' +
       L.address +
       "</p>" +
-      '<p class="mt-1 whitespace-pre-wrap text-sm text-slate-800">' +
+      '<p class="mt-1 whitespace-pre-wrap text-sm text-on-surface">' +
       MiniApp.escapeHtml(o.address || "") +
       "</p>" +
       "</div>" +
@@ -508,7 +505,7 @@
       }
       if ((shop.phone || "").trim()) {
         parts.push(
-          "<p><span class='font-medium text-slate-800'>" +
+          "<p><span class='font-medium text-on-surface'>" +
             MiniApp.escapeHtml(L.shopPhone) +
             ":</span> " +
             MiniApp.escapeHtml(shop.phone) +
@@ -517,7 +514,7 @@
       }
       if ((shop.address || "").trim()) {
         parts.push(
-          "<p><span class='font-medium text-slate-800'>" +
+          "<p><span class='font-medium text-on-surface'>" +
             MiniApp.escapeHtml(L.shopAddress) +
             ":</span> " +
             MiniApp.escapeHtml(shop.address) +
@@ -567,7 +564,7 @@
     if (!el) return;
     const icon = el.querySelector(".ck-icon");
     if (icon) icon.textContent = done ? "✓" : "○";
-    el.classList.toggle("text-emerald-800", done);
+    el.classList.toggle("text-primary", done);
     el.classList.toggle("font-semibold", done);
   }
 
@@ -836,11 +833,11 @@
           .map(function (n) {
             var who = n.is_seller ? L.seller : L.buyer;
             return (
-              '<div class="rounded-lg bg-white px-2 py-1.5 ring-1 ring-slate-100"><span class="font-semibold text-slate-700">' +
+              '<div class="rounded-lg bg-surface-container-lowest px-2 py-1.5 ring-1 ring-outline-variant/20"><span class="font-semibold text-on-surface">' +
               MiniApp.escapeHtml(who) +
-              "</span> <span class=\"text-slate-400\">" +
+              "</span> <span class=\"text-on-surface-variant\">" +
               MiniApp.escapeHtml(String(n.created_at || "")) +
-              '</span><p class="mt-1 whitespace-pre-wrap text-slate-800">' +
+              '</span><p class="mt-1 whitespace-pre-wrap text-on-surface">' +
               MiniApp.escapeHtml(n.body || "") +
               "</p></div>"
             );
@@ -878,11 +875,11 @@
             .map(function (n) {
               var who = n.is_seller ? L.seller : L.buyer;
               return (
-                '<div class="rounded-lg bg-white px-2 py-1.5 ring-1 ring-slate-100"><span class="font-semibold text-slate-700">' +
+                '<div class="rounded-lg bg-surface-container-lowest px-2 py-1.5 ring-1 ring-outline-variant/20"><span class="font-semibold text-on-surface">' +
                 MiniApp.escapeHtml(who) +
-                "</span> <span class=\"text-slate-400\">" +
+                "</span> <span class=\"text-on-surface-variant\">" +
                 MiniApp.escapeHtml(String(n.created_at || "")) +
-                '</span><p class="mt-1 whitespace-pre-wrap text-slate-800">' +
+                '</span><p class="mt-1 whitespace-pre-wrap text-on-surface">' +
                 MiniApp.escapeHtml(n.body || "") +
                 "</p></div>"
               );

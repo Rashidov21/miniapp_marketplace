@@ -1,0 +1,22 @@
+{% load i18n %}
+{# Stitch top bar — id="back-btn" MiniApp.bindBackButton uchun #}
+<header
+  class="ds-app-header"
+  role="navigation"
+  aria-label="{% trans 'Navigatsiya' %}"
+>
+  <div class="flex min-w-0 flex-1 items-center gap-3">
+    <button
+      id="back-btn"
+      type="button"
+      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-sm ring-1 ring-outline-variant/25 transition active:scale-[0.97]"
+      aria-label="{% trans 'Orqaga' %}"
+    >
+      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">arrow_back</span>
+    </button>
+    <h1 class="min-w-0 flex-1 truncate font-headline text-lg font-extrabold tracking-tight text-on-surface">
+      {{ title }}
+    </h1>
+  </div>
+  {% if header_extra %}{{ header_extra }}{% endif %}
+</header>

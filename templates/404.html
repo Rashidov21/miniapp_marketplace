@@ -2,16 +2,30 @@
 {% load i18n %}
 {% block title %}{% trans "Topilmadi" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <a href="/webapp/" class="ui-topbar__back app-topbar-back inline-flex no-underline" aria-label="{% trans 'Orqaga' %}">‹</a>
-  <p class="ui-topbar__title">{% trans "Topilmadi" %}</p>
-</div>
+<header
+  class="ds-app-header"
+  role="navigation"
+  aria-label="{% trans 'Navigatsiya' %}"
+>
+  <div class="flex min-w-0 flex-1 items-center gap-3">
+    <a
+      href="/webapp/"
+      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-primary shadow-sm ring-1 ring-outline-variant/25 transition active:scale-[0.97]"
+      aria-label="{% trans 'Orqaga' %}"
+    >
+      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">arrow_back</span>
+    </a>
+    <h1 class="min-w-0 flex-1 truncate font-headline text-lg font-extrabold tracking-tight text-on-surface">
+      {% trans "Topilmadi" %}
+    </h1>
+  </div>
+</header>
 {% endblock %}
 {% block content %}
 <div class="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-2 text-center">
-  <p class="text-5xl font-bold text-slate-300" aria-hidden="true">404</p>
-  <h1 class="text-xl font-bold text-slate-900">{% trans "Sahifa yoki do‘kon topilmadi" %}</h1>
-  <p class="max-w-sm text-sm text-slate-600">
+  <p class="font-headline text-5xl font-extrabold text-outline-variant" aria-hidden="true">404</p>
+  <h2 class="text-xl font-bold text-on-surface">{% trans "Sahifa yoki do‘kon topilmadi" %}</h2>
+  <p class="max-w-sm text-sm text-on-surface-variant">
     {% trans "Havola eskirgan bo‘lishi yoki do‘kon vaqtincha yopilgan bo‘lishi mumkin." %}
   </p>
   <a href="/webapp/"

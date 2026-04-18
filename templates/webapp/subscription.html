@@ -2,48 +2,45 @@
 {% load i18n %}
 {% block title %}{% trans "Obuna" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Obuna" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Obuna") %}
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
   <div>
-    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Obuna" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Tariflar" %}</h1>
-    <p class="mt-2 text-sm text-slate-600">{% trans "Demo: 5 tagacha mahsulot bepul. Keyin — pastdagi oylik tariflardan birini tanlang. To‘lovni amalga oshirgach, skrinshotni yuklang — admin tasdiqlagach obuna ochiladi." %}</p>
+    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Obuna" %}</p>
+    <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">{% trans "Tariflar" %}</h1>
+    <p class="mt-2 text-sm text-on-surface-variant">{% trans "Demo: 5 tagacha mahsulot bepul. Keyin — pastdagi oylik tariflardan birini tanlang. To‘lovni amalga oshirgach, skrinshotni yuklang — admin tasdiqlagach obuna ochiladi." %}</p>
   </div>
-  <div id="pay-info" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-200/80">
+  <div id="pay-info" class="rounded-3xl bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/80">
     <p class="font-medium">{% trans "To‘lov rekvizitlari" %}</p>
     <p class="mt-1 font-mono text-xs">{% trans "Keyinroq admin sozlamalaridan o‘zgartirasiz — hozircha shu yerda ko‘rsating." %}</p>
   </div>
-  <div id="plans-empty" class="hidden rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-600">
+  <div id="plans-empty" class="hidden rounded-3xl border border-dashed border-outline-variant/40 bg-surface-container-lowest px-4 py-8 text-center text-sm text-on-surface-variant shadow-editorial ring-1 ring-outline-variant/15">
     {% trans "Hozircha tariflar yo‘q. Keyinroq urinib ko‘ring yoki qo‘llab-quvvatlashga yozing." %}
   </div>
   <div id="plans" class="space-y-3"></div>
-  <div id="pending-note" class="hidden rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 ring-1 ring-sky-100/90">
+  <div id="pending-note" class="hidden rounded-3xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 shadow-editorial ring-1 ring-sky-100/90">
     <p class="font-semibold text-sky-900">{% trans "To‘lov ko‘rib chiqilmoqda" %}</p>
     <p class="mt-2 text-xs leading-relaxed text-sky-900/90">
       {% trans "Skrinshot platforma operatoriga tushdi. Tasdiqlangach obuna avtomatik yangilanadi — odatda 1 ish kuni ichida." %}
     </p>
     <p class="mt-2 text-xs font-medium text-sky-800">{% trans "Keyingi qadam: operator javobini kuting. Qayta skrin yuborish shart emas (agar alohida so‘ralmasa)." %}</p>
-    <a href="/webapp/seller/" class="mt-3 inline-flex text-xs font-semibold text-brand underline">{% trans "Kabinetga qaytish" %}</a>
+    <a href="/webapp/seller/" class="mt-3 inline-flex text-xs font-semibold text-primary underline">{% trans "Kabinetga qaytish" %}</a>
   </div>
-  <form id="pay-form" class="hidden space-y-3 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
+  <form id="pay-form" class="hidden space-y-3 rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" enctype="multipart/form-data">
     <input type="hidden" name="plan_id" id="plan_id" />
-    <p id="plan-label" class="text-sm font-semibold text-slate-800"></p>
+    <p id="plan-label" class="text-sm font-semibold text-on-surface"></p>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "To‘lov skrinshoti" %}</label>
-      <input name="proof_image" type="file" accept="image/*" required class="mt-2 block w-full text-sm" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "To‘lov skrinshoti" %}</label>
+      <input name="proof_image" type="file" accept="image/*" required class="mt-2 block w-full text-sm text-on-surface-variant" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Izoh (ixtiyoriy)" %}</label>
-      <input name="notes" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Izoh (ixtiyoriy)" %}</label>
+      <input name="notes" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-2 text-sm text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
-    <button type="submit" class="w-full rounded-2xl bg-brand py-3 text-base font-semibold text-white">{% trans "Yuborish" %}</button>
+    <button type="submit" class="w-full rounded-2xl bg-primary py-3 text-base font-semibold text-on-primary shadow-md shadow-primary/25">{% trans "Yuborish" %}</button>
   </form>
-  <p id="err" class="hidden text-sm text-red-700"></p>
+  <p id="err" class="hidden text-sm text-error"></p>
 </div>
 {% endblock %}
 {% block scripts %}
@@ -80,17 +77,17 @@
         const b = document.createElement("button");
         b.type = "button";
         b.className =
-          "w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm ring-1 ring-slate-100 active:bg-slate-50";
+          "w-full rounded-3xl border border-outline-variant/25 bg-surface-container-lowest px-4 py-4 text-left shadow-editorial ring-1 ring-outline-variant/20 active:bg-surface-container-low";
         let sub = "";
         if (p.max_products != null) {
           sub =
-            '<p class="mt-1 text-xs text-slate-600">' +
+            '<p class="mt-1 text-xs text-on-surface-variant">' +
             "{% trans 'Faol mahsulotgacha:' %} " +
             p.max_products +
             "</p>";
         } else {
           sub =
-            '<p class="mt-1 text-xs text-slate-600">' +
+            '<p class="mt-1 text-xs text-on-surface-variant">' +
             "{% trans 'Cheksiz mahsulot' %}" +
             (p.includes_advanced_analytics
               ? " · {% trans 'Analytics' %}"
@@ -98,9 +95,9 @@
             "</p>";
         }
         b.innerHTML =
-          '<p class="font-semibold text-slate-900">' +
+          '<p class="font-headline font-semibold text-on-surface">' +
           p.name +
-          '</p><p class="mt-1 text-lg font-bold text-brand">' +
+          '</p><p class="mt-1 text-lg font-bold text-primary">' +
           fmt(p.price, p.currency) +
           "</p>" +
           sub;

@@ -2,19 +2,16 @@
 {% load i18n %}
 {% block title %}{% if product_id %}{% trans "Mahsulotni tahrirlash" %}{% else %}{% trans "Yangi mahsulot" %}{% endif %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Mahsulot boshqaruvi" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Mahsulot boshqaruvi") %}
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
   <div>
-    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Mahsulot" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">
+    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Mahsulot" %}</p>
+    <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">
       {% if product_id %}{% trans "Tahrirlash" %}{% else %}{% trans "Yangi mahsulot" %}{% endif %}
     </h1>
-    <p class="mt-2 text-sm text-slate-600">
+    <p class="mt-2 text-sm text-on-surface-variant">
       {% if product_id %}
         {% trans "O‘zgarishlarni saqlang." %}
       {% else %}
@@ -23,41 +20,41 @@
     </p>
   </div>
 
-  <form id="form" class="space-y-5 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
+  <form id="form" class="space-y-5 rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" enctype="multipart/form-data">
     <div>
-      <label for="field-name" class="block text-sm font-medium text-slate-800">{% trans "Nomi" %}</label>
+      <label for="field-name" class="block text-sm font-medium text-on-surface">{% trans "Nomi" %}</label>
       <input id="field-name" name="name" required
-             class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+             class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
              placeholder="{% trans 'Masalan: Qo‘lda to‘qilgan sumka' %}">
     </div>
 
     <div>
-      <label for="field-price" class="block text-sm font-medium text-slate-800">{% trans "Narx" %}</label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "So‘mda — nuqta yoki vergul bilan" %}</p>
+      <label for="field-price" class="block text-sm font-medium text-on-surface">{% trans "Narx" %}</label>
+      <p class="mt-0.5 text-xs text-on-surface-variant">{% trans "So‘mda — nuqta yoki vergul bilan" %}</p>
       <div class="relative mt-2">
-        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{% trans "so‘m" %}</span>
+        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">{% trans "so‘m" %}</span>
         <input id="field-price" name="price" type="number" step="0.01" min="0" required
-               class="w-full rounded-xl border border-slate-200 bg-slate-50/80 py-3.5 pl-14 pr-4 text-lg font-semibold focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+               class="w-full rounded-2xl border-0 bg-surface-container-low py-3.5 pl-14 pr-4 text-lg font-semibold text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
                placeholder="99000">
       </div>
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Rasm" %}</label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Yaxshi yoritilgan, yagona mahsulot — sotuv oshadi" %}</p>
+      <label class="block text-sm font-medium text-on-surface">{% trans "Rasm" %}</label>
+      <p class="mt-0.5 text-xs text-on-surface-variant">{% trans "Yaxshi yoritilgan, yagona mahsulot — sotuv oshadi" %}</p>
       <input name="image" type="file" accept="image/*"
-             class="mt-2 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+             class="mt-2 block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-on-primary"
              {% if not product_id %}required{% endif %}>
     </div>
 
     <div>
-      <label for="field-desc" class="block text-sm font-medium text-slate-800">{% trans "Tavsif" %} <span class="font-normal text-slate-400">({% trans "ixtiyoriy" %})</span></label>
+      <label for="field-desc" class="block text-sm font-medium text-on-surface">{% trans "Tavsif" %} <span class="font-normal text-on-surface-variant">({% trans "ixtiyoriy" %})</span></label>
       <textarea id="field-desc" name="description" rows="3"
-                class="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+                class="mt-2 w-full resize-none rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
                 placeholder="{% trans 'Rang, o‘lcham, yetkazib berish muddati…' %}"></textarea>
     </div>
 
-    <div class="rounded-2xl border border-amber-100 bg-amber-50/80 p-3 text-sm text-amber-950">
+    <div class="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-3 text-sm text-amber-950 ring-1 ring-amber-100/80">
       <p class="font-semibold">{% trans "Sotuv uchun maslahat" %}</p>
       <ul class="mt-2 list-inside list-disc space-y-1 text-[13px] leading-snug text-amber-900/90">
         <li>{% trans "Rasmni yaxshi yoritish — yagona mahsulot kadrdan to‘liq ko‘rinsin." %}</li>
@@ -67,28 +64,28 @@
     </div>
 
     <div>
-      <label for="field-scarcity" class="block text-sm font-medium text-slate-800">{% trans "Shoshilinch eslatma" %} <span class="font-normal text-slate-400">({% trans "ixtiyoriy" %})</span></label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Masalan: «Faqat 3 ta qoldi» — mahsulot sahifasida ko‘rinadi." %}</p>
+      <label for="field-scarcity" class="block text-sm font-medium text-on-surface">{% trans "Shoshilinch eslatma" %} <span class="font-normal text-on-surface-variant">({% trans "ixtiyoriy" %})</span></label>
+      <p class="mt-0.5 text-xs text-on-surface-variant">{% trans "Masalan: «Faqat 3 ta qoldi» — mahsulot sahifasida ko‘rinadi." %}</p>
       <input id="field-scarcity" name="scarcity_text" type="text" maxlength="120"
-             class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+             class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
              placeholder="{% trans 'Masalan: Faqat 5 ta qoldi' %}">
     </div>
 
     <div>
-      <label for="field-social" class="block text-sm font-medium text-slate-800">{% trans "Ijtimoiy ishonch" %} <span class="font-normal text-slate-400">({% trans "ixtiyoriy" %})</span></label>
-      <p class="mt-0.5 text-xs text-slate-500">{% trans "Masalan: bugungi buyurtmalar yoki sharh — qisqa yozing." %}</p>
+      <label for="field-social" class="block text-sm font-medium text-on-surface">{% trans "Ijtimoiy ishonch" %} <span class="font-normal text-on-surface-variant">({% trans "ixtiyoriy" %})</span></label>
+      <p class="mt-0.5 text-xs text-on-surface-variant">{% trans "Masalan: bugungi buyurtmalar yoki sharh — qisqa yozing." %}</p>
       <input id="field-social" name="social_proof_text" type="text" maxlength="120"
-             class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+             class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"
              placeholder="{% trans 'Masalan: Bugun 10+ buyurtma' %}">
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-slate-50/90 p-4 ring-1 ring-slate-100/80">
+    <div class="rounded-2xl border border-outline-variant/25 bg-surface-container-low/90 p-4 ring-1 ring-outline-variant/15">
       <label class="flex cursor-pointer items-start gap-3">
         <input type="checkbox" id="field-active" checked
-               class="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/30">
+               class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/30">
         <span>
-          <span class="block text-sm font-medium text-slate-800">{% trans "Vitrinada ko‘rsatish" %}</span>
-          <span class="mt-1 block text-xs leading-relaxed text-slate-600">{% trans "O‘chirilsa mahsulot mijozga ko‘rinmaydi — qoralama sifatida saqlanadi." %}</span>
+          <span class="block text-sm font-medium text-on-surface">{% trans "Vitrinada ko‘rsatish" %}</span>
+          <span class="mt-1 block text-xs leading-relaxed text-on-surface-variant">{% trans "O‘chirilsa mahsulot mijozga ko‘rinmaydi — qoralama sifatida saqlanadi." %}</span>
         </span>
       </label>
     </div>
@@ -100,9 +97,9 @@
 <div class="app-sticky-bottom">
   <div class="mx-auto max-w-lg px-4">
     <button type="submit" form="form" id="save-btn"
-            class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-md shadow-brand/25 disabled:opacity-50">
+            class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-4 text-base font-semibold text-on-primary shadow-md shadow-primary/25 disabled:opacity-50">
       <span id="save-label">{% trans "Saqlash" %}</span>
-      <svg id="save-spin" class="hidden h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+      <svg id="save-spin" class="hidden h-5 w-5 animate-spin text-on-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
     </button>
   </div>
 </div>
@@ -173,7 +170,7 @@
       MiniApp.showToast("{% trans 'Saqlandi' %}", "success");
       window.location.href = "/webapp/seller/";
     } catch (err) {
-      msg.className = "rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800";
+      msg.className = "rounded-xl bg-error-container px-3 py-2 text-sm text-error";
       msg.textContent = MiniApp.parseApiError(err, "{% trans 'Saqlab bo‘lmadi' %}");
       msg.classList.remove("hidden");
       MiniApp.showToast(msg.textContent, "error");

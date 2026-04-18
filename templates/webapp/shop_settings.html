@@ -2,82 +2,79 @@
 {% load i18n %}
 {% block title %}{% trans "Do‘kon sozlamalari" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Do‘kon sozlamalari" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Do‘kon sozlamalari") %}
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
   <div>
-    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Profil" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Do‘kon" %}</h1>
-    <p class="mt-2 text-sm text-slate-600">{% trans "Logo, aloqa va ijtimoiy tarmoqlar — mijoz ishonchi uchun." %}</p>
+    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Profil" %}</p>
+    <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">{% trans "Do‘kon" %}</h1>
+    <p class="mt-2 text-sm text-on-surface-variant">{% trans "Logo, aloqa va ijtimoiy tarmoqlar — mijoz ishonchi uchun." %}</p>
   </div>
   <div id="shop-metrics" class="hidden grid grid-cols-2 gap-2">
-    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-      <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Buyurtmalar" %}</p>
-      <p id="shop-metrics-count" class="mt-1 text-xl font-bold tabular-nums text-slate-900">—</p>
+    <div class="rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">
+      <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{% trans "Buyurtmalar" %}</p>
+      <p id="shop-metrics-count" class="mt-1 text-xl font-bold tabular-nums text-on-surface">—</p>
     </div>
-    <div class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80">
-      <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">{% trans "Jami summa" %}</p>
-      <p id="shop-metrics-sum" class="mt-1 text-sm font-bold tabular-nums leading-snug text-slate-900">—</p>
+    <div class="rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20">
+      <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{% trans "Jami summa" %}</p>
+      <p id="shop-metrics-sum" class="mt-1 text-sm font-bold tabular-nums leading-snug text-on-surface">—</p>
     </div>
   </div>
-  <form id="f" class="space-y-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/80" enctype="multipart/form-data">
+  <form id="f" class="space-y-4 rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" enctype="multipart/form-data">
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Do‘kon nomi" %}</label>
-      <input name="name" id="name" required class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Do‘kon nomi" %}</label>
+      <input name="name" id="name" required class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Havola (slug)" %}</label>
-      <p class="mt-1 text-xs text-slate-500">{% trans "Lotin harflar, raqam va tire. Mijoz havolasida ko‘rinadi." %}</p>
-      <input name="slug" id="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="80" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 font-mono text-sm" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Havola (slug)" %}</label>
+      <p class="mt-1 text-xs text-on-surface-variant">{% trans "Lotin harflar, raqam va tire. Mijoz havolasida ko‘rinadi." %}</p>
+      <input name="slug" id="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="80" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 font-mono text-sm text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Qisqa tavsif" %}</label>
-      <textarea name="description" id="description" rows="3" class="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+      <label class="block text-sm font-medium text-on-surface">{% trans "Qisqa tavsif" %}</label>
+      <textarea name="description" id="description" rows="3" class="mt-2 w-full resize-none rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"></textarea>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Logo" %}</label>
-      <input name="logo" type="file" accept="image/*" class="mt-2 block w-full text-sm" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Logo" %}</label>
+      <input name="logo" type="file" accept="image/*" class="mt-2 block w-full text-sm text-on-surface-variant" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Telefon" %}</label>
-      <input name="phone" id="phone" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" placeholder="+998..." />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Telefon" %}</label>
+      <input name="phone" id="phone" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" placeholder="+998..." />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Qo‘shimcha telefon" %}</label>
-      <input name="phone_secondary" id="phone_secondary" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+      <label class="block text-sm font-medium text-on-surface">{% trans "Qo‘shimcha telefon" %}</label>
+      <input name="phone_secondary" id="phone_secondary" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Manzil" %}</label>
-      <textarea name="address" id="address" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+      <label class="block text-sm font-medium text-on-surface">{% trans "Manzil" %}</label>
+      <textarea name="address" id="address" rows="2" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"></textarea>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">Telegram URL</label>
-      <input name="social_telegram" id="social_telegram" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" placeholder="https://t.me/..." />
+      <label class="block text-sm font-medium text-on-surface">Telegram URL</label>
+      <input name="social_telegram" id="social_telegram" type="url" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" placeholder="https://t.me/..." />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">Instagram URL</label>
-      <input name="social_instagram" id="social_instagram" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+      <label class="block text-sm font-medium text-on-surface">Instagram URL</label>
+      <input name="social_instagram" id="social_instagram" type="url" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">Facebook URL</label>
-      <input name="social_facebook" id="social_facebook" type="url" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base" />
+      <label class="block text-sm font-medium text-on-surface">Facebook URL</label>
+      <input name="social_facebook" id="social_facebook" type="url" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-800">{% trans "Mijozga: to‘lov tartibi" %}</label>
-      <p class="mt-1 text-xs text-slate-500">
+      <label class="block text-sm font-medium text-on-surface">{% trans "Mijozga: to‘lov tartibi" %}</label>
+      <p class="mt-1 text-xs text-on-surface-variant">
         {% trans "Mahsulot va buyurtma sahifasida ko‘rinadi. Click havolasi, karta yoki naqd — qisqa yozing. Buyurtmadan platforma ulush olmaydi." %}
       </p>
       <div id="payment-note-warn" class="mt-2 hidden rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 ring-1 ring-amber-200/80">
         {% trans "Mijoz to‘lov tartibini tushunmasin — qisqa tartibni shu yerga yozing." %}
       </div>
-      <textarea name="payment_note" id="payment_note" rows="4" maxlength="800" class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base"></textarea>
+      <textarea name="payment_note" id="payment_note" rows="4" maxlength="800" class="mt-2 w-full resize-y rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35"></textarea>
     </div>
-    <p id="err" class="hidden text-sm text-red-700"></p>
-    <button type="submit" id="btn" class="touch-target w-full rounded-2xl bg-brand py-4 text-base font-semibold text-white">{% trans "Saqlash" %}</button>
+    <p id="err" class="hidden text-sm text-error"></p>
+    <button type="submit" id="btn" class="touch-target w-full rounded-2xl bg-primary py-4 text-base font-semibold text-on-primary shadow-md shadow-primary/25">{% trans "Saqlash" %}</button>
   </form>
 </div>
 {% endblock %}

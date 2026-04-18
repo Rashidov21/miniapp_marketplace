@@ -1,17 +1,21 @@
 {% load i18n static %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'uz' }}">
+<html lang="{{ LANGUAGE_CODE|default:'uz' }}" class="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-  <meta name="theme-color" content="#0d9488">
+  <meta name="theme-color" content="#00685f">
   <title>{% block title %}{% trans "Mini do‘kon" %}{% endblock %}</title>
   {% block extra_head %}{% endblock %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="{% static 'css/tailwind-built.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-brand/20">
+<body class="min-h-screen bg-surface font-body text-on-surface antialiased selection:bg-primary/15">
   <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:shadow">{% trans "Asosiy kontentga o‘tish" %}</a>
   <main id="main" class="mx-auto max-w-lg px-4 pb-36 pt-4">
     {% block topbar %}{% endblock %}

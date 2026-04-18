@@ -2,68 +2,65 @@
 {% load i18n %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
 {% block topbar %}
-<div class="ui-topbar app-topbar" role="navigation" aria-label="{% trans 'Navigatsiya' %}">
-  <button id="back-btn" type="button" class="ui-topbar__back app-topbar-back" aria-label="{% trans 'Orqaga' %}">‹</button>
-  <p class="ui-topbar__title">{% trans "Buyurtma" %}</p>
-</div>
+{% include "includes/ds_app_header.html" with title=_("Buyurtma") %}
 {% endblock %}
 {% block content %}
 <div id="order-boot-skeleton" class="flex flex-col gap-4 pb-28" aria-busy="true">
   <div class="space-y-3">
-    <div class="skeleton h-8 w-56 max-w-[85%] rounded-lg bg-slate-200/90"></div>
-    <div class="skeleton h-4 w-full rounded bg-slate-200/80"></div>
-    <div class="skeleton h-24 w-full rounded-2xl bg-slate-200/80"></div>
-    <div class="skeleton h-14 w-full rounded-xl bg-slate-200/80"></div>
-    <div class="skeleton h-14 w-full rounded-xl bg-slate-200/80"></div>
-    <div class="skeleton h-24 w-full rounded-xl bg-slate-200/80"></div>
+    <div class="skeleton h-8 w-56 max-w-[85%] rounded-lg bg-surface-container-high/90"></div>
+    <div class="skeleton h-4 w-full rounded bg-surface-container-high/80"></div>
+    <div class="skeleton h-24 w-full rounded-2xl bg-surface-container-high/80"></div>
+    <div class="skeleton h-14 w-full rounded-xl bg-surface-container-high/80"></div>
+    <div class="skeleton h-14 w-full rounded-xl bg-surface-container-high/80"></div>
+    <div class="skeleton h-24 w-full rounded-xl bg-surface-container-high/80"></div>
   </div>
 </div>
 
 <div id="form-section" class="hidden flex flex-col gap-4 pb-28">
   <div>
-    <p class="text-xs font-medium uppercase tracking-wide text-brand">{% trans "Tez buyurtma" %}</p>
-    <h1 class="mt-1 text-2xl font-bold text-slate-900">{% trans "Buyurtma" %}</h1>
-    <p class="mt-2 text-sm text-slate-600">{% trans "Ism, telefon va manzil — boshqa maydon yo‘q." %}</p>
-    <div class="mt-3 rounded-xl border border-emerald-100/90 bg-gradient-to-r from-emerald-50/95 to-teal-50/80 px-3 py-2.5 text-xs leading-snug text-emerald-950 ring-1 ring-emerald-100/70">
-      <p class="font-semibold">{% trans "Ishonchli sotuvchi" %}</p>
-      <p class="mt-0.5 text-emerald-900/90">{% trans "Telegram orqali xavfsiz buyurtma" %}</p>
+    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Tez buyurtma" %}</p>
+    <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">{% trans "Buyurtma" %}</h1>
+    <p class="mt-2 text-sm text-on-surface-variant">{% trans "Ism, telefon va manzil — boshqa maydon yo‘q." %}</p>
+    <div class="mt-3 rounded-2xl bg-gradient-to-r from-primary/10 to-primary-container/15 px-3 py-2.5 text-xs leading-snug text-on-surface ring-1 ring-primary/15">
+      <p class="font-semibold text-primary">{% trans "Ishonchli sotuvchi" %}</p>
+      <p class="mt-0.5 text-on-surface-variant">{% trans "Telegram orqali xavfsiz buyurtma" %}</p>
     </div>
-    <p class="mt-3 text-xs leading-relaxed text-slate-500">
+    <p class="mt-3 text-xs leading-relaxed text-on-surface-variant">
       {% trans "Ma’lumotlar faqat sotuvchiga." %}
-      <a href="/webapp/legal/privacy/" class="font-medium text-brand underline">{% trans "Maxfiylik" %}</a>
+      <a href="/webapp/legal/privacy/" class="font-medium text-primary underline">{% trans "Maxfiylik" %}</a>
       ·
-      <a href="/webapp/legal/terms/" class="font-medium text-brand underline">{% trans "Shartlar" %}</a>
+      <a href="/webapp/legal/terms/" class="font-medium text-primary underline">{% trans "Shartlar" %}</a>
     </p>
     {% if shop_payment_note %}
-    <div class="rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 shadow-sm ring-1 ring-amber-100/80">
+    <div class="mt-3 rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 shadow-sm ring-1 ring-amber-100/80">
       <p class="text-xs font-semibold uppercase tracking-wide text-amber-800/90">{% trans "To‘lov tartibi (do‘kon)" %}</p>
       <div class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{{ shop_payment_note }}</div>
     </div>
     {% endif %}
   </div>
 
-  <form id="order-form" class="ui-card space-y-4" novalidate>
+  <form id="order-form" class="ui-card space-y-4 rounded-3xl border-0 bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" novalidate>
     <input type="hidden" name="product" id="product-id">
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="sm:col-span-1">
-        <label for="customer_name" class="block text-sm font-medium text-slate-800">{% trans "Ism" %}</label>
+        <label for="customer_name" class="block text-sm font-medium text-on-surface">{% trans "Ism" %}</label>
         <input id="customer_name" name="customer_name" required autocomplete="name" autofocus maxlength="120"
-               class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+               class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/35"
                placeholder="{% trans 'Ismingiz' %}">
       </div>
       <div class="sm:col-span-1">
-        <label for="phone" class="block text-sm font-medium text-slate-800">{% trans "Telefon" %}</label>
+        <label for="phone" class="block text-sm font-medium text-on-surface">{% trans "Telefon" %}</label>
         <input id="phone" name="phone" required inputmode="tel" autocomplete="tel" maxlength="24"
-               class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 font-mono text-base tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+               class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 font-mono text-base tabular-nums text-on-surface shadow-inner ring-1 ring-outline-variant/25 placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/35"
                placeholder="+998 90 123 45 67">
       </div>
     </div>
 
     <div>
-      <label for="address" class="block text-sm font-medium text-slate-800">{% trans "Yetkazish manzili" %}</label>
+      <label for="address" class="block text-sm font-medium text-on-surface">{% trans "Yetkazish manzili" %}</label>
       <textarea id="address" name="address" required rows="2" maxlength="500"
-                class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+                class="mt-2 w-full resize-y rounded-2xl border-0 bg-surface-container-low px-4 py-3 text-base text-on-surface shadow-inner ring-1 ring-outline-variant/25 placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/35"
                 placeholder="{% trans 'Qisqa: mahalla, ko‘cha, uy…' %}"></textarea>
     </div>
   </form>
@@ -71,10 +68,10 @@
 
 <div class="app-sticky-bottom">
   <div class="mx-auto max-w-lg px-4">
-    <div class="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
+    <div class="rounded-2xl border border-outline-variant/25 bg-surface-container-lowest/95 p-3 shadow-lg backdrop-blur-sm ring-1 ring-outline-variant/10">
       <button type="submit" form="order-form" id="submit-btn"
               class="ui-btn ui-btn--primary flex w-full disabled:opacity-60">
-        <span id="submit-label">{% trans "Buyurtmani yuborish" %}</span>
+        <span id="submit-label">{% trans "Buyurtmani tasdiqlash" %}</span>
         <svg id="submit-spinner" class="hidden h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -85,17 +82,17 @@
 </div>
 
 <div id="success-section" class="hidden flex min-h-[55vh] flex-col items-center justify-center gap-6 px-2 pb-24 text-center">
-  <div class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl" aria-hidden="true">✓</div>
+  <div class="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 text-4xl text-primary" aria-hidden="true">✓</div>
   <div>
-    <h2 class="text-2xl font-bold text-slate-900">{% trans "Buyurtmangiz qabul qilindi" %}</h2>
-    <p class="mt-2 text-sm text-slate-600">{% trans "Sotuvchi siz bilan tez orada bog‘lanadi." %}</p>
+    <h2 class="font-headline text-2xl font-extrabold text-on-surface">{% trans "Buyurtmangiz qabul qilindi" %}</h2>
+    <p class="mt-2 text-sm text-on-surface-variant">{% trans "Sotuvchi siz bilan tez orada bog‘lanadi." %}</p>
     {% if shop_payment_note %}
     <div class="mt-4 w-full max-w-sm rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3 text-left text-sm text-amber-950 shadow-sm ring-1 ring-amber-100/80">
       <p class="text-xs font-semibold uppercase tracking-wide text-amber-800/90">{% trans "To‘lov" %}</p>
       <div class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{{ shop_payment_note }}</div>
     </div>
     {% else %}
-    <p class="mt-4 max-w-sm text-left text-xs leading-relaxed text-slate-500">
+    <p class="mt-4 max-w-sm text-left text-xs leading-relaxed text-on-surface-variant">
       {% trans "To‘lov tartibi do‘kon sozlamalarida ko‘rsatilmagan bo‘lsa, sotuvchi siz bilan bog‘lanadi. Buyurtmangizni keyin buyurtmalar ro‘yxatidan kuzatishingiz mumkin." %}
     </p>
     {% endif %}
@@ -220,7 +217,7 @@
     } finally {
       btn.disabled = false;
       spin.classList.add("hidden");
-      label.textContent = "{% trans 'Buyurtmani yuborish' %}";
+      label.textContent = "{% trans 'Buyurtmani tasdiqlash' %}";
     }
   });
 </script>
