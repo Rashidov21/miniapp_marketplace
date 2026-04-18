@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-sticky-commerce{% endblock %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Buyurtma") %}

@@ -117,6 +117,10 @@ def shop_mine(request):
     shop = get_owner_shop(user)
     if not shop:
         return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
+    # Do‘kon bor, lekin role buyer qolgan (admin yoki eski ma’lumot) — kabinet va /me/ mos bo‘lsin
+    if user.role == User.Role.BUYER:
+        user.role = User.Role.SELLER
+        user.save(update_fields=["role"])
     return Response(ShopSerializer(shop, context={"request": request}).data)
 
 

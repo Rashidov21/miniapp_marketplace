@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods, require_POST
@@ -96,7 +97,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
                 "type": "payment_pending",
                 "title": f"{p.shop.name} · {p.plan.name}",
                 "meta": str(_("Pending payment since %(dt)s")) % {"dt": timezone.localtime(p.created_at).strftime("%Y-%m-%d %H:%M")},
-                "url": f"/platform/payments/?status=pending&q={p.id}",
+                "url": f"{reverse('platform_payments')}?status=pending&q={p.id}",
             }
         )
     for s in trial_expiring_qs.order_by("trial_ends_at")[:6]:
@@ -105,7 +106,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
                 "type": "trial_expiring",
                 "title": s.name,
                 "meta": str(_("Trial ends at %(dt)s")) % {"dt": timezone.localtime(s.trial_ends_at).strftime("%Y-%m-%d %H:%M")},
-                "url": f"/platform/shops/?q={s.id}",
+                "url": f"{reverse('platform_shops')}?q={s.id}",
             }
         )
 

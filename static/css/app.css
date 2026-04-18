@@ -162,6 +162,22 @@ body.has-app-dock .app-sticky-bottom {
   bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* Fixed CTA — skroll oxiridagi kontent yashirinmasin (dock yo‘q: pastda faqat CTA) */
+body.has-sticky-commerce:not(.has-app-dock) #main {
+  padding-bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Dock + ixcham CTA (mahsulot PDP) */
+body.has-app-dock.has-sticky-commerce #main {
+  padding-bottom: calc(10.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Bir qatorli CTA — balandlikni kamaytirish */
+.app-sticky-bottom--compact {
+  padding-top: 0.35rem;
+  padding-bottom: calc(0.35rem + var(--safe-bottom));
+}
+
 .skeleton {
   animation: pulse 1.5s ease-in-out infinite;
 }

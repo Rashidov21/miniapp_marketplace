@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block body_extra_class %}has-app-dock{% endblock %}
+{% block body_extra_class %}has-app-dock has-sticky-commerce{% endblock %}
 {% block title %}{% if product_id %}{% trans "Mahsulotni tahrirlash" %}{% else %}{% trans "Yangi mahsulot" %}{% endif %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Mahsulot boshqaruvi") %}
@@ -95,10 +95,10 @@
   </form>
 </div>
 
-<div class="app-sticky-bottom">
-  <div class="mx-auto max-w-lg px-4">
+<div class="app-sticky-bottom app-sticky-bottom--compact">
+  <div class="mx-auto max-w-lg px-3">
     <button type="submit" form="form" id="save-btn"
-            class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-4 text-base font-semibold text-on-primary shadow-md shadow-primary/25 disabled:opacity-50">
+            class="touch-target flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-base font-semibold text-on-primary shadow-md shadow-primary/25 disabled:opacity-50">
       <span id="save-label">{% trans "Saqlash" %}</span>
       <svg id="save-spin" class="hidden h-5 w-5 animate-spin text-on-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
     </button>

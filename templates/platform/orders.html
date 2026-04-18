@@ -22,6 +22,7 @@
         <th class="px-3 py-2">ID</th>
         <th class="px-3 py-2">{% trans "Vaqt" %}</th>
         <th class="px-3 py-2">{% trans "Do‘kon" %}</th>
+        <th class="px-3 py-2">{% trans "Tashqi (ochiq sahifa)" %}</th>
         <th class="px-3 py-2">{% trans "Mahsulot" %}</th>
         <th class="px-3 py-2">{% trans "Mijoz" %}</th>
         <th class="px-3 py-2">{% trans "Telefon" %}</th>
@@ -33,14 +34,26 @@
         <tr class="border-b border-slate-100">
           <td class="px-3 py-2 font-mono">{{ o.id }}</td>
           <td class="px-3 py-2 text-slate-500">{{ o.created_at|date:"Y-m-d H:i" }}</td>
-          <td class="px-3 py-2">{{ o.shop.name }}</td>
+          <td class="px-3 py-2">
+            <a href="{% url 'platform_shops' %}?q={{ o.shop_id }}" class="text-brand hover:underline">{{ o.shop.name }}</a>
+            <span class="ml-1 font-mono text-xs text-slate-400">#{{ o.shop_id }}</span>
+          </td>
+          <td class="px-3 py-2 text-xs">
+            {% if platform_has_public_url %}
+              <a href="{{ platform_public_base_url }}/webapp/s/{{ o.shop.slug }}/" target="_blank" rel="noopener noreferrer" class="text-brand hover:underline">{% trans "Do‘kon" %} ↗</a>
+              <span class="text-slate-300">·</span>
+              <a href="{{ platform_public_base_url }}/webapp/s/{{ o.shop.slug }}/p/{{ o.product.slug }}/" target="_blank" rel="noopener noreferrer" class="text-brand hover:underline">{% trans "Mahsulot" %} ↗</a>
+            {% else %}
+              <span class="text-slate-400">—</span>
+            {% endif %}
+          </td>
           <td class="px-3 py-2">{{ o.product.name }}</td>
           <td class="px-3 py-2">{{ o.customer_name }}</td>
           <td class="px-3 py-2 font-mono">{{ o.phone }}</td>
           <td class="px-3 py-2">{{ o.get_status_display }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="7" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
+        <tr><td colspan="8" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
       {% endfor %}
     </tbody>
   </table>
