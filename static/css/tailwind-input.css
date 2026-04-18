@@ -103,8 +103,9 @@
     @apply bg-primary/5;
   }
 
+  /* 4 ta tab (sotuvchi: Kabinet … Obuna …) uchun gorizontal joy */
   .app-bottom-nav__link--active {
-    @apply rounded-2xl bg-primary px-5 py-2.5 text-on-primary shadow-sm;
+    @apply rounded-2xl bg-primary px-3 py-2.5 text-on-primary shadow-sm sm:px-4;
   }
 
   .app-bottom-nav__link--active:hover {

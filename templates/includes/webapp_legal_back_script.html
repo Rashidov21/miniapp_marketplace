@@ -1,15 +1,17 @@
 {% load i18n %}
+{# legal_back_fallback: tarix bo‘lmasa qayerga (default: Yordam markazi) #}
 <script>
   MiniApp.ready();
   (function () {
     var b = document.getElementById("back-btn");
     if (!b) return;
+    var fallback = "{{ legal_back_fallback|default:'/webapp/help/' }}";
     b.addEventListener("click", function (e) {
       e.preventDefault();
       if (window.history.length > 1) {
         window.history.back();
       } else {
-        window.location.href = "/webapp/discover/";
+        window.location.href = fallback;
       }
     });
   })();

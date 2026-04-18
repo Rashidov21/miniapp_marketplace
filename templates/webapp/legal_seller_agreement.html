@@ -26,5 +26,5 @@
 {% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
-{% include "includes/webapp_legal_back_script.html" %}
+{% include "includes/webapp_legal_back_script.html" with legal_back_fallback="/webapp/seller/" %}
 {% endblock %}

@@ -4,6 +4,7 @@
 {% if nav_role == "seller" %}
   {% url 'seller_dashboard' as u_seller %}
   {% url 'seller_products_list' as u_products %}
+  {% url 'subscription' as u_sub %}
   {% url 'shop_settings' as u_shop %}
   <a href="{{ u_seller }}"
      class="app-bottom-nav__link touch-target {% if request.path == '/webapp/seller/' or request.path == '/webapp/seller' %}app-bottom-nav__link--active{% endif %}">
@@ -15,8 +16,13 @@
     <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">inventory_2</span>
     <span>{% trans "Mahsulotlar" %}</span>
   </a>
+  <a href="{{ u_sub }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/seller/subscription' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">subscriptions</span>
+    <span>{% trans "Obuna" %}</span>
+  </a>
   <a href="{{ u_shop }}"
-     class="app-bottom-nav__link touch-target {% if '/webapp/seller/shop' in request.path or '/webapp/seller/subscription' in request.path %}app-bottom-nav__link--active{% endif %}">
+     class="app-bottom-nav__link touch-target {% if '/webapp/seller/shop' in request.path %}app-bottom-nav__link--active{% endif %}">
     <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">settings</span>
     <span>{% trans "Do‘kon" %}</span>
   </a>

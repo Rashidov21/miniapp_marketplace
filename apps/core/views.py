@@ -13,6 +13,7 @@ from apps.core.models import Lead
 
 from apps.products.models import Product
 from apps.shops.models import Shop
+from apps.shops.selectors import get_owner_shop
 from apps.users.terms import current_terms_version
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,10 @@ def discover_page(request):
 @require_GET
 def help_page(request):
     """Yordam markazi — huquqiy va navigatsiya havolalari (Stitch «Profil/Yordam»)."""
-    return render(request, "webapp/help.html")
+    nav_role = "buyer"
+    if request.user.is_authenticated and get_owner_shop(request.user):
+        nav_role = "seller"
+    return render(request, "webapp/help.html", {"nav_role": nav_role})
 
 
 @require_GET

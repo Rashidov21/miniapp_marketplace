@@ -11,6 +11,44 @@
     {% trans "Tez havolalar va huquqiy hujjatlar — keyingi qadamni tanlang." %}
   </p>
 
+  {% if nav_role == "seller" %}
+  <div class="rounded-3xl bg-primary/5 p-4 ring-1 ring-primary/15">
+    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Sotuvchi" %}</p>
+    <div class="mt-3 grid grid-cols-1 gap-3">
+      <a href="/webapp/seller/"
+         class="touch-target flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-3 shadow-sm ring-1 ring-outline-variant/10 active:scale-[0.99]">
+        <span class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">storefront</span>
+          </span>
+          <span class="font-headline text-sm font-semibold text-on-surface">{% trans "Kabinet" %}</span>
+        </span>
+        <span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">chevron_right</span>
+      </a>
+      <a href="/webapp/seller/subscription/"
+         class="touch-target flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-3 shadow-sm ring-1 ring-outline-variant/10 active:scale-[0.99]">
+        <span class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">subscriptions</span>
+          </span>
+          <span class="font-headline text-sm font-semibold text-on-surface">{% trans "Obuna va tariflar" %}</span>
+        </span>
+        <span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">chevron_right</span>
+      </a>
+      <a href="/webapp/seller/shop/"
+         class="touch-target flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-3 shadow-sm ring-1 ring-outline-variant/10 active:scale-[0.99]">
+        <span class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">settings</span>
+          </span>
+          <span class="font-headline text-sm font-semibold text-on-surface">{% trans "Do‘kon sozlamalari" %}</span>
+        </span>
+        <span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">chevron_right</span>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="grid grid-cols-1 gap-3">
     <a href="/webapp/discover/"
        class="touch-target flex items-center justify-between gap-3 rounded-3xl border border-outline-variant/20 bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/15 active:scale-[0.99]">
@@ -46,11 +84,11 @@
 </div>
 {% endblock %}
 {% block app_bottom_nav %}
-{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
+{% include "includes/webapp_bottom_nav.html" with nav_role=nav_role|default:"buyer" %}
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
-  MiniApp.bindBackButton("back-btn", "/webapp/discover/");
+  MiniApp.bindBackButton("back-btn", "{% if nav_role == 'seller' %}/webapp/seller/{% else %}/webapp/discover/{% endif %}");
 </script>
 {% endblock %}
