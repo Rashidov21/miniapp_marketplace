@@ -2,6 +2,7 @@ import hmac
 import threading
 import time
 
+from django.contrib.auth import login
 from django.conf import settings
 from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
@@ -48,6 +49,11 @@ def telegram_auth(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
     user = upsert_user_from_telegram_user(payload["user"])
+    login(
+        request._request,
+        user,
+        backend="django.contrib.auth.backends.ModelBackend",
+    )
     return Response(
         {
             "user": UserSerializer(user).data,

@@ -155,7 +155,10 @@
     try {
       res = await fetch(
         API_BASE + path,
-        Object.assign({}, opts, { headers, signal: controller.signal })
+        Object.assign({ credentials: "same-origin" }, opts, {
+          headers,
+          signal: controller.signal,
+        })
       );
     } catch (networkErr) {
       if (networkErr && networkErr.name === "AbortError") {

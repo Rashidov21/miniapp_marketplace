@@ -91,4 +91,31 @@
   MiniApp.ready();
   MiniApp.bindBackButton("back-btn", "{% if nav_role == 'seller' %}/webapp/seller/{% else %}/webapp/discover/{% endif %}");
 </script>
+{% if nav_role == 'buyer' %}
+<script>
+  (async function helpNavIfSellerAfterSession() {
+    var init = await MiniApp.waitForInitData();
+    if (!init) return;
+    try {
+      await MiniApp.apiFetch("/auth/telegram/", {
+        method: "POST",
+        body: JSON.stringify({ init_data: init }),
+      });
+      var me = await MiniApp.apiFetch("/me/", { method: "GET" });
+      var hasShop = false;
+      try {
+        await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+        hasShop = true;
+      } catch (ignore) {
+        hasShop = false;
+      }
+      var elevated =
+        me.role === "seller" || me.role === "admin" || me.role === "platform_owner";
+      if (elevated || hasShop) {
+        window.location.reload();
+      }
+    } catch (e) {}
+  })();
+</script>
+{% endif %}
 {% endblock %}
