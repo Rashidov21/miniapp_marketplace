@@ -14,6 +14,7 @@ Barcha `MiniApp.apiFetch` chaqiriqlari `/api` prefiksi bilan `static/js/app.js` 
 | Mijoz, buyurtma bor | redirect `GET /webapp/my-orders/` (`GET /orders/mine/?page_size=1`) |
 | Mijoz, buyurtma yo‘q | redirect `GET /webapp/discover/` |
 | Katalog (ochiq do‘konlar) | `GET /shops/discover/` (sahifa: `/webapp/discover/`) |
+| Yordam markazi | `/webapp/help/` (huquqiy havolalar + pastki nav) |
 
 ## Do‘kon / mahsulot (ochiq)
 

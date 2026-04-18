@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="{% static 'css/tailwind-built.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body class="min-h-screen bg-surface font-body text-on-surface antialiased selection:bg-primary/15">
+<body class="min-h-screen bg-surface font-body text-on-surface antialiased selection:bg-primary/15 {% block body_extra_class %}{% endblock %}">
   <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:shadow">{% trans "Asosiy kontentga o‘tish" %}</a>
   <main id="main" class="mx-auto max-w-lg px-4 pb-36 pt-4">
     {% block topbar %}{% endblock %}

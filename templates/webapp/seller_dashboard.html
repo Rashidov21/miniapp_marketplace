@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% trans "Kabinet" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Kabinet") %}
@@ -131,7 +132,7 @@
     </a>
   </div>
 
-  <section>
+  <section id="seller-orders">
     <div class="mb-3 flex items-end justify-between gap-2">
       <h2 class="font-headline text-lg font-extrabold text-on-surface">{% trans "Buyurtmalar" %}</h2>
       <span id="orders-count" class="hidden text-xs font-medium text-on-surface-variant"></span>
@@ -178,11 +179,12 @@
     <p id="orders-err" class="hidden text-center text-sm text-error"></p>
   </section>
 </div>
+{% include "includes/webapp_bottom_nav.html" with nav_role="seller" %}
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
-  MiniApp.bindBackButton("back-btn", "/webapp/");
+  MiniApp.bindBackButton("back-btn", "/webapp/discover/");
   const L = {
     new: "{% trans 'Yangi' %}",
     accepted: "{% trans 'Qabul qilindi' %}",

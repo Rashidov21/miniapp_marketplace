@@ -101,6 +101,12 @@ def discover_page(request):
 
 
 @require_GET
+def help_page(request):
+    """Yordam markazi — huquqiy va navigatsiya havolalari (Stitch «Profil/Yordam»)."""
+    return render(request, "webapp/help.html")
+
+
+@require_GET
 def seller_dashboard(request):
     return render(request, "webapp/seller_dashboard.html")
 

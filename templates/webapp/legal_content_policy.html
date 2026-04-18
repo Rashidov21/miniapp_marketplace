@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% trans "Kontent qoidalari" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
@@ -16,6 +17,7 @@
     <li>{% trans "Haqorat, zo‘ravonlik va noxush kontent taqiqlanadi." %}</li>
   </ul>
 </article>
+{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
 {% include "includes/webapp_legal_back_script.html" %}

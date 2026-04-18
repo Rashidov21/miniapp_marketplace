@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% trans "Buyurtma" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Buyurtma") %}
@@ -96,6 +97,7 @@
     </button>
   </div>
 </div>
+{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
 <script>

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% trans "Mening buyurtmalarim" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Buyurtmalar") %}
@@ -31,11 +32,12 @@
     {% trans "Yana ko‘rsatish" %}
   </button>
 </div>
+{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
-  MiniApp.bindBackButton("back-btn", "/webapp/");
+  MiniApp.bindBackButton("back-btn", "/webapp/discover/");
   const L = {
     NEW: "{% trans 'Yangi' %}",
     ACCEPTED: "{% trans 'Qabul qilindi' %}",

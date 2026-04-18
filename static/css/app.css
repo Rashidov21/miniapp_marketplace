@@ -157,6 +157,11 @@ summary:focus-visible,
   pointer-events: auto;
 }
 
+/* Pastki dock (Stitch) bilan sticky CTA ustma-ust tushmasin */
+body.has-app-dock .app-sticky-bottom {
+  bottom: calc(4.35rem + env(safe-area-inset-bottom, 0px));
+}
+
 .skeleton {
   animation: pulse 1.5s ease-in-out infinite;
 }

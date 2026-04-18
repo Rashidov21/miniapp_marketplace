@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% if og_title %}{{ og_title }}{% else %}{% trans "Mahsulot" %}{% endif %}{% endblock %}
 {% block extra_head %}
 {% if og_title %}
@@ -74,6 +75,7 @@
     </div>
   </div>
 </div>
+{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
 <script>

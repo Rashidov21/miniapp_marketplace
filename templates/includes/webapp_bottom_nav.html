@@ -1,0 +1,43 @@
+{% load i18n %}
+{# Stitch uslubi: pastki dock. nav_role: "buyer" | "seller" #}
+<nav class="app-bottom-nav max-w-lg mx-auto w-full" role="navigation" aria-label="{% trans 'Asosiy navigatsiya' %}">
+{% if nav_role == "seller" %}
+  {% url 'seller_dashboard' as u_seller %}
+  {% url 'seller_products_list' as u_products %}
+  {% url 'shop_settings' as u_shop %}
+  <a href="{{ u_seller }}"
+     class="app-bottom-nav__link touch-target {% if request.path == '/webapp/seller/' or request.path == '/webapp/seller' %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">storefront</span>
+    <span>{% trans "Kabinet" %}</span>
+  </a>
+  <a href="{{ u_products }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/seller/products' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">inventory_2</span>
+    <span>{% trans "Mahsulotlar" %}</span>
+  </a>
+  <a href="{{ u_shop }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/seller/shop' in request.path or '/webapp/seller/subscription' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">settings</span>
+    <span>{% trans "Do‘kon" %}</span>
+  </a>
+{% else %}
+  {% url 'webapp_discover' as u_disc %}
+  {% url 'webapp_my_orders' as u_ord %}
+  {% url 'webapp_help' as u_help %}
+  <a href="{{ u_disc }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/discover' in request.path or request.path == '/webapp/' or '/webapp/s/' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">storefront</span>
+    <span>{% trans "Katalog" %}</span>
+  </a>
+  <a href="{{ u_ord }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/my-orders' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">receipt_long</span>
+    <span>{% trans "Buyurtmalar" %}</span>
+  </a>
+  <a href="{{ u_help }}"
+     class="app-bottom-nav__link touch-target {% if '/webapp/help' in request.path or '/webapp/legal/' in request.path %}app-bottom-nav__link--active{% endif %}">
+    <span class="material-symbols-outlined app-bottom-nav__icon" aria-hidden="true">help</span>
+    <span>{% trans "Yordam" %}</span>
+  </a>
+{% endif %}
+</nav>

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% block body_extra_class %}has-app-dock{% endblock %}
 {% block title %}{% trans "Maxfiylik siyosati" %}{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Huquqiy") %}
@@ -144,6 +145,7 @@
     <a class="font-medium text-primary underline" href="/webapp/legal/terms/">{% trans "Foydalanish shartlari" %}</a>
   </p>
 </article>
+{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
 {% endblock %}
 {% block scripts %}
 {% include "includes/webapp_legal_back_script.html" %}
