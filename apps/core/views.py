@@ -1,9 +1,11 @@
 import json
 import logging
 
+from django.conf import settings
 from django.core.cache import cache
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 
@@ -16,6 +18,16 @@ from apps.users.terms import current_terms_version
 logger = logging.getLogger(__name__)
 
 
+def _legal_page_context() -> dict:
+    """Maxfiylik / foydalanish shartlari sahifalari uchun sana va bog‘lanish."""
+    bot = (getattr(settings, "TELEGRAM_BOT_USERNAME", "") or "").strip().lstrip("@")
+    return {
+        "legal_updated": timezone.localdate(),
+        "support_email": (getattr(settings, "PLATFORM_SUPPORT_EMAIL", "") or "").strip(),
+        "telegram_bot_username": bot,
+    }
+
+
 def _client_ip(request):
     xff = request.META.get("HTTP_X_FORWARDED_FOR")
     if xff:
@@ -26,8 +38,6 @@ def _client_ip(request):
 @require_GET
 def landing_page(request):
     """SavdoLink marketing landing (conversion)."""
-    from django.conf import settings
-
     return render(
         request,
         "landing/savdolink.html",
@@ -261,16 +271,14 @@ def subscription_page(request):
 
 @require_GET
 def legal_terms(request):
-    return render(
-        request,
-        "webapp/legal_terms.html",
-        {"terms_version": current_terms_version()},
-    )
+    ctx = _legal_page_context()
+    ctx["terms_version"] = current_terms_version()
+    return render(request, "webapp/legal_terms.html", ctx)
 
 
 @require_GET
 def legal_privacy(request):
-    return render(request, "webapp/legal_privacy.html", {})
+    return render(request, "webapp/legal_privacy.html", _legal_page_context())
 
 
 @require_GET

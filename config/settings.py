@@ -193,6 +193,8 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
+# Huquqiy sahifalar (bog‘lanish); bo‘sh bo‘lsa shablonda «—» ko‘rinadi
+PLATFORM_SUPPORT_EMAIL = os.environ.get("PLATFORM_SUPPORT_EMAIL", "").strip()
 
 # Landing arizalari — Telegram chat ID lar (vergul bilan), masalan: "123456789" yoki "111,222"
 LANDING_NOTIFY_TELEGRAM_IDS = os.environ.get("LANDING_NOTIFY_TELEGRAM_IDS", "")

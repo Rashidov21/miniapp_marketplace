@@ -7,13 +7,142 @@
 {% block content %}
 <article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
   <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Maxfiylik siyosati" %}</h1>
-  <p>
-    {% blocktrans %}Namunaviy matn. Bu yerda qanday ma’lumotlar yig‘ilishi (Telegram ID, ism, buyurtma uchun telefon va manzil), saqlash muddati va uchinchi tomonlarga oshirish shartlari yoziladi.{% endblocktrans %}
+  <p class="text-xs text-on-surface-variant">
+    {% trans "Oxirgi yangilanish:" %} <time datetime="{{ legal_updated|date:'Y-m-d' }}">{{ legal_updated|date:"d.m.Y" }}</time>
   </p>
-  <ul class="list-disc space-y-2 pl-5">
-    <li>{% trans "Buyurtma berishda kiritilgan telefon va manzil sotuvchiga yetkaziladi." %}</li>
-    <li>{% trans "Ma’lumotlarni qonun talab qilganda taqdim etish mumkin." %}</li>
+
+  <p>{% trans "SavdoLink platformasidan foydalanganingiz uchun rahmat." %}</p>
+  <p>
+    {% blocktrans trimmed %}
+      Ushbu Maxfiylik siyosati SavdoLink (keyingi o‘rinlarda “Platforma”) foydalanuvchilarining shaxsiy ma’lumotlari qanday yig‘ilishi, ishlatilishi va himoya qilinishini tushuntiradi.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="mt-2 text-base font-bold text-on-surface">{% trans "1. Umumiy qoidalar" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      SavdoLink — bu Telegram ichida ishlaydigan mini-do‘kon platformasi bo‘lib, foydalanuvchilarga mahsulot joylash, buyurtma qabul qilish va savdo jarayonini boshqarish imkonini beradi.
+    {% endblocktrans %}
+  </p>
+  <p>{% trans "Platformadan foydalanish orqali siz ushbu siyosatga rozilik bildirasiz." %}</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "2. Yig‘iladigan ma’lumotlar" %}</h2>
+  <p>{% trans "Biz quyidagi ma’lumotlarni yig‘ishimiz mumkin:" %}</p>
+
+  <h3 class="mt-3 text-sm font-semibold text-on-surface">{% trans "2.1. Telegram orqali" %}</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>Telegram ID</li>
+    <li>username</li>
+    <li>{% trans "ism (agar mavjud bo‘lsa)" %}</li>
   </ul>
+
+  <h3 class="mt-3 text-sm font-semibold text-on-surface">{% trans "2.2. Sotuvchilar (sellerlar) uchun" %}</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "do‘kon nomi" %}</li>
+    <li>{% trans "aloqa ma’lumotlari" %}</li>
+    <li>{% trans "mahsulotlar (rasm, narx, tavsif)" %}</li>
+  </ul>
+
+  <h3 class="mt-3 text-sm font-semibold text-on-surface">{% trans "2.3. Mijozlar (buyerlar) uchun" %}</h3>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "ism" %}</li>
+    <li>{% trans "telefon raqami" %}</li>
+    <li>{% trans "manzil (ixtiyoriy)" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "3. Ma’lumotlardan foydalanish" %}</h2>
+  <p>{% trans "Yig‘ilgan ma’lumotlar quyidagilar uchun ishlatiladi:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "buyurtmalarni qayta ishlash" %}</li>
+    <li>{% trans "sotuvchi va mijoz o‘rtasida aloqa ta’minlash" %}</li>
+    <li>{% trans "platforma funksiyalarini ta’minlash" %}</li>
+    <li>{% trans "xizmat sifatini yaxshilash" %}</li>
+    <li>{% trans "texnik muammolarni hal qilish" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "4. Ma’lumotlarni uchinchi tomonlarga berish" %}</h2>
+  <p>{% trans "Biz foydalanuvchi ma’lumotlarini uchinchi shaxslarga bermaymiz, bundan mustasno:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "qonunchilik talab qilganda" %}</li>
+    <li>{% trans "foydalanuvchi roziligi bilan" %}</li>
+    <li>{% trans "texnik xizmat ko‘rsatuvchi servislar (hosting va boshqalar)" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "5. Ma’lumotlarni himoya qilish" %}</h2>
+  <p>{% trans "Biz quyidagi choralarni ko‘ramiz:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "xavfsiz serverlardan foydalanish" %}</li>
+    <li>{% trans "ma’lumotlarga cheklangan kirish" %}</li>
+    <li>{% trans "zamonaviy xavfsizlik standartlari" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "6. Foydalanuvchi ma’suliyati" %}</h2>
+  <p>{% trans "Foydalanuvchi:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "o‘z akkaunt ma’lumotlarini himoya qilishi kerak" %}</li>
+    <li>{% trans "noto‘g‘ri ma’lumot bermasligi kerak" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "7. Cookie va texnik ma’lumotlar" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      Platforma texnik ishlash uchun minimal texnik ma’lumotlarni yig‘ishi mumkin (IP, brauzer va boshqalar).
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "8. O‘zgartirishlar" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      Biz ushbu siyosatni o‘zgartirish huquqiga egamiz. O‘zgarishlar platformada e’lon qilinadi.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "9. Bog‘lanish" %}</h2>
+  <p>{% trans "Savollar uchun:" %}</p>
+  <p>
+    Email:
+    {% if support_email %}
+      <a class="font-medium text-primary underline" href="mailto:{{ support_email }}">{{ support_email }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+  <p>
+    Telegram:
+    {% if telegram_bot_username %}
+      <a class="font-medium text-primary underline" href="https://t.me/{{ telegram_bot_username }}" target="_blank" rel="noopener noreferrer">@{{ telegram_bot_username }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <p class="text-xs text-on-surface-variant">
+    {% trans "Foydalanishda davom etish orqali siz ushbu siyosatga rozilik bildirasiz." %}
+  </p>
+  <p class="text-xs text-on-surface-variant">
+    {% trans "Batafsil shartlar:" %}
+    <a class="font-medium text-primary underline" href="/webapp/legal/terms/">{% trans "Foydalanish shartlari" %}</a>
+  </p>
 </article>
 {% endblock %}
 {% block scripts %}

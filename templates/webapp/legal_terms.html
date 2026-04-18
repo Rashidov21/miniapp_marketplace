@@ -7,17 +7,150 @@
 {% block content %}
 <article class="max-w-none space-y-4 rounded-3xl bg-surface-container-lowest p-4 text-sm leading-relaxed text-on-surface shadow-editorial ring-1 ring-outline-variant/20">
   <h1 class="font-headline text-xl font-extrabold text-on-surface">{% trans "Foydalanish shartlari" %}</h1>
-  <p class="text-xs text-on-surface-variant">{% trans "Versiya" %} {{ terms_version }}</p>
-  <p>
-    {% blocktrans %}Bu matn namunaviy hisoblanadi. Real loyiha uchun yuridik maslahat bilan tasdiqlangan to‘liq shartlar joylashtiring. Platforma foydalanuvchilarga mini-do‘kon xizmatini taqdim etadi; sotuvchi va mijoz o‘rtasidagi munosabatlar qonun va ofertaga muvofiq hal qilinadi.{% endblocktrans %}
-  </p>
-  <ul class="list-disc space-y-2 pl-5">
-    <li>{% trans "Akkaunt va Telegram ma’lumotlari xavfsiz saqlanishi uchun texnik choralarni qo‘llaymiz." %}</li>
-    <li>{% trans "Taqiqlangan mahsulot va kontent joylashtirish mumkin emas." %}</li>
-    <li>{% trans "Platforma moderatsiya va bloklash huquqini o‘zida saqlaydi." %}</li>
-  </ul>
   <p class="text-xs text-on-surface-variant">
-    {% trans "Batafsil maxfiylik:" %} <a class="font-medium text-primary underline" href="/webapp/legal/privacy/">{% trans "Maxfiylik siyosati" %}</a>
+    {% trans "Oxirgi yangilanish:" %} <time datetime="{{ legal_updated|date:'Y-m-d' }}">{{ legal_updated|date:"d.m.Y" }}</time>
+    · {% trans "Versiya" %} {{ terms_version }}
+  </p>
+
+  <p>
+    {% blocktrans trimmed %}
+      SavdoLink platformasidan foydalanishdan oldin ushbu shartlarni diqqat bilan o‘qing.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="mt-2 text-base font-bold text-on-surface">{% trans "1. Umumiy qoidalar" %}</h2>
+  <p>{% trans "SavdoLink — bu Telegram asosidagi mini-do‘kon platformasi." %}</p>
+  <p>{% trans "Platformadan foydalanish orqali siz ushbu shartlarga rozilik bildirasiz." %}</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "2. Platforma vazifasi" %}</h2>
+  <p>{% trans "SavdoLink:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "sotuvchilarga mahsulot joylash imkonini beradi" %}</li>
+    <li>{% trans "buyurtmalarni qabul qilishni osonlashtiradi" %}</li>
+    <li>{% trans "mijoz va sotuvchi o‘rtasida vositachi sifatida xizmat qiladi" %}</li>
+  </ul>
+  <p>
+    {% blocktrans trimmed %}
+      Platforma mahsulotlarning sifati yoki yetkazib berilishiga kafolat bermaydi.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "3. Foydalanuvchi majburiyatlari" %}</h2>
+  <p>{% trans "Foydalanuvchi:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "qonunga zid mahsulotlarni joylamasligi kerak" %}</li>
+    <li>{% trans "yolg‘on ma’lumot bermasligi kerak" %}</li>
+    <li>{% trans "boshqa foydalanuvchilarga zarar yetkazmasligi kerak" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "4. Taqiqlangan faoliyat" %}</h2>
+  <p>{% trans "Quyidagilar taqiqlanadi:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "noqonuniy mahsulotlar savdosi" %}</li>
+    <li>{% trans "firibgarlik" %}</li>
+    <li>{% trans "spam" %}</li>
+    <li>{% trans "boshqa foydalanuvchilarning ma’lumotlarini noqonuniy yig‘ish" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "5. To‘lov va obuna" %}</h2>
+  <p>{% trans "Platformada pullik tariflar mavjud:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "obuna asosida ishlaydi (oylik/yillik)" %}</li>
+    <li>{% trans "to‘lovlar qaytarilmaydi (agar boshqacha ko‘rsatilmagan bo‘lsa)" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "6. Hisobni bloklash" %}</h2>
+  <p>{% trans "Platforma quyidagi hollarda akkauntni bloklashi mumkin:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "qoidalar buzilganda" %}</li>
+    <li>{% trans "shubhali faoliyat bo‘lsa" %}</li>
+    <li>{% trans "boshqa foydalanuvchilardan shikoyat tushsa" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "7. Javobgarlik cheklovi" %}</h2>
+  <p>{% trans "SavdoLink:" %}</p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>{% trans "sotuvchi va mijoz o‘rtasidagi kelishmovchiliklar uchun javobgar emas" %}</li>
+    <li>{% trans "mahsulot sifati uchun javob bermaydi" %}</li>
+    <li>{% trans "yetkazib berish uchun javob bermaydi" %}</li>
+  </ul>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "8. Xizmatni to‘xtatish" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      Platforma xizmatni vaqtincha yoki to‘liq to‘xtatish huquqiga ega.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "9. Intellektual mulk" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      Platformadagi barcha dizayn, kod va brend elementlari SavdoLinkga tegishli.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "10. O‘zgartirishlar" %}</h2>
+  <p>{% trans "Shartlar istalgan vaqtda o‘zgartirilishi mumkin." %}</p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "11. Qonunchilik" %}</h2>
+  <p>
+    {% blocktrans trimmed %}
+      Ushbu shartlar O‘zbekiston Respublikasi qonunchiligiga muvofiq tartibga solinadi.
+    {% endblocktrans %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <h2 class="text-base font-bold text-on-surface">{% trans "12. Bog‘lanish" %}</h2>
+  <p>
+    Email:
+    {% if support_email %}
+      <a class="font-medium text-primary underline" href="mailto:{{ support_email }}">{{ support_email }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+  <p>
+    Telegram:
+    {% if telegram_bot_username %}
+      <a class="font-medium text-primary underline" href="https://t.me/{{ telegram_bot_username }}" target="_blank" rel="noopener noreferrer">@{{ telegram_bot_username }}</a>
+    {% else %}
+      <span class="text-on-surface-variant">—</span>
+    {% endif %}
+  </p>
+
+  <hr class="border-outline-variant/25" />
+
+  <p class="text-xs text-on-surface-variant">
+    {% blocktrans trimmed %}
+      Platformadan foydalanish orqali siz ushbu shartlarga to‘liq rozilik bildirasiz.
+    {% endblocktrans %}
+  </p>
+  <p class="text-xs text-on-surface-variant">
+    {% trans "Batafsil maxfiylik:" %}
+    <a class="font-medium text-primary underline" href="/webapp/legal/privacy/">{% trans "Maxfiylik siyosati" %}</a>
   </p>
 </article>
 {% endblock %}
