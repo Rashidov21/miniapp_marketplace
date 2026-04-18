@@ -87,18 +87,28 @@
     @apply bg-surface-container-high text-on-surface ring-outline-variant/25;
   }
 
-  /* Stitch pastki dock — sotuvchi_paneli / mijoz oqimi */
+  /* Stitch pastki dock — fixed bottom-0 w-full rounded-t-[24px] z-50 (main tashqarisida) */
   .app-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-[45] flex justify-around border-t border-outline-variant/15 bg-white/90 px-1 pb-[calc(0.65rem+env(safe-area-inset-bottom,0px))] pt-2 shadow-[0_-4px_24px_rgba(11,28,48,0.06)] backdrop-blur-xl;
+    @apply fixed bottom-0 left-0 right-0 z-50 flex w-full items-center justify-around border-t border-on-surface/5 bg-white/90 px-2 pt-3 shadow-[0_-4px_24px_rgba(11,28,48,0.04)] backdrop-blur-xl;
     border-radius: 1.5rem 1.5rem 0 0;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   }
 
   .app-bottom-nav__link {
-    @apply flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-1.5 text-[11px] font-medium text-on-surface-variant transition-colors hover:bg-primary/5;
+    @apply flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-[11px] font-medium text-on-surface/50 transition-colors;
+    @apply active:bg-primary/10;
+  }
+
+  .app-bottom-nav__link:not(.app-bottom-nav__link--active):hover {
+    @apply bg-primary/5;
   }
 
   .app-bottom-nav__link--active {
-    @apply bg-primary text-on-primary shadow-sm;
+    @apply rounded-2xl bg-primary px-5 py-2.5 text-on-primary shadow-sm;
+  }
+
+  .app-bottom-nav__link--active:hover {
+    @apply bg-primary;
   }
 
   .app-bottom-nav__icon {

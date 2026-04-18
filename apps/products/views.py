@@ -31,7 +31,7 @@ from apps.users.models import User
 def product_list_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
     qs = (
         Product.objects.filter(shop=shop, is_active=True)
         .select_related("shop")
@@ -59,7 +59,7 @@ def product_list_public(request, shop_id):
 def product_detail_public(request, shop_id, product_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
     cache_key = product_public_cache_key(shop_id, product_id)
     cached = cache.get(cache_key)
     if cached is not None:
@@ -80,7 +80,7 @@ def product_detail_public(request, shop_id, product_id):
 def product_list_manage(request):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     if request.method == "GET":
         qs = Product.objects.filter(shop=shop).select_related("shop").order_by("sort_order", "-created_at")
         paginator = ProductListPagination()
@@ -89,13 +89,13 @@ def product_list_manage(request):
         return paginator.get_paginated_response(ser.data)
     if not shop.is_subscription_operational():
         return Response(
-            {"detail": _("To add products, activate your subscription.")},
+            {"detail": _("Mahsulot qo‘shish uchun obunani faollashtiring.")},
             status=status.HTTP_403_FORBIDDEN,
         )
     ok, lim_code = monetization.can_add_product(shop)
     if not ok:
         return error_response(
-            _("Active product limit reached. Upgrade your subscription."),
+            _("Faol mahsulot limiti tugadi — obunani kengaytiring."),
             status=status.HTTP_409_CONFLICT,
             code=lim_code or "product_limit_reached",
             extra={
@@ -115,16 +115,16 @@ def product_list_manage(request):
 def product_detail_manage(request, product_id):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     product = (
         Product.objects.filter(pk=product_id, shop=shop)
         .select_related("shop")
         .first()
     )
     if not product:
-        return Response({"detail": _("Product not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Mahsulot topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     if request.method == "GET":
         return Response(ProductSerializer(product, context={"request": request}).data)
     if request.method == "DELETE":
@@ -143,7 +143,9 @@ def product_detail_manage(request, product_id):
         ok, lim_code = monetization.can_activate_product(shop)
         if not ok:
             return error_response(
-                _("Active product limit reached. Deactivate another product or upgrade."),
+                _(
+                    "Faol mahsulot limiti tugadi — boshqa mahsulotni o‘chirib qo‘ying yoki obunani kengaytiring."
+                ),
                 status=status.HTTP_409_CONFLICT,
                 code=lim_code or "product_limit_reached",
                 extra={
@@ -162,18 +164,18 @@ def product_duplicate(request, product_id):
     """Mahsulot nusxasi — qoralama (is_active=false), yangi slug."""
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     src = Product.objects.filter(pk=product_id, shop=shop).first()
     if not src:
-        return Response({"detail": _("Product not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Mahsulot topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     if not src.image:
         return Response(
-            {"detail": _("This product has no image — upload an image before duplicating.")},
+            {"detail": _("Bu mahsulotda rasm yo‘q — avval rasm yuklang, keyin nusxa oling.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    base_name = f"{src.name} ({gettext('Copy')})"
+    base_name = f"{src.name} ({gettext('Nusxa')})"
     slug = unique_product_slug(shop.pk, base_name)
     new_p = Product(
         shop=shop,
@@ -194,7 +196,7 @@ def product_duplicate(request, product_id):
             ext = "jpg"
         new_p.image.save(f"dup_{product_id}.{ext}", ContentFile(data), save=False)
     except OSError:
-        return Response({"detail": _("Could not read product image.")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Mahsulot rasmini o‘qib bo‘lmadi.")}, status=status.HTTP_400_BAD_REQUEST)
     new_p.save()
     return Response(ProductSerializer(new_p, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
@@ -206,10 +208,10 @@ def product_admin_block(request, product_id):
         request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
         and not request.user.is_superuser
     ):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     product = Product.objects.filter(pk=product_id).select_related("shop").first()
     if not product:
-        return Response({"detail": _("Product not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Mahsulot topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if "is_active" in request.data:
         product.is_active = bool(request.data.get("is_active"))
         product.save(update_fields=["is_active"])
@@ -221,10 +223,10 @@ def product_admin_block(request, product_id):
 def product_public_link(request, shop_id, product_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
     product = Product.objects.filter(pk=product_id, shop=shop, is_active=True).first()
     if not product:
-        return Response({"detail": _("Product not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Mahsulot topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     from django.conf import settings as dj_settings
 
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""

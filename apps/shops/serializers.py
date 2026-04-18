@@ -140,7 +140,7 @@ class ShopSerializer(serializers.ModelSerializer):
             return None
         v = str(value).strip()
         if not v:
-            raise serializers.ValidationError(_("This field may not be blank."))
+            raise serializers.ValidationError(_("Bu maydon bo‘sh bo‘lishi mumkin emas."))
         from django.core.validators import validate_slug
 
         validate_slug(v)
@@ -148,7 +148,7 @@ class ShopSerializer(serializers.ModelSerializer):
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError(_("A shop with this slug already exists."))
+            raise serializers.ValidationError(_("Bu slug bilan do‘kon allaqachon mavjud."))
         return v
 
     def get_trial_days_left(self, obj: Shop) -> int | None:
@@ -233,5 +233,5 @@ class SubscriptionPaymentCreateSerializer(serializers.Serializer):
 
     def validate_plan_id(self, value: int) -> int:
         if not SubscriptionPlan.objects.filter(pk=value, is_active=True).exists():
-            raise serializers.ValidationError("Invalid plan.")
+            raise serializers.ValidationError(_("Tarif topilmadi yoki faol emas."))
         return value

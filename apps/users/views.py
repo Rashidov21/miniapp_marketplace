@@ -34,16 +34,19 @@ def telegram_auth(request):
     """
     init_data = (request.data or {}).get("init_data") or request.data.get("initData")
     if not init_data:
-        return Response({"detail": _("init_data is required")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("init_data kiritilishi kerak.")}, status=status.HTTP_400_BAD_REQUEST)
     token = getattr(settings, "TELEGRAM_BOT_TOKEN", "") or ""
     if not token:
         return Response(
-            {"detail": _("Telegram bot is not configured")},
+            {"detail": _("Telegram bot sozlanmagan.")},
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
     payload = verify_init_data(init_data, token)
     if not payload:
-        return Response({"detail": _("Invalid initData")}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"detail": _("initData noto‘g‘ri yoki muddati o‘tgan.")},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
     user = upsert_user_from_telegram_user(payload["user"])
     return Response(
         {
@@ -70,8 +73,8 @@ def become_seller(request):
         return error_response(
             str(
                 _(
-                    "Please accept the seller and platform terms first. "
-                    "Open Seller agreement in the mini app: /webapp/legal/seller/"
+                    "Avval sotuvchi va platforma shartlariga rozilik bering. "
+                    "Mini ilovada «Sotuvchi bilan kelishuv» sahifasi: /webapp/legal/seller/"
                 )
             ),
             status=status.HTTP_403_FORBIDDEN,
@@ -131,9 +134,9 @@ def _spawn_onboarding_nudges(chat_id: int, telegram_user_id: int | None, start_p
 def telegram_webhook(request, secret: str):
     cfg_secret = (getattr(settings, "TELEGRAM_WEBHOOK_SECRET", "") or "").strip()
     if not cfg_secret:
-        return Response({"detail": "Webhook not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({"detail": _("Webhook sozlanmagan.")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if not hmac.compare_digest(secret, cfg_secret):
-        return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
 
     update = request.data or {}
     message = update.get("message") or {}

@@ -78,6 +78,8 @@
     <button type="submit" id="btn" class="touch-target w-full rounded-2xl bg-primary py-4 text-base font-semibold text-on-primary shadow-md shadow-primary/25">{% trans "Saqlash" %}</button>
   </form>
 </div>
+{% endblock %}
+{% block app_bottom_nav %}
 {% include "includes/webapp_bottom_nav.html" with nav_role="seller" %}
 {% endblock %}
 {% block scripts %}

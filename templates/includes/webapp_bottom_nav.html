@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Stitch uslubi: pastki dock. nav_role: "buyer" | "seller" #}
-<nav class="app-bottom-nav max-w-lg mx-auto w-full" role="navigation" aria-label="{% trans 'Asosiy navigatsiya' %}">
+<nav class="app-bottom-nav" role="navigation" aria-label="{% trans 'Asosiy navigatsiya' %}">
 {% if nav_role == "seller" %}
   {% url 'seller_dashboard' as u_seller %}
   {% url 'seller_products_list' as u_products %}

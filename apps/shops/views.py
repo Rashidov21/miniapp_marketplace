@@ -46,14 +46,14 @@ def shop_create(request):
     user = _require_auth_user(request)
     name = (request.data or {}).get("name", "").strip()
     if not name:
-        return Response({"name": [_("This field is required.")]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"name": [_("Bu maydon majburiy.")]}, status=status.HTTP_400_BAD_REQUEST)
     elevated = user.is_superuser or user.role in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
     if not elevated and not user_has_current_seller_terms(user):
         return error_response(
             str(
                 _(
-                    "Please accept the seller and platform terms first. "
-                    "Open Seller agreement in the mini app: /webapp/legal/seller/"
+                    "Avval sotuvchi va platforma shartlariga rozilik bering. "
+                    "Mini ilovada «Sotuvchi bilan kelishuv» sahifasi: /webapp/legal/seller/"
                 )
             ),
             status=status.HTTP_403_FORBIDDEN,
@@ -61,11 +61,11 @@ def shop_create(request):
             extra={"terms_url": "/webapp/legal/seller/"},
         )
     if Shop.objects.filter(owner=user).exists():
-        return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Sizda allaqachon do‘kon bor.")}, status=status.HTTP_400_BAD_REQUEST)
     try:
         shop = Shop.objects.create(owner=user, name=name)
     except IntegrityError:
-        return Response({"detail": _("You already have a shop.")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Sizda allaqachon do‘kon bor.")}, status=status.HTTP_400_BAD_REQUEST)
     apply_trial_for_new_shop(shop)
     shop.refresh_from_db()
     return Response(
@@ -79,7 +79,7 @@ def shop_create(request):
 def seller_stats(request):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     week_ago = timezone.now() - timedelta(days=7)
     shop_views_week = AnalyticsEvent.objects.filter(
         event_type=AnalyticsEvent.EventType.SHOP_VIEW,
@@ -115,7 +115,7 @@ def shop_mine(request):
     user = _require_auth_user(request)
     shop = get_owner_shop(user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(ShopSerializer(shop, context={"request": request}).data)
 
 
@@ -124,9 +124,9 @@ def shop_mine(request):
 def shop_update(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id).first()
     if not shop:
-        return Response({"detail": _("Shop not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if not IsShopOwnerOrAdmin().has_object_permission(request, None, shop):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     data = request.data.copy()
     if not (
         request.user.is_superuser
@@ -150,7 +150,7 @@ def shop_update(request, shop_id):
 def shop_public(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(ShopPublicSerializer(shop, context={"request": request}).data)
 
 
@@ -159,13 +159,13 @@ def shop_public(request, shop_id):
 def shop_link(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id).first()
     if not shop:
-        return Response({"detail": _("Shop not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if (
         shop.owner_id != request.user.id
         and request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
         and not request.user.is_superuser
     ):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     from django.conf import settings as dj_settings
 
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
@@ -182,7 +182,7 @@ def shop_link(request, shop_id):
 def shop_public_link(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
-        return Response({"detail": _("Shop is unavailable.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
     from django.conf import settings as dj_settings
 
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
@@ -206,7 +206,7 @@ def subscription_plans_list(request):
 def subscription_payment_create(request):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     ser = SubscriptionPaymentCreateSerializer(data=request.data)
     if not ser.is_valid():
         return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -216,7 +216,7 @@ def subscription_payment_create(request):
         status=SubscriptionPayment.Status.PENDING,
     ).exists():
         return error_response(
-            str(_("You already sent a payment. Please wait for review.")),
+            str(_("To‘lov allaqachon yuborilgan — tekshiruvni kuting.")),
             status=status.HTTP_409_CONFLICT,
             code="payment_pending_exists",
         )
@@ -233,7 +233,7 @@ def subscription_payment_create(request):
             shop.save(update_fields=["subscription_status"])
     except IntegrityError:
         return error_response(
-            str(_("You already sent a payment. Please wait for review.")),
+            str(_("To‘lov allaqachon yuborilgan — tekshiruvni kuting.")),
             status=status.HTTP_409_CONFLICT,
             code="payment_pending_exists",
         )

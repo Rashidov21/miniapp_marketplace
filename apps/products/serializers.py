@@ -46,7 +46,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 raise serializers.ValidationError(
-                    _("A product with this slug already exists in this shop.")
+                    _("Bu do‘konda bunday slug bilan mahsulot allaqachon mavjud.")
                 )
         return v
 

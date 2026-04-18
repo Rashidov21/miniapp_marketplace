@@ -43,20 +43,20 @@ def _seller_apply_status_change(request, order_id: int, new_status: str) -> Resp
     """Sotuvchi do‘koni: buyurtma holatini o‘zgartirish (PATCH va POST actionlar uchun)."""
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     order = get_object_or_404(
         Order.objects.select_related("product", "shop", "buyer"),
         pk=order_id,
         shop=shop,
     )
     if not isinstance(new_status, str) or new_status not in dict(Order.Status.choices):
-        return Response({"status": [_("Invalid status.")]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": [_("Noto‘g‘ri holat.")]}, status=status.HTTP_400_BAD_REQUEST)
     old = order.status
     if new_status == old:
         return Response(OrderSerializer(order, context={"request": request}).data)
     if not can_transition(old, new_status):
         return Response(
-            {"status": [_("Invalid status transition.")]},
+            {"status": [_("Bu holatga o‘tib bo‘lmaydi.")]},
             status=status.HTTP_400_BAD_REQUEST,
         )
     order.status = new_status
@@ -124,7 +124,7 @@ def order_create(request):
                         existing_order.buyer_id,
                     )
                     return Response(
-                        {"detail": _("Idempotency key conflict.")},
+                        {"detail": _("Takrorlash kaliti boshqa foydalanuvchining buyurtmasi bilan band.")},
                         status=status.HTTP_409_CONFLICT,
                     )
                 same_payload = (
@@ -140,7 +140,7 @@ def order_create(request):
                         existing_order.pk,
                     )
                     return Response(
-                        {"detail": _("Idempotency key reused with different payload.")},
+                        {"detail": _("Bir xil takrorlash kaliti, lekin ma’lumot boshqacha.")},
                         status=status.HTTP_409_CONFLICT,
                     )
                 logger.info(
@@ -187,7 +187,7 @@ def order_create(request):
 def seller_orders(request):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     qs = Order.objects.filter(shop=shop).select_related("product", "shop", "buyer").order_by("-created_at")
     st = (request.GET.get("status") or "").strip().upper()
     if st in dict(Order.Status.choices):
@@ -241,8 +241,8 @@ def buyer_order_cancel(request, order_id):
         return Response(
             {
                 "detail": _(
-                    "This order can no longer be cancelled in the app. "
-                    "Please contact the seller using the phone number on the order."
+                    "Bu buyurtmani ilovada bekor qilib bo‘lmaydi. "
+                    "Sotuvchi bilan buyurtmadagi telefon raqami orqali bog‘laning."
                 ),
                 "code": "cancel_not_allowed",
             },
@@ -279,13 +279,13 @@ def buyer_order_detail(request, order_id):
         .first()
     )
     if not order:
-        return Response({"detail": _("Order not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Buyurtma topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if (
         order.buyer_id != request.user.id
         and request.user.role not in (User.Role.ADMIN, User.Role.PLATFORM_OWNER)
         and not request.user.is_superuser
     ):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     return Response(OrderSerializer(order, context={"request": request}).data)
 
 
@@ -308,9 +308,9 @@ def order_notes(request, order_id: int):
         .first()
     )
     if not order:
-        return Response({"detail": _("Order not found.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Buyurtma topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
     if not _can_access_order_notes(request.user, order):
-        return Response({"detail": _("You do not have access.")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
     if request.method == "GET":
         notes = order.notes.select_related("author").order_by("created_at")
         return Response({"results": OrderNoteSerializer(notes, many=True).data})
@@ -330,7 +330,7 @@ def order_notes(request, order_id: int):
 def seller_orders_export_csv(request):
     shop = get_owner_shop(request.user)
     if not shop:
-        return Response({"detail": _("Create your shop first.")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
     qs = Order.objects.filter(shop=shop).select_related("product", "buyer").order_by("-created_at")
     st = (request.GET.get("status") or "").strip().upper()
     if st in dict(Order.Status.choices):

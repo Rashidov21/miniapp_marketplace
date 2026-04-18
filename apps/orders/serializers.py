@@ -92,14 +92,14 @@ class OrderCreateSerializer(serializers.Serializer):
         v = value.strip()
         digits = "".join(c for c in v if c.isdigit())
         if len(digits) < 9:
-            raise serializers.ValidationError(_("Enter a complete phone number."))
+            raise serializers.ValidationError(_("Telefon raqamini to‘liq kiriting."))
         return v
 
     def validate(self, attrs):
         product: Product = attrs["product"]
         shop = product.shop
         if not shop.is_active:
-            raise serializers.ValidationError({"product": _("Shop is not available.")})
+            raise serializers.ValidationError({"product": _("Do‘kon mavjud emas.")})
         if not shop.is_subscription_operational():
-            raise serializers.ValidationError({"product": _("Shop is not available.")})
+            raise serializers.ValidationError({"product": _("Do‘kon mavjud emas.")})
         return attrs

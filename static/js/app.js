@@ -10,6 +10,31 @@
   const API_TIMEOUT_MS = 15000;
   let toastTimer = null;
 
+  /** Inglizcha HTTP status matnlari (brauzer) uchun o‘zbekcha qisqa xabar */
+  function _httpStatusUzMessage(status) {
+    switch (status) {
+      case 400:
+        return "So‘rov noto‘g‘ri.";
+      case 401:
+        return "Kirish rad etildi.";
+      case 403:
+        return "Ruxsat yo‘q.";
+      case 404:
+        return "Topilmadi.";
+      case 409:
+        return "Ma’lumot mos kelmayapti (takroriy so‘rov).";
+      case 429:
+        return "Juda ko‘p so‘rov. Birozdan keyin urinib ko‘ring.";
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return "Serverda xatolik. Keyinroq urinib ko‘ring.";
+      default:
+        return "";
+    }
+  }
+
   function getInitData() {
     try {
       return window.Telegram && window.Telegram.WebApp
@@ -107,12 +132,14 @@
       );
     } catch (networkErr) {
       if (networkErr && networkErr.name === "AbortError") {
-        const err = new Error("So'rov vaqti tugadi. Internetni tekshirib qayta urinib ko'ring.");
+        const err = new Error(
+          "So‘rov muddati tugadi. Internetni tekshirib qayta urinib ko‘ring."
+        );
         err.status = 0;
         err.data = null;
         throw err;
       }
-      const err = new Error("Ulanishda muammo. Internetni tekshirib qayta urinib ko'ring.");
+      const err = new Error("Ulanishda muammo. Internetni tekshirib qayta urinib ko‘ring.");
       err.status = 0;
       err.data = null;
       throw err;
@@ -134,6 +161,13 @@
         if (Array.isArray(v) && v.length) msg = String(v[0]);
       }
       if (typeof msg === "object") msg = JSON.stringify(msg);
+      if (
+        !msg ||
+        msg === res.statusText ||
+        /^not found|bad request|forbidden|conflict|internal server error$/i.test(String(msg).trim())
+      ) {
+        msg = _httpStatusUzMessage(res.status) || msg;
+      }
       const err = new Error(msg);
       err.status = res.status;
       err.data = data;
@@ -161,7 +195,7 @@
     c.innerHTML =
       '<div class="app-toast-card">' +
       '<p id="app-toast-text" class="app-toast-text"></p>' +
-      '<button type="button" id="app-toast-close" class="app-toast-close" aria-label="close">×</button>' +
+      '<button type="button" id="app-toast-close" class="app-toast-close" aria-label="Yopish">Yopish</button>' +
       "</div>";
     document.body.appendChild(c);
     c.querySelector("#app-toast-close").addEventListener("click", function () {

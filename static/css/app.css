@@ -159,7 +159,7 @@ summary:focus-visible,
 
 /* Pastki dock (Stitch) bilan sticky CTA ustma-ust tushmasin */
 body.has-app-dock .app-sticky-bottom {
-  bottom: calc(4.35rem + env(safe-area-inset-bottom, 0px));
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .skeleton {
@@ -178,17 +178,26 @@ body.has-app-dock .app-sticky-bottom {
 
 /* Topbar: .ui-topbar / .app-topbar — tailwind-input.css @layer components */
 
+/* Stitch (obuna_bo_lish): pastki snackbar — qora kartochka; dock bor sahifada pastki nav ustida */
 .app-toast {
   position: fixed;
-  left: 0;
-  right: 0;
-  top: calc(0.65rem + var(--safe-top));
-  bottom: auto;
-  z-index: 9998;
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
   display: flex;
   justify-content: center;
-  padding: 0 0.75rem;
+  width: min(90vw, 24rem);
+  max-width: 24rem;
+  margin: 0;
+  padding: 0;
+  transform: translateX(-50%);
   pointer-events: none;
+}
+
+body:not(.has-app-dock) .app-toast {
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
 .app-toast.hidden {
@@ -197,15 +206,16 @@ body.has-app-dock .app-sticky-bottom {
 
 .app-toast-card {
   width: 100%;
-  max-width: 32rem;
-  border-radius: 0.95rem;
-  padding: 0.85rem 1rem;
-  box-shadow: 0 16px 40px rgb(2 6 23 / 0.2);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem 0.75rem 1.1rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  color: #fff;
+  background: #0b1c30;
+  color: #f8fafc;
+  border: 1px solid rgb(255 255 255 / 0.06);
   pointer-events: auto;
   animation: app-toast-in 0.24s ease-out;
 }
@@ -213,7 +223,7 @@ body.has-app-dock .app-sticky-bottom {
 @keyframes app-toast-in {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.98);
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -228,16 +238,17 @@ body.has-app-dock .app-sticky-bottom {
 }
 
 .app-toast-success .app-toast-card {
-  background: var(--ui-success);
+  box-shadow: 0 25px 50px -12px rgb(0 100 95 / 0.35);
+  border-left: 4px solid #00685f;
 }
 .app-toast-error .app-toast-card {
-  background: var(--ui-error);
+  border-left: 4px solid #e11d48;
 }
 .app-toast-warning .app-toast-card {
-  background: var(--ui-warning);
+  border-left: 4px solid #d97706;
 }
 .app-toast-info .app-toast-card {
-  background: rgb(15 23 42);
+  border-left: 4px solid rgb(148 163 184);
 }
 
 .app-toast-text {
@@ -251,12 +262,22 @@ body.has-app-dock .app-sticky-bottom {
 }
 
 .app-toast-close {
+  flex-shrink: 0;
   border: 0;
   background: transparent;
   color: inherit;
-  font-size: 1.15rem;
-  line-height: 1;
-  opacity: 0.92;
-  min-height: 28px;
-  min-width: 28px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  opacity: 0.65;
+  min-height: 36px;
+  min-width: 3.5rem;
+  padding: 0.25rem 0.35rem;
+  cursor: pointer;
+}
+
+.app-toast-close:hover {
+  opacity: 1;
 }
