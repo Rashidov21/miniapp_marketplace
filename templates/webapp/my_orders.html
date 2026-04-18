@@ -47,7 +47,7 @@
     CANCELLED: "{% trans 'Bekor qilindi' %}",
   };
   async function auth() {
-    const init = MiniApp.getInitData();
+    const init = await MiniApp.waitForInitData();
     if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
     await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
   }

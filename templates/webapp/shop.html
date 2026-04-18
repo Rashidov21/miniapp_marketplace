@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block body_extra_class %}has-app-dock{% endblock %}
-{% block title %}{% trans "Do‘kon" %}{% endblock %}
+{% block title %}{% if og_title %}{{ og_title }}{% else %}{% trans "Do‘kon" %}{% endif %}{% endblock %}
+{% block extra_head %}
+{% if og_title %}
+  <meta name="description" content="{{ og_description|escape }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ og_title|escape }}">
+  <meta property="og:description" content="{{ og_description|escape }}">
+  {% if og_image %}<meta property="og:image" content="{{ og_image|escape }}">{% endif %}
+  <meta property="og:url" content="{{ og_url|escape }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title|escape }}">
+  <meta name="twitter:description" content="{{ og_description|escape }}">
+  {% if og_image %}<meta name="twitter:image" content="{{ og_image|escape }}">{% endif %}
+{% endif %}
+{% endblock %}
 {% block topbar %}
 {% include "includes/ds_app_header.html" with title=_("Katalog") %}
 {% endblock %}

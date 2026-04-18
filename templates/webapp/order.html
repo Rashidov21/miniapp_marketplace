@@ -162,7 +162,7 @@
     const btn = document.getElementById("submit-btn");
     const spin = document.getElementById("submit-spinner");
     const label = document.getElementById("submit-label");
-    const init = MiniApp.getInitData();
+    const init = await MiniApp.waitForInitData();
     if (!init) {
       MiniApp.showToast("{% trans 'Telegram ichidan oching.' %}", "warning");
       return;

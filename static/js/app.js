@@ -45,6 +45,33 @@
     }
   }
 
+  /**
+   * Reply keyboard / ayrim clientlarda initData birinchi frame dan keyin paydo bo‘lishi mumkin.
+   * Qisqa kutish bilan qayta o‘qiydi; brauzerda bo‘sh qator qaytaradi.
+   */
+  function waitForInitData(maxMs) {
+    var limit = maxMs == null ? 800 : maxMs;
+    var stepMs = 25;
+    return new Promise(function (resolve) {
+      var deadline = Date.now() + limit;
+      function read() {
+        var d = getInitData();
+        if (d) return resolve(d);
+        if (Date.now() >= deadline) return resolve("");
+        setTimeout(read, stepMs);
+      }
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () {
+          var d0 = getInitData();
+          if (d0) return resolve(d0);
+          setTimeout(read, 0);
+        });
+      } else {
+        setTimeout(read, 0);
+      }
+    });
+  }
+
   function getStartParam() {
     try {
       const u = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe;
@@ -300,6 +327,7 @@
 
   const api = {
     getInitData,
+    waitForInitData,
     getStartParam,
     getTelegramUser,
     getSuggestedName,

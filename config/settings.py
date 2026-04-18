@@ -113,7 +113,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 # Query string for /static/js/app.js etc. when not using ManifestStaticFilesStorage (e.g. misconfigured nginx).
-STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260423")
+STATIC_ASSET_VERSION = os.environ.get("STATIC_ASSET_VERSION", "20260426")
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -130,8 +130,20 @@ def product_form(request, product_id=None):
     return render(request, "webapp/product_form.html", ctx)
 
 
-def _shop_page_ctx(shop: Shop) -> dict:
-    return {"shop_id": shop.id, "shop_slug": shop.slug}
+def _shop_page_ctx(request, shop: Shop) -> dict:
+    desc = (shop.description or "").strip()
+    og_desc = (desc[:200] if desc else "") or f"{shop.name} — SavdoLink mini-do‘kon"
+    og_image = ""
+    if shop.logo:
+        og_image = request.build_absolute_uri(shop.logo.url)
+    return {
+        "shop_id": shop.id,
+        "shop_slug": shop.slug,
+        "og_title": shop.name,
+        "og_description": og_desc[:300],
+        "og_image": og_image,
+        "og_url": request.build_absolute_uri(request.get_full_path()),
+    }
 
 
 @require_GET
@@ -168,7 +180,7 @@ def shop_page(request, shop_slug):
         return _render_catalog_unavailable(request, reason="inactive", shop_name=shop.name)
     if not shop.is_subscription_operational():
         return _render_catalog_unavailable(request, reason="subscription", shop_name=shop.name)
-    return render(request, "webapp/shop.html", _shop_page_ctx(shop))
+    return render(request, "webapp/shop.html", _shop_page_ctx(request, shop))
 
 
 @require_GET
@@ -210,6 +222,7 @@ def product_page(request, shop_slug, product_slug):
     og_image = ""
     if product.image:
         og_image = request.build_absolute_uri(product.image.url)
+    og_title = f"{product.name} · {shop.name}"
     return render(
         request,
         "webapp/product.html",
@@ -218,7 +231,7 @@ def product_page(request, shop_slug, product_slug):
             "product_id": product.id,
             "shop_slug": shop.slug,
             "product_slug": product.slug,
-            "og_title": product.name,
+            "og_title": og_title,
             "og_description": og_desc[:300],
             "og_image": og_image,
             "og_url": request.build_absolute_uri(request.get_full_path()),
