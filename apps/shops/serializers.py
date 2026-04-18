@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -32,6 +33,8 @@ class ShopSerializer(serializers.ModelSerializer):
     plan_includes_analytics = serializers.SerializerMethodField()
     orders_total_count = serializers.SerializerMethodField()
     orders_total_amount = serializers.SerializerMethodField()
+    current_plan_name = serializers.SerializerMethodField()
+    platform_subscription_payment_note = serializers.SerializerMethodField()
 
     class Meta:
         model = Shop
@@ -54,6 +57,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "trial_ends_at",
             "subscription_ends_at",
             "current_plan",
+            "current_plan_name",
             "first_order_completed_at",
             "is_active",
             "is_verified",
@@ -66,6 +70,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "plan_includes_analytics",
             "orders_total_count",
             "orders_total_amount",
+            "platform_subscription_payment_note",
         )
         read_only_fields = (
             "id",
@@ -78,6 +83,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "trial_ends_at",
             "subscription_ends_at",
             "current_plan",
+            "current_plan_name",
             "first_order_completed_at",
             "subscription_operational",
             "trial_days_left",
@@ -87,6 +93,7 @@ class ShopSerializer(serializers.ModelSerializer):
             "plan_includes_analytics",
             "orders_total_count",
             "orders_total_amount",
+            "platform_subscription_payment_note",
         )
         extra_kwargs = {
             "name": {"required": False},
@@ -160,6 +167,15 @@ class ShopSerializer(serializers.ModelSerializer):
         if delta.total_seconds() <= 0:
             return 0
         return max(0, int(delta.total_seconds() // 86400))
+
+    def get_current_plan_name(self, obj: Shop) -> str:
+        if not obj.current_plan_id:
+            return ""
+        plan = getattr(obj, "current_plan", None)
+        return (plan.name if plan else "") or ""
+
+    def get_platform_subscription_payment_note(self, _obj: Shop) -> str:
+        return (getattr(settings, "PLATFORM_SUBSCRIPTION_PAYMENT_NOTE", None) or "").strip()
 
 
 class ShopDiscoverSerializer(serializers.ModelSerializer):

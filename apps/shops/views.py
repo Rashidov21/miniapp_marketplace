@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 from decimal import Decimal
 
+from django.conf import settings as dj_settings
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
@@ -166,8 +167,6 @@ def shop_link(request, shop_id):
         and not request.user.is_superuser
     ):
         return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
-    from django.conf import settings as dj_settings
-
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
     path = f"/webapp/s/{shop.slug}/"
@@ -183,8 +182,6 @@ def shop_public_link(request, shop_id):
     shop = Shop.objects.filter(pk=shop_id, is_active=True).first()
     if not shop or not shop.is_subscription_operational():
         return Response({"detail": _("Do‘kon vaqtincha mavjud emas.")}, status=status.HTTP_404_NOT_FOUND)
-    from django.conf import settings as dj_settings
-
     bot = getattr(dj_settings, "TELEGRAM_BOT_USERNAME", "") or ""
     base = (getattr(dj_settings, "PUBLIC_BASE_URL", "") or "").rstrip("/")
     startapp = f"shop_{shop.id}"
@@ -198,7 +195,17 @@ def shop_public_link(request, shop_id):
 @permission_classes([AllowAny])
 def subscription_plans_list(request):
     qs = SubscriptionPlan.objects.filter(is_active=True)
-    return Response({"results": SubscriptionPlanSerializer(qs, many=True).data})
+    return Response(
+        {
+            "results": SubscriptionPlanSerializer(qs, many=True).data,
+            "platform_subscription_payment_note": (
+                getattr(dj_settings, "PLATFORM_SUBSCRIPTION_PAYMENT_NOTE", None) or ""
+            ).strip(),
+            "platform_support_email": (
+                getattr(dj_settings, "PLATFORM_SUPPORT_EMAIL", None) or ""
+            ).strip(),
+        }
+    )
 
 
 @api_view(["POST"])

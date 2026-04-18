@@ -195,6 +195,8 @@ TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
 # Huquqiy sahifalar (bog‘lanish); bo‘sh bo‘lsa shablonda «—» ko‘rinadi
 PLATFORM_SUPPORT_EMAIL = os.environ.get("PLATFORM_SUPPORT_EMAIL", "").strip()
+# Obuna sahifasida: do‘kon `payment_note` bo‘sh bo‘lsa ko‘rsatiladigan umumiy to‘lov ko‘rsatmalari (admin/env).
+PLATFORM_SUBSCRIPTION_PAYMENT_NOTE = os.environ.get("PLATFORM_SUBSCRIPTION_PAYMENT_NOTE", "").strip()
 
 # Landing arizalari — Telegram chat ID lar (vergul bilan), masalan: "123456789" yoki "111,222"
 LANDING_NOTIFY_TELEGRAM_IDS = os.environ.get("LANDING_NOTIFY_TELEGRAM_IDS", "")

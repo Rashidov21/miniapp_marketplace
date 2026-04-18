@@ -10,4 +10,9 @@ def get_owner_shop(user: User) -> Shop | None:
     """Egasining do‘koni (birinchi yaratilgan). Admin orqali bir nechta bo‘lsa ham barqaror tanlov."""
     if not user or not user.is_authenticated:
         return None
-    return Shop.objects.filter(owner_id=user.pk).order_by("pk").first()
+    return (
+        Shop.objects.filter(owner_id=user.pk)
+        .select_related("current_plan")
+        .order_by("pk")
+        .first()
+    )

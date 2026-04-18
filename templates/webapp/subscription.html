@@ -7,40 +7,58 @@
 {% endblock %}
 {% block content %}
 <div class="flex flex-col gap-4 pb-28">
-  <div>
-    <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Obuna" %}</p>
-    <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">{% trans "Tariflar" %}</h1>
-    <p class="mt-2 text-sm text-on-surface-variant">{% trans "Demo: 5 tagacha mahsulot bepul. Keyin — pastdagi oylik tariflardan birini tanlang. To‘lovni amalga oshirgach, skrinshotni yuklang — admin tasdiqlagach obuna ochiladi." %}</p>
+  <div id="no-shop" class="hidden rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/80">
+    <p class="font-medium">{% trans "Do‘kon topilmadi" %}</p>
+    <p class="mt-1 text-xs leading-relaxed text-amber-900/90">{% trans "Avval sotuvchi kabinetida do‘kon yarating — keyin obuna va to‘lovlarni boshqarasiz." %}</p>
+    <a href="/webapp/seller/" class="mt-3 inline-flex touch-target rounded-2xl bg-amber-900 px-4 py-2.5 text-sm font-semibold text-white">{% trans "Kabinetga o‘tish" %}</a>
   </div>
-  <div id="pay-info" class="rounded-3xl bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/80">
-    <p class="font-medium">{% trans "To‘lov rekvizitlari" %}</p>
-    <p class="mt-1 font-mono text-xs">{% trans "Keyinroq admin sozlamalaridan o‘zgartirasiz — hozircha shu yerda ko‘rsating." %}</p>
-  </div>
-  <div id="plans-empty" class="hidden rounded-3xl border border-dashed border-outline-variant/40 bg-surface-container-lowest px-4 py-8 text-center text-sm text-on-surface-variant shadow-editorial ring-1 ring-outline-variant/15">
-    {% trans "Hozircha tariflar yo‘q. Keyinroq urinib ko‘ring yoki qo‘llab-quvvatlashga yozing." %}
-  </div>
-  <div id="plans" class="space-y-3"></div>
-  <div id="pending-note" class="hidden rounded-3xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 shadow-editorial ring-1 ring-sky-100/90">
-    <p class="font-semibold text-sky-900">{% trans "To‘lov ko‘rib chiqilmoqda" %}</p>
-    <p class="mt-2 text-xs leading-relaxed text-sky-900/90">
-      {% trans "Skrinshot platforma operatoriga tushdi. Tasdiqlangach obuna avtomatik yangilanadi — odatda 1 ish kuni ichida." %}
-    </p>
-    <p class="mt-2 text-xs font-medium text-sky-800">{% trans "Keyingi qadam: operator javobini kuting. Qayta skrin yuborish shart emas (agar alohida so‘ralmasa)." %}</p>
-    <a href="/webapp/seller/" class="mt-3 inline-flex text-xs font-semibold text-primary underline">{% trans "Kabinetga qaytish" %}</a>
-  </div>
-  <form id="pay-form" class="hidden space-y-3 rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" enctype="multipart/form-data">
-    <input type="hidden" name="plan_id" id="plan_id" />
-    <p id="plan-label" class="text-sm font-semibold text-on-surface"></p>
+
+  <div id="sub-root" class="hidden flex flex-col gap-4">
     <div>
-      <label class="block text-sm font-medium text-on-surface">{% trans "To‘lov skrinshoti" %}</label>
-      <input name="proof_image" type="file" accept="image/*" required class="mt-2 block w-full text-sm text-on-surface-variant" />
+      <p class="text-xs font-semibold uppercase tracking-wide text-primary">{% trans "Obuna" %}</p>
+      <h1 class="font-headline mt-1 text-2xl font-extrabold text-on-surface">{% trans "Tariflar" %}</h1>
+      <p id="intro" class="mt-2 text-sm leading-relaxed text-on-surface-variant"></p>
     </div>
-    <div>
-      <label class="block text-sm font-medium text-on-surface">{% trans "Izoh (ixtiyoriy)" %}</label>
-      <input name="notes" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-2 text-sm text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
+
+    <div id="status-card" class="hidden rounded-3xl px-4 py-3 text-sm shadow-editorial ring-1"></div>
+
+    <div id="pay-info" class="rounded-3xl bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-editorial ring-1 ring-amber-200/80">
+      <p class="font-medium">{% trans "To‘lov rekvizitlari" %}</p>
+      <p id="pay-note-hint" class="mt-1 text-xs text-amber-900/80">{% trans "Do‘kon sozlamalaridagi «To‘lov eslatmasi» yoki platforma sozlamalari (env) matni avtomatik chiqadi." %}</p>
+      <div id="pay-info-body" class="mt-2 whitespace-pre-wrap text-sm leading-relaxed"></div>
+      <p id="pay-info-empty" class="mt-2 hidden text-xs text-amber-900/85"></p>
     </div>
-    <button type="submit" class="w-full rounded-2xl bg-primary py-3 text-base font-semibold text-on-primary shadow-md shadow-primary/25">{% trans "Yuborish" %}</button>
-  </form>
+
+    <div id="plans-empty" class="hidden rounded-3xl border border-dashed border-outline-variant/40 bg-surface-container-lowest px-4 py-8 text-center text-sm text-on-surface-variant shadow-editorial ring-1 ring-outline-variant/15">
+      {% trans "Hozircha tariflar yo‘q. Keyinroq urinib ko‘ring yoki qo‘llab-quvvatlashga yozing." %}
+    </div>
+    <div id="plans-wrap" class="space-y-3">
+      <div id="plans" class="space-y-3"></div>
+      <form id="pay-form" class="hidden space-y-3 rounded-3xl bg-surface-container-lowest p-4 shadow-editorial ring-1 ring-outline-variant/20" enctype="multipart/form-data">
+        <input type="hidden" name="plan_id" id="plan_id" />
+        <p id="plan-label" class="text-sm font-semibold text-on-surface"></p>
+        <div>
+          <label class="block text-sm font-medium text-on-surface">{% trans "To‘lov skrinshoti" %}</label>
+          <input name="proof_image" type="file" accept="image/*" required class="mt-2 block w-full text-sm text-on-surface-variant" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-on-surface">{% trans "Izoh (ixtiyoriy)" %}</label>
+          <input name="notes" class="mt-2 w-full rounded-2xl border-0 bg-surface-container-low px-4 py-2 text-sm text-on-surface shadow-inner ring-1 ring-outline-variant/25 focus:outline-none focus:ring-2 focus:ring-primary/35" />
+        </div>
+        <button type="submit" class="w-full rounded-2xl bg-primary py-3 text-base font-semibold text-on-primary shadow-md shadow-primary/25">{% trans "Yuborish" %}</button>
+      </form>
+    </div>
+
+    <div id="pending-note" class="hidden rounded-3xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950 shadow-editorial ring-1 ring-sky-100/90">
+      <p class="font-semibold text-sky-900">{% trans "To‘lov ko‘rib chiqilmoqda" %}</p>
+      <p class="mt-2 text-xs leading-relaxed text-sky-900/90">
+        {% trans "Skrinshot platforma operatoriga tushdi. Tasdiqlangach obuna avtomatik yangilanadi — odatda 1 ish kuni ichida." %}
+      </p>
+      <p class="mt-2 text-xs font-medium text-sky-800">{% trans "Keyingi qadam: operator javobini kuting. Qayta skrin yuborish shart emas (agar alohida so‘ralmasa)." %}</p>
+      <a href="/webapp/seller/" class="mt-3 inline-flex text-xs font-semibold text-primary underline">{% trans "Kabinetga qaytish" %}</a>
+    </div>
+  </div>
+
   <p id="err" class="hidden text-sm text-error"></p>
 </div>
 {% endblock %}
@@ -52,80 +70,216 @@
   MiniApp.ready();
   MiniApp.bindBackButton("back-btn", "/webapp/seller/");
   let selectedPlan = null;
+  var platformPaymentNote = "";
+  var platformSupportEmail = "";
+
   async function auth() {
     const init = await MiniApp.waitForInitData();
     if (!init) throw new Error("{% trans 'Telegram ichida oching.' %}");
     await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
   }
+
   function fmt(n, cur) {
     return new Intl.NumberFormat("uz-UZ").format(n) + " " + (cur || "UZS");
   }
+
+  function fmtWhen(iso) {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleString("uz-UZ", { dateStyle: "medium", timeStyle: "short" });
+    } catch (e) {
+      return String(iso);
+    }
+  }
+
+  function setPaymentInfo(shop, platformNote, supportEmail) {
+    var bodyEl = document.getElementById("pay-info-body");
+    var emptyEl = document.getElementById("pay-info-empty");
+    var hintEl = document.getElementById("pay-note-hint");
+    var custom = shop && shop.payment_note ? String(shop.payment_note).trim() : "";
+    var plat = (platformNote || "").trim();
+    var text = custom || plat;
+    hintEl.classList.toggle("hidden", !!text);
+    bodyEl.textContent = text;
+    emptyEl.classList.add("hidden");
+    if (!text) {
+      emptyEl.textContent = supportEmail
+        ? "{% trans 'Rekvizitlar hali kiritilmagan. Qo‘llab-quvvatlash:' %} " + supportEmail
+        : "{% trans 'Rekvizitlar hali kiritilmagan. Do‘kon sozlamalarida «To‘lov eslatmasi» maydonini to‘ldiring yoki platforma administratoriga murojaat qiling.' %}";
+      emptyEl.classList.remove("hidden");
+    }
+  }
+
+  function setStatusCard(shop) {
+    var el = document.getElementById("status-card");
+    if (!shop) {
+      el.classList.add("hidden");
+      return;
+    }
+    var st = shop.subscription_status;
+    var parts = [];
+    var ring = "ring-outline-variant/25 bg-surface-container-lowest text-on-surface";
+    if (st === "trial") {
+      ring = "ring-primary/30 bg-primary/5 text-on-surface";
+      parts.push("{% trans 'Holat: sinov muddati' %}");
+      if (shop.trial_days_left != null) {
+        parts.push("{% trans 'Taxminiy qolgan kunlar:' %} " + shop.trial_days_left);
+      }
+      if (shop.trial_ends_at) {
+        parts.push("{% trans 'Tugash vaqti:' %} " + fmtWhen(shop.trial_ends_at));
+      }
+    } else if (st === "active") {
+      ring = "ring-emerald-200/80 bg-emerald-50/90 text-emerald-950";
+      parts.push("{% trans 'Holat: obuna faol' %}");
+      if (shop.current_plan_name) {
+        parts.push("{% trans 'Tarif:' %} " + shop.current_plan_name);
+      }
+      if (shop.subscription_ends_at) {
+        parts.push("{% trans 'Obuna muddati tugaydi:' %} " + fmtWhen(shop.subscription_ends_at));
+      } else {
+        parts.push("{% trans 'Muddat: cheksiz (hozirgi sozlamalar bo‘yicha)' %}");
+      }
+    } else if (st === "expired") {
+      ring = "ring-rose-200/80 bg-rose-50 text-rose-950";
+      parts.push("{% trans 'Holat: obuna muddati tugagan — vitrina mijozlarga yopiq' %}");
+    } else if (st === "payment_pending") {
+      ring = "ring-sky-200/80 bg-sky-50 text-sky-950";
+      parts.push("{% trans 'Holat: to‘lov tekshirilmoqda' %}");
+    } else if (st === "suspended") {
+      ring = "ring-amber-300 bg-amber-50 text-amber-950";
+      parts.push("{% trans 'Holat: do‘kon vaqtincha to‘xtatilgan' %}");
+    } else {
+      parts.push("{% trans 'Holat:' %} " + st);
+    }
+    el.className = "rounded-3xl px-4 py-3 text-sm shadow-editorial ring-1 " + ring;
+    var html = "";
+    parts.forEach(function (p, i) {
+      html +=
+        '<p class="' +
+        (i === 0 ? "font-semibold leading-snug" : "mt-2 font-normal leading-relaxed") +
+        '">' +
+        MiniApp.escapeHtml(p) +
+        "</p>";
+    });
+    el.innerHTML = html;
+    el.classList.remove("hidden");
+  }
+
+  function setIntro(shop) {
+    var el = document.getElementById("intro");
+    if (!shop) {
+      el.textContent = "";
+      return;
+    }
+    var st = shop.subscription_status;
+    if (st === "trial") {
+      el.textContent =
+        "{% trans 'Sinov davrida mahsulotlar joylash mumkin. Doimiy obuna uchun pastdan tarifni tanlang, to‘lov skrinshotini yuboring — operator tasdiqlagach obuna faollashadi.' %}";
+    } else if (st === "active") {
+      el.textContent =
+        "{% trans 'Obuna faol. Boshqa tarifga o‘tmoqchi bo‘lsangiz, pastdan tanlang va yangi to‘lov skrinshotini yuboring (tekshiruvdan keyin yangilanadi).' %}";
+    } else if (st === "expired") {
+      el.textContent =
+        "{% trans 'Obuna muddati tugagan. Do‘konni qayta ochish uchun tarif tanlang va to‘lovni yuboring.' %}";
+    } else if (st === "payment_pending") {
+      el.textContent = "{% trans 'To‘lovingiz tekshirilmoqda. Tasdiqlangacha yangi skrinshot yuborish shart emas (operator so‘ramaguncha).' %}";
+    } else if (st === "suspended") {
+      el.textContent =
+        "{% trans 'Do‘kon platforma tomonidan vaqtincha to‘xtatilgan. Batafsil ma’lumot uchun qo‘llab-quvvatlash bilan bog‘laning.' %}";
+    } else {
+      el.textContent = "{% trans 'Tariflarni tanlang va to‘lov skrinshotini yuboring.' %}";
+    }
+  }
+
+  function renderPlans(plans) {
+    var box = document.getElementById("plans");
+    box.innerHTML = "";
+    if (!plans.length) {
+      document.getElementById("plans-empty").classList.remove("hidden");
+      return;
+    }
+    document.getElementById("plans-empty").classList.add("hidden");
+    plans.forEach(function (p) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className =
+        "w-full rounded-3xl border border-outline-variant/25 bg-surface-container-lowest px-4 py-4 text-left shadow-editorial ring-1 ring-outline-variant/20 active:bg-surface-container-low";
+      var sub = "";
+      if (p.max_products != null) {
+        sub =
+          '<p class="mt-1 text-xs text-on-surface-variant">' +
+          "{% trans 'Faol mahsulotgacha:' %} " +
+          p.max_products +
+          "</p>";
+      } else {
+        sub =
+          '<p class="mt-1 text-xs text-on-surface-variant">' +
+          "{% trans 'Cheksiz mahsulot' %}" +
+          (p.includes_advanced_analytics ? " · {% trans 'Analytics' %}" : "") +
+          "</p>";
+      }
+      b.innerHTML =
+        '<p class="font-headline font-semibold text-on-surface">' +
+        MiniApp.escapeHtml(p.name) +
+        '</p><p class="mt-1 text-lg font-bold text-primary">' +
+        fmt(p.price, p.currency) +
+        "</p>" +
+        sub;
+      b.addEventListener("click", function () {
+        selectedPlan = p;
+        document.getElementById("pay-form").classList.remove("hidden");
+        document.getElementById("plan_id").value = String(p.id);
+        document.getElementById("plan-label").textContent = p.name + " — " + fmt(p.price, p.currency);
+      });
+      box.appendChild(b);
+    });
+  }
+
   (async function () {
-    const err = document.getElementById("err");
+    var err = document.getElementById("err");
     try {
       await auth();
+      var plansRes = await MiniApp.apiFetch("/subscription/plans/", { method: "GET" });
+      platformPaymentNote = plansRes.platform_subscription_payment_note || "";
+      platformSupportEmail = plansRes.platform_support_email || "";
+      var plans = plansRes.results || [];
+      var shop = null;
       try {
-        const shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
-        if (shop.subscription_status === "payment_pending") {
-          document.getElementById("pending-note").classList.remove("hidden");
-        }
-      } catch (ignore) {}
-      const res = await MiniApp.apiFetch("/subscription/plans/", { method: "GET" });
-      const box = document.getElementById("plans");
-      const plans = res.results || [];
-      if (!plans.length) {
-        document.getElementById("plans-empty").classList.remove("hidden");
+        shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
+      } catch (noShop) {
+        shop = null;
+      }
+
+      if (!shop) {
+        document.getElementById("no-shop").classList.remove("hidden");
         return;
       }
-      plans.forEach(function (p) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className =
-          "w-full rounded-3xl border border-outline-variant/25 bg-surface-container-lowest px-4 py-4 text-left shadow-editorial ring-1 ring-outline-variant/20 active:bg-surface-container-low";
-        let sub = "";
-        if (p.max_products != null) {
-          sub =
-            '<p class="mt-1 text-xs text-on-surface-variant">' +
-            "{% trans 'Faol mahsulotgacha:' %} " +
-            p.max_products +
-            "</p>";
-        } else {
-          sub =
-            '<p class="mt-1 text-xs text-on-surface-variant">' +
-            "{% trans 'Cheksiz mahsulot' %}" +
-            (p.includes_advanced_analytics
-              ? " · {% trans 'Analytics' %}"
-              : "") +
-            "</p>";
-        }
-        b.innerHTML =
-          '<p class="font-headline font-semibold text-on-surface">' +
-          p.name +
-          '</p><p class="mt-1 text-lg font-bold text-primary">' +
-          fmt(p.price, p.currency) +
-          "</p>" +
-          sub;
-        b.addEventListener("click", function () {
-          selectedPlan = p;
-          document.getElementById("pay-form").classList.remove("hidden");
-          document.getElementById("plan_id").value = String(p.id);
-          document.getElementById("plan-label").textContent = p.name + " — " + fmt(p.price, p.currency);
-        });
-        box.appendChild(b);
-      });
+
+      document.getElementById("sub-root").classList.remove("hidden");
+      setIntro(shop);
+      setStatusCard(shop);
+      setPaymentInfo(shop, shop.platform_subscription_payment_note || platformPaymentNote, platformSupportEmail);
+
+      var pending = shop.subscription_status === "payment_pending";
+      document.getElementById("pending-note").classList.toggle("hidden", !pending);
+      document.getElementById("plans-wrap").classList.toggle("hidden", pending);
+      if (!pending) {
+        renderPlans(plans);
+      }
     } catch (e) {
-      err.textContent = MiniApp.parseApiError(e, "{% trans 'Tariflarni yuklab bo‘lmadi.' %}");
+      err.textContent = MiniApp.parseApiError(e, "{% trans 'Ma’lumotlarni yuklab bo‘lmadi.' %}");
       err.classList.remove("hidden");
       MiniApp.showToast(err.textContent, "error");
     }
   })();
+
   document.getElementById("pay-form").addEventListener("submit", async function (e) {
     e.preventDefault();
-    const err = document.getElementById("err");
+    var err = document.getElementById("err");
     err.classList.add("hidden");
     try {
       await auth();
-      const fd = new FormData(e.target);
+      var fd = new FormData(e.target);
       await MiniApp.apiFetch("/shops/mine/payments/", { method: "POST", body: fd });
       MiniApp.showToast("{% trans 'Yuborildi. Admin tasdiqlashini kuting.' %}", "success");
       window.location.href = "/webapp/seller/";
