@@ -197,7 +197,7 @@
 </div>
 {% endblock %}
 {% block app_bottom_nav %}
-{% include "includes/webapp_bottom_nav.html" with nav_role="seller" %}
+{% include "includes/webapp_bottom_nav.html" with nav_role=nav_role|default:'buyer' %}
 {% endblock %}
 {% block scripts %}
 <script>
@@ -692,7 +692,11 @@
       try {
         shop = await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
       } catch (x) {
-        shop = null;
+        if (x && x.status === 404) {
+          shop = null;
+        } else {
+          throw x;
+        }
       }
       lastShop = shop;
       const productsLink = document.getElementById("seller-products-link");

@@ -60,12 +60,46 @@
 </div>
 {% endblock %}
 {% block app_bottom_nav %}
-{% include "includes/webapp_bottom_nav.html" with nav_role="buyer" %}
+{% include "includes/webapp_bottom_nav.html" with nav_role=nav_role|default:'buyer' %}
 {% endblock %}
 {% block scripts %}
 <script>
   MiniApp.ready();
   MiniApp.bindBackButton("back-btn", "/webapp/discover/");
+  async function resolveStartParamRoute(sp) {
+    if (!sp) return null;
+    if (sp.indexOf("shop_") === 0) {
+      const id = sp.replace("shop_", "");
+      if (!id) return null;
+      try {
+        const shop = await MiniApp.apiFetch("/shops/" + id + "/public/", { method: "GET" });
+        if (shop && shop.slug) return "/webapp/s/" + encodeURIComponent(shop.slug) + "/";
+      } catch (ignoreShopSlug) {}
+      return "/webapp/shop/" + id + "/";
+    }
+    if (sp.indexOf("product_") === 0) {
+      const parts = sp.split("_");
+      if (!(parts.length === 3 && parts[1] && parts[2])) return null;
+      try {
+        const shop = await MiniApp.apiFetch("/shops/" + parts[1] + "/public/", { method: "GET" });
+        const product = await MiniApp.apiFetch(
+          "/shops/" + parts[1] + "/products/" + parts[2] + "/public/",
+          { method: "GET" }
+        );
+        if (shop && shop.slug && product && product.slug) {
+          return (
+            "/webapp/s/" +
+            encodeURIComponent(shop.slug) +
+            "/p/" +
+            encodeURIComponent(product.slug) +
+            "/"
+          );
+        }
+      } catch (ignoreProductSlug) {}
+      return "/webapp/shop/" + parts[1] + "/product/" + parts[2] + "/";
+    }
+    return null;
+  }
   (async function () {
     const loading = document.getElementById("loading");
     const ready = document.getElementById("ready");
@@ -79,32 +113,35 @@
     }
     try {
       const sp = MiniApp.getStartParam();
-      if (sp && sp.indexOf("shop_") === 0) {
-        const id = sp.replace("shop_", "");
-        if (id) {
-          window.location.replace("/webapp/shop/" + id + "/");
-          return;
-        }
-      }
-      if (sp && sp.indexOf("product_") === 0) {
-        const parts = sp.split("_");
-        if (parts.length === 3 && parts[1] && parts[2]) {
-          window.location.replace("/webapp/shop/" + parts[1] + "/product/" + parts[2] + "/");
-          return;
-        }
+      const startParamRoute = await resolveStartParamRoute(sp);
+      if (startParamRoute) {
+        window.location.replace(startParamRoute);
+        return;
       }
       await MiniApp.apiFetch("/auth/telegram/", { method: "POST", body: JSON.stringify({ init_data: init }) });
       const me = await MiniApp.apiFetch("/me/", { method: "GET" });
-      let hasShop = false;
+      let hasShop = null;
       try {
         await MiniApp.apiFetch("/shops/mine/", { method: "GET" });
         hasShop = true;
-      } catch (ignore) {
-        hasShop = false;
+      } catch (eShop) {
+        if (eShop && eShop.status === 404) {
+          hasShop = false;
+        } else {
+          hasShop = null;
+        }
       }
       // Do‘koni bor foydalanuvchi — har doim do‘kon profili (boshqaruv).
-      if (hasShop) {
+      if (hasShop === true) {
         window.location.replace("/webapp/seller/shop/");
+        return;
+      }
+      if (hasShop === null) {
+        loading.classList.add("hidden");
+        ready.classList.remove("hidden");
+        const name = me.first_name || me.username || me.telegram_id;
+        document.getElementById("status").textContent = "{% trans 'Salom' %}, " + name + "!";
+        MiniApp.showToast("{% trans 'Do‘kon holatini tekshirib bo‘lmadi — yo‘nalishni tanlang.' %}", "warning");
         return;
       }
       const panelRole =

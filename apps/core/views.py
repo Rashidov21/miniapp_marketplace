@@ -93,7 +93,16 @@ def landing_lead_submit(request):
 
 @require_GET
 def webapp_home(request):
-    return render(request, "webapp/home.html")
+    nav_role = "buyer"
+    if request.user.is_authenticated:
+        has_shop = get_owner_shop(request.user) is not None
+        if has_shop or request.user.role in (
+            User.Role.SELLER,
+            User.Role.ADMIN,
+            User.Role.PLATFORM_OWNER,
+        ):
+            nav_role = "seller"
+    return render(request, "webapp/home.html", {"nav_role": nav_role})
 
 
 @require_GET
@@ -120,10 +129,18 @@ def help_page(request):
 
 @require_GET
 def seller_dashboard(request):
-    ctx = {"dashboard_role": "", "dashboard_has_shop": None}
-    if request.user.is_authenticated:
-        ctx["dashboard_role"] = request.user.role
-        ctx["dashboard_has_shop"] = get_owner_shop(request.user) is not None
+    ctx = {"dashboard_role": "", "dashboard_has_shop": None, "nav_role": "buyer"}
+    if not request.user.is_authenticated:
+        return redirect("webapp_home")
+    ctx["dashboard_role"] = request.user.role
+    has_shop = get_owner_shop(request.user) is not None
+    ctx["dashboard_has_shop"] = has_shop
+    if has_shop or request.user.role in (
+        User.Role.SELLER,
+        User.Role.ADMIN,
+        User.Role.PLATFORM_OWNER,
+    ):
+        ctx["nav_role"] = "seller"
     return render(request, "webapp/seller_dashboard.html", ctx)
 
 
