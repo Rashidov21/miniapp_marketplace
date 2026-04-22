@@ -193,6 +193,10 @@ CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
+# BotFather → Payments → provayder (masalan Click Telegram orqali). Obuna invoice (createInvoiceLink / sendInvoice).
+TELEGRAM_PAYMENT_PROVIDER_TOKEN = os.environ.get("TELEGRAM_PAYMENT_PROVIDER_TOKEN", "").strip()
+# Telegram LabeledPrice: UZS uchun kichik birlik (odatda tiyin, 100 = 1 so‘m).
+TELEGRAM_UZS_MINOR_UNIT_MULTIPLIER = int(os.environ.get("TELEGRAM_UZS_MINOR_UNIT_MULTIPLIER", "100"))
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000")
 # Huquqiy sahifalar (bog‘lanish); bo‘sh bo‘lsa shablonda «—» ko‘rinadi
 PLATFORM_SUPPORT_EMAIL = os.environ.get("PLATFORM_SUPPORT_EMAIL", "").strip()

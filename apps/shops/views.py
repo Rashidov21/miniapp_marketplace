@@ -214,6 +214,46 @@ def subscription_plans_list(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsSellerOrAdmin])
+def subscription_telegram_invoice(request):
+    """Telegram Bot Payments: createInvoiceLink + pending SubscriptionPayment."""
+    from apps.shops.telegram_subscription import create_telegram_subscription_invoice
+
+    raw = (request.data or {}).get("plan_id")
+    try:
+        plan_id = int(raw)
+    except (TypeError, ValueError):
+        return Response({"detail": _("plan_id majburiy.")}, status=status.HTTP_400_BAD_REQUEST)
+
+    invoice_url, err, payment_id = create_telegram_subscription_invoice(user=request.user, plan_id=plan_id)
+    if err == "telegram_provider_not_configured":
+        return error_response(
+            str(_("Telegram to‘lovi sozlanmagan (TELEGRAM_PAYMENT_PROVIDER_TOKEN).")),
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            code=err,
+        )
+    if err == "no_shop":
+        return Response({"detail": _("Avval do‘kon yarating.")}, status=status.HTTP_404_NOT_FOUND)
+    if err == "payment_pending_exists":
+        return error_response(
+            str(_("To‘lov allaqachon yuborilgan — tekshiruvni kuting.")),
+            status=status.HTTP_409_CONFLICT,
+            code=err,
+        )
+    if err == "plan_not_found":
+        return Response({"detail": _("Tarif topilmadi.")}, status=status.HTTP_404_NOT_FOUND)
+    if err == "invalid_amount":
+        return Response({"detail": _("Noto‘g‘ri tarif narxi.")}, status=status.HTTP_400_BAD_REQUEST)
+    if err or not invoice_url:
+        return error_response(
+            str(_("Hisob-faktura yaratib bo‘lmadi. Keyinroq urinib ko‘ring.")),
+            status=status.HTTP_502_BAD_GATEWAY,
+            code=err or "invoice_create_failed",
+        )
+    return Response({"ok": True, "payment_id": payment_id, "invoice_url": invoice_url})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSellerOrAdmin])
 def subscription_payment_create(request):
     shop = get_owner_shop(request.user)
     if not shop:
@@ -237,6 +277,7 @@ def subscription_payment_create(request):
                 shop=shop,
                 plan=plan,
                 amount=plan.price,
+                channel=SubscriptionPayment.Channel.MANUAL_SCREENSHOT,
                 proof_image=ser.validated_data["proof_image"],
                 notes=ser.validated_data.get("notes") or "",
             )

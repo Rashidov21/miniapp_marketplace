@@ -166,6 +166,7 @@ def leads_list(request: HttpRequest) -> HttpResponse:
 @_staff_required
 def payments_list(request: HttpRequest) -> HttpResponse:
     status_filter = request.GET.get("status") or "pending"
+    channel_filter = (request.GET.get("channel") or "").strip()
     q = (request.GET.get("q") or "").strip()
     qs = SubscriptionPayment.objects.select_related("shop", "plan", "reviewed_by").order_by("-created_at")
     if status_filter == "pending":
@@ -174,11 +175,21 @@ def payments_list(request: HttpRequest) -> HttpResponse:
         qs = qs.filter(status=SubscriptionPayment.Status.APPROVED)
     elif status_filter == "rejected":
         qs = qs.filter(status=SubscriptionPayment.Status.REJECTED)
+    if channel_filter in (
+        SubscriptionPayment.Channel.MANUAL_SCREENSHOT,
+        SubscriptionPayment.Channel.TELEGRAM,
+    ):
+        qs = qs.filter(channel=channel_filter)
     if q:
+        q_filter = (
+            Q(shop__name__icontains=q)
+            | Q(plan__name__icontains=q)
+            | Q(telegram_payment_charge_id__icontains=q)
+            | Q(invoice_payload__icontains=q)
+        )
         if q.isdigit():
-            qs = qs.filter(Q(id=int(q)) | Q(shop__owner__telegram_id=int(q)))
-        else:
-            qs = qs.filter(Q(shop__name__icontains=q) | Q(plan__name__icontains=q))
+            q_filter |= Q(id=int(q)) | Q(shop__owner__telegram_id=int(q))
+        qs = qs.filter(q_filter)
 
     pending_count = SubscriptionPayment.objects.filter(status=SubscriptionPayment.Status.PENDING).count()
     approved_count = SubscriptionPayment.objects.filter(status=SubscriptionPayment.Status.APPROVED).count()
@@ -191,6 +202,7 @@ def payments_list(request: HttpRequest) -> HttpResponse:
         {
             "page": page,
             "status_filter": status_filter,
+            "channel_filter": channel_filter,
             "q": q,
             "pending_count": pending_count,
             "approved_count": approved_count,

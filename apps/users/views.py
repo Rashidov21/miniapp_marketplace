@@ -145,7 +145,21 @@ def telegram_webhook(request, secret: str):
         return Response({"detail": _("Ruxsat yo‘q.")}, status=status.HTTP_403_FORBIDDEN)
 
     update = request.data or {}
+
+    pcq = update.get("pre_checkout_query")
+    if isinstance(pcq, dict) and pcq.get("id"):
+        from apps.shops.telegram_subscription import handle_pre_checkout_query
+
+        handle_pre_checkout_query(pcq)
+        return Response({"ok": True})
+
     message = update.get("message") or {}
+    if isinstance(message, dict) and message.get("successful_payment"):
+        from apps.shops.telegram_subscription import handle_successful_payment
+
+        handle_successful_payment(message)
+        return Response({"ok": True})
+
     chat = message.get("chat") or {}
     text = (message.get("text") or "").strip()
     if not chat.get("id"):

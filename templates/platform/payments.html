@@ -8,16 +8,21 @@
   <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">{% trans "Tasdiqlangan" %}: {{ approved_count }}</span>
   <span class="rounded-full bg-rose-100 px-3 py-1 font-semibold text-rose-900">{% trans "Rad etilgan" %}: {{ rejected_count }}</span>
 </div>
-<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-4">
-  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'ID, do‘kon yoki owner telegram_id' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
+<form method="get" class="mt-4 grid gap-2 rounded-2xl bg-white p-3 shadow ring-1 ring-slate-200 sm:grid-cols-5">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'ID, do‘kon, invoice, telegram_charge' %}" class="rounded-xl border border-slate-300 px-3 py-2 text-sm" />
   <input type="hidden" name="status" value="{{ status_filter }}">
-  <div class="sm:col-span-2"></div>
+  <select name="channel" class="rounded-xl border border-slate-300 px-3 py-2 text-sm">
+    <option value="" {% if not channel_filter %}selected{% endif %}>{% trans "Barcha kanallar" %}</option>
+    <option value="manual_screenshot" {% if channel_filter == 'manual_screenshot' %}selected{% endif %}>{% trans "Skrinshot" %}</option>
+    <option value="telegram" {% if channel_filter == 'telegram' %}selected{% endif %}>{% trans "Telegram invoice" %}</option>
+  </select>
+  <div class="sm:col-span-1"></div>
   <button type="submit" class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white">{% trans "Qidirish" %}</button>
 </form>
-<div class="mt-4 flex gap-2 text-sm">
-  <a href="?status=pending&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'pending' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Kutilmoqda" %}</a>
-  <a href="?status=approved&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'approved' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Tasdiqlangan" %}</a>
-  <a href="?status=rejected&q={{ q|urlencode }}" class="rounded-lg px-3 py-1 {% if status_filter == 'rejected' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Rad etilgan" %}</a>
+<div class="mt-4 flex flex-wrap gap-2 text-sm">
+  <a href="?status=pending&q={{ q|urlencode }}{% if channel_filter %}&channel={{ channel_filter|urlencode }}{% endif %}" class="rounded-lg px-3 py-1 {% if status_filter == 'pending' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Kutilmoqda" %}</a>
+  <a href="?status=approved&q={{ q|urlencode }}{% if channel_filter %}&channel={{ channel_filter|urlencode }}{% endif %}" class="rounded-lg px-3 py-1 {% if status_filter == 'approved' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Tasdiqlangan" %}</a>
+  <a href="?status=rejected&q={{ q|urlencode }}{% if channel_filter %}&channel={{ channel_filter|urlencode }}{% endif %}" class="rounded-lg px-3 py-1 {% if status_filter == 'rejected' %}bg-teal-100 font-semibold{% else %}bg-white ring-1 ring-slate-200{% endif %}">{% trans "Rad etilgan" %}</a>
 </div>
 
 <div class="mt-6 overflow-x-auto rounded-2xl bg-white shadow ring-1 ring-slate-200">
@@ -28,6 +33,8 @@
         <th class="px-3 py-2">{% trans "Do‘kon" %}</th>
         <th class="px-3 py-2">{% trans "Tarif" %}</th>
         <th class="px-3 py-2">{% trans "Summa" %}</th>
+        <th class="px-3 py-2">{% trans "Kanal" %}</th>
+        <th class="px-3 py-2">{% trans "Telegram charge" %}</th>
         <th class="px-3 py-2">{% trans "Holat" %}</th>
         <th class="px-3 py-2">{% trans "Vaqt" %}</th>
         <th class="px-3 py-2"></th>
@@ -46,15 +53,25 @@
           </td>
           <td class="px-3 py-2">{{ p.plan.name }}</td>
           <td class="px-3 py-2">{{ p.amount }}</td>
+          <td class="px-3 py-2">{{ p.get_channel_display }}</td>
+          <td class="px-3 py-2 font-mono text-xs text-slate-600">{{ p.telegram_payment_charge_id|default:"—" }}</td>
           <td class="px-3 py-2">{{ p.get_status_display }}</td>
           <td class="px-3 py-2 text-slate-500">{{ p.created_at|date:"Y-m-d H:i" }}</td>
           <td class="px-3 py-2">
             {% if p.status == "pending" %}
-              <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline" data-confirm="{% trans 'To‘lovni tasdiqlaysizmi?' %}">{% csrf_token %}<button type="submit" class="text-brand underline">{% trans "Tasdiqlash" %}</button></form>
-              <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline-flex items-center gap-1" data-confirm="{% trans 'To‘lovni rad etasizmi?' %}">{% csrf_token %}
-                <input required name="admin_note" placeholder="{% trans 'Rad sababi' %}" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs" />
-                <button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button>
-              </form>
+              {% if p.channel == "telegram" %}
+                <p class="mb-2 max-w-xs text-xs text-slate-600">{% trans "Telegram: to‘lov tugagach odatda avtomatik tasdiqlanadi. Bekor / chalkash invoice uchun rad eting." %}</p>
+                <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="inline-flex items-center gap-1" data-confirm="{% trans 'To‘lovni rad etasizmi?' %}">{% csrf_token %}
+                  <input required name="admin_note" placeholder="{% trans 'Rad sababi' %}" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs" />
+                  <button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'platform_payment_approve' p.id %}" class="inline" data-confirm="{% trans 'To‘lovni tasdiqlaysizmi?' %}">{% csrf_token %}<button type="submit" class="text-brand underline">{% trans "Tasdiqlash" %}</button></form>
+                <form method="post" action="{% url 'platform_payment_reject' p.id %}" class="ml-2 inline-flex items-center gap-1" data-confirm="{% trans 'To‘lovni rad etasizmi?' %}">{% csrf_token %}
+                  <input required name="admin_note" placeholder="{% trans 'Rad sababi' %}" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs" />
+                  <button type="submit" class="text-red-600 underline">{% trans "Rad" %}</button>
+                </form>
+              {% endif %}
             {% endif %}
             {% if p.proof_image %}
               <a href="{{ p.proof_image.url }}" target="_blank" class="ml-2 text-xs text-slate-600 underline">{% trans "Skrinshot" %}</a>
@@ -62,7 +79,7 @@
           </td>
         </tr>
       {% empty %}
-        <tr><td colspan="7" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
+        <tr><td colspan="9" class="px-3 py-8 text-center text-slate-500">{% trans "Bo‘sh" %}</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -72,10 +89,10 @@
     <p class="text-slate-600">{% trans "Sahifa" %} {{ page.number }} / {{ page.paginator.num_pages }}</p>
     <div class="flex gap-2">
       {% if page.has_previous %}
-        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.previous_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}">{% trans "Oldingi" %}</a>
+        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.previous_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}{% if channel_filter %}&channel={{ channel_filter|urlencode }}{% endif %}">{% trans "Oldingi" %}</a>
       {% endif %}
       {% if page.has_next %}
-        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.next_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}">{% trans "Keyingi" %}</a>
+        <a class="rounded-lg border border-slate-300 bg-white px-3 py-1" href="?page={{ page.next_page_number }}&status={{ status_filter|urlencode }}&q={{ q|urlencode }}{% if channel_filter %}&channel={{ channel_filter|urlencode }}{% endif %}">{% trans "Keyingi" %}</a>
       {% endif %}
     </div>
   </div>

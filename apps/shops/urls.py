@@ -8,6 +8,11 @@ urlpatterns = [
     path("shops/discover/", views.shop_discover_list, name="api_shop_discover"),
     path("shops/", views.shop_create, name="api_shop_create"),
     path("shops/mine/", views.shop_mine, name="api_shop_mine"),
+    path(
+        "shops/mine/subscription/telegram-invoice/",
+        views.subscription_telegram_invoice,
+        name="api_shop_subscription_telegram_invoice",
+    ),
     path("shops/mine/payments/", views.subscription_payment_create, name="api_shop_payment_create"),
     path("shops/<int:shop_id>/", views.shop_update, name="api_shop_update"),
     path("shops/<int:shop_id>/public/", views.shop_public, name="api_shop_public"),

@@ -149,12 +149,40 @@ class Shop(models.Model):
 
 
 class SubscriptionPayment(models.Model):
-    """Skrinshot orqali yuborilgan obuna to‘lovi (admin tasdiqi)."""
+    """Obuna to‘lovi: skrinshot (admin tasdiqi) yoki Telegram Bot Payments (provider_token)."""
 
     class Status(models.TextChoices):
         PENDING = "pending", _("Pending")
         APPROVED = "approved", _("Approved")
         REJECTED = "rejected", _("Rejected")
+
+    class Channel(models.TextChoices):
+        MANUAL_SCREENSHOT = "manual_screenshot", _("Manual screenshot")
+        TELEGRAM = "telegram", _("Telegram invoice")
+
+    channel = models.CharField(
+        max_length=32,
+        choices=Channel.choices,
+        default=Channel.MANUAL_SCREENSHOT,
+        db_index=True,
+    )
+    invoice_payload = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text=_("Telegram invoice payload (unique per pending payment)."),
+    )
+    telegram_payment_charge_id = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        unique=True,
+        help_text=_("successful_payment.telegram_payment_charge_id"),
+    )
+    telegram_provider_payment_charge_id = models.CharField(max_length=256, blank=True, default="")
+    invoice_message_id = models.BigIntegerField(null=True, blank=True)
+    invoice_chat_id = models.BigIntegerField(null=True, blank=True)
 
     shop = models.ForeignKey(
         Shop,
@@ -172,7 +200,7 @@ class SubscriptionPayment(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
-    proof_image = models.ImageField(upload_to="subscription_payments/")
+    proof_image = models.ImageField(upload_to="subscription_payments/", null=True, blank=True)
     notes = models.TextField(blank=True)
     admin_note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
